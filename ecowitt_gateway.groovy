@@ -1,8 +1,8 @@
 /**
  * Driver:     Ecowitt WiFi Gateway
  * Author:     Mirco Caramori
- * Repository: https://github.com/mircolino/hubitat/tree/master/ecowitt
- * Import URL: https://raw.githubusercontent.com/mircolino/hubitat/master/ecowitt/ecowitt_gateway.groovy
+ * Repository: https://github.com/mircolino/ecowitt
+ * Import URL: https://raw.githubusercontent.com/mircolino/ecowitt/master/ecowitt_gateway.groovy
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file except
  * in compliance with the License. You may obtain a copy of the License at:
