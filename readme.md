@@ -3,9 +3,9 @@
 
 ---
 
-#### Installation Instructions
+### Installation Instructions
 
-##### Ecowitt WS View:
+#### Ecowitt WS View:
 
 1.  Make sure all your sensors are properly registered:  
 
@@ -15,7 +15,7 @@
 
     <img src="https://i.imgur.com/STF5v6d.png" width="300" height="600">
 
-##### Hubitat: 
+#### Hubitat: 
 
 1.  If the Ecowitt Gateway has been setup correctly, every 5 minutes, you should see the following warning in the Hubitat system log:
 
@@ -40,6 +40,6 @@
     
     <img src="https://i.imgur.com/Nad8ScL.png">
 
-#### Disclaimer
+### Disclaimer
 
 This driver is still under development. Install it on a production Hubitat hub at your own risk.
