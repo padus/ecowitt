@@ -1,8 +1,8 @@
 /**
  * Driver:     Ecowitt Weather Sensor 
  * Author:     Mirco Caramori
- * Repository: https://github.com/mircolino/hubitat/tree/master/ecowitt
- * Import URL: https://raw.githubusercontent.com/mircolino/hubitat/master/ecowitt/ecowitt_sensor.groovy
+ * Repository: https://github.com/mircolino/ecowitt
+ * Import URL: https://raw.githubusercontent.com/mircolino/ecowitt/master/ecowitt_sensor.groovy
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file except
  * in compliance with the License. You may obtain a copy of the License at:
@@ -31,7 +31,7 @@ metadata {
     capability "IlluminanceMeasurement";
 
  // attribute "battery", "number";                             // 0-100%
- // attribute "temperature", "number";                         // °F
+ // attribute "temperature", "number";                         // Â°F
  // attribute "humidity", "number";                            // 0-100%
  // attribute "pressure", "number";                            // inHg - relative pressure corrected to sea-level
     attribute "pressureAbs", "number";                         // inHg - absolute pressure
@@ -45,13 +45,13 @@ metadata {
     attribute "rainYearly", "number";                          // in - rainfall in the current year
     attribute "rainTotal", "number";                           // in - rainfall total since sensor installation
 
-    attribute "pm25", "number";                                // µg/cm³ - current PM2.5 particle reading 
-    attribute "pm25_avg_24h", "number";                        // µg/cm³ - average PM2.5 particle reading over the last 24 hours
+    attribute "pm25", "number";                                // Âµg/cmÂ³ - current PM2.5 particle reading 
+    attribute "pm25_avg_24h", "number";                        // Âµg/cmÂ³ - average PM2.5 particle reading over the last 24 hours
 
  // attribute "ultravioletIndex", "number";                    // 0-11+ UV Index
  // attribute "illuminance", "number";                         // lux
-    attribute "windDirection", "number";                       // 0-359°
-    attribute "windDirection_avg_10m", "number";               // 0-359° - average over the last 10 minutes 
+    attribute "windDirection", "number";                       // 0-359Â°
+    attribute "windDirection_avg_10m", "number";               // 0-359Â° - average over the last 10 minutes 
     attribute "windSpeed", "number";                           // mph
     attribute "windSpeed_avg_10m", "number";                   // mph - average over the last 10 minutes
     attribute "windGust", "number";                            // mph
@@ -87,7 +87,7 @@ void updateStates(String key, String val) {
   case "tempinf":
   case "tempf":
   case ~/temp[1-8]f/:
-    if (state.temperature != val) sendEvent(name: "temperature", value: val, unit: "°F");
+    if (state.temperature != val) sendEvent(name: "temperature", value: val, unit: "Â°F");
     break;
 
   case "humidityin":
@@ -138,11 +138,11 @@ void updateStates(String key, String val) {
     break;
 
   case ~/pm25_ch[1-4]/:
-    if (state.pm25 != val) sendEvent(name: "pm25", value: val, unit: "µg/cm³");
+    if (state.pm25 != val) sendEvent(name: "pm25", value: val, unit: "Âµg/cmÂ³");
     break;
 
   case ~/pm25_avg_24h_ch[1-4]/:
-    if (state.pm25_avg_24h != val) sendEvent(name: "pm25_avg_24h", value: val, unit: "µg/cm³");
+    if (state.pm25_avg_24h != val) sendEvent(name: "pm25_avg_24h", value: val, unit: "Âµg/cmÂ³");
     break;
 
   case "uv":
@@ -155,11 +155,11 @@ void updateStates(String key, String val) {
     break;
 
   case "winddir":
-    if (state.windDirection != val) sendEvent(name: "windDirection", value: val, unit: "°");
+    if (state.windDirection != val) sendEvent(name: "windDirection", value: val, unit: "Â°");
     break;
 
   case "winddir_avg10m":
-    if (state.windDirection_avg_10m != val) sendEvent(name: "windDirection_avg_10m", value: val, unit: "°");
+    if (state.windDirection_avg_10m != val) sendEvent(name: "windDirection_avg_10m", value: val, unit: "Â°");
     break;
 
   case "windspeedmph":
