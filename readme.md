@@ -1,7 +1,6 @@
 ## Ecowitt WiFi Gateway
 *Ecowitt Wifi Gateway driver for Hubitat Elevation*
 
----
 
 ### Installation Instructions
 
