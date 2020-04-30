@@ -23,6 +23,10 @@ metadata {
   definition(name: "Ecowitt WiFi Gateway", namespace: "mircolino", author: "Mirco Caramori") {
     capability "Sensor";
 
+    // Driver info
+    attribute "driverVer", "string"; // Current driver version (e.g. "v1.0.3")
+    attribute "driverNew", "string"; // Has a new driver version been released on GitHub? (e.g. "v1.0.5")
+
     // Gateway info
     attribute "model", "string";     // Model number
     attribute "firmware", "string";  // Firmware version
@@ -69,6 +73,39 @@ metadata {
     input(name: "macAddress", type: "string", title: "<font style='font-size:12px; color:#1a77c9'>MAC Address</font>", description: "<font style='font-size:12px; font-style: italic'>Ecowitt WiFi Gateway MAC address</font>", defaultValue: "", required: true);
     input(name: "logLevel", type: "enum", title: "<font style='font-size:12px; color:#1a77c9'>Log Verbosity</font>", description: "<font style='font-size:12px; font-style: italic'>Default: 'Debug' for 30 min and 'Info' thereafter</font>", options: [0:"Error", 1:"Warning", 2:"Info", 3:"Debug"], multiple: false, defaultValue: 3, required: true);
   }
+}
+
+// Versioning -----------------------------------------------------------------------------------------------------------------
+
+public static String version() { return "v0.6.1"; }
+
+// ------------------------------------------------------------
+
+void updateVersion() {
+  String verCurrent = version();
+  String verNew = null;
+
+  try {
+    logDebug("updateVersion()");
+
+    // Retrieve latest (non pre) release metadata from GitHub
+    // If no releases have been staged yet, it will throw an exception
+    String releaseText = "https://api.github.com/repos/mircolino/ecowitt/releases/latest".toURL().getText();
+    if (releaseText) {
+      // text -> json
+      Object parser = new groovy.json.JsonSlurper();
+      Object release = parser.parseText(releaseText);  
+
+      // Compare versions: a bit rudimental but for now it will do
+      if (release.tag_name && release.tag_name > verCurrent) verNew = release.tag_name;
+    }
+  }
+  catch (Exception e) {
+    logError("Exception in updateVersion(): ${e}");
+  }
+
+  if (state.driverVer != verCurrent) sendEvent(name: "driverVer", value: verCurrent);
+  if (state.driverNew != verNew) sendEvent(name: "driverNew", value: verNew);
 }
 
 // MAC & DNI ------------------------------------------------------------------------------------------------------------------
@@ -328,6 +365,9 @@ void updated() {
     // Update Device Network ID
     updateDNI();
   
+    // Update driver version
+    updateVersion();
+
     // Turn off debug log in 30 minutes
     if (getLogLevel() > 2) runIn(1800, logDebugOff);
   }
