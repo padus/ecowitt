@@ -22,7 +22,7 @@
     
     That's because this driver has not been installed yet and the hub has nowhere to forward the data to.
     
-2.  In "Drivers Code" add the new Ecowitt Gateway and Sensor drivers:
+2.  In "Drivers Code" add the new Ecowitt Gateway and RF Sensor drivers:
 
     <img src="https://i.imgur.com/F66oitb.png">
     

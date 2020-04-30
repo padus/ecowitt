@@ -16,8 +16,13 @@
  * Change Log:
  *
  * 2020.04.24 - Initial implementation
- *
+ * 2020.04.29 - Added GitHub versioning and 
+ *              Added support for more sensors: WH40, WH41, WH43, WS68 and WS80
 */
+
+public static String version() { return "v0.6.1"; }
+
+// Metadata -------------------------------------------------------------------------------------------------------------------
 
 metadata {
   definition(name: "Ecowitt WiFi Gateway", namespace: "mircolino", author: "Mirco Caramori") {
@@ -76,10 +81,6 @@ metadata {
 }
 
 // Versioning -----------------------------------------------------------------------------------------------------------------
-
-public static String version() { return "v0.6.1"; }
-
-// ------------------------------------------------------------
 
 void updateVersion() {
   String verCurrent = version();
