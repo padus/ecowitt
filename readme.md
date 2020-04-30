@@ -1,5 +1,5 @@
 ## Ecowitt WiFi Gateway
-*Ecowitt Wifi Gateway driver for Hubitat Elevation (LAN only - no cloud service needed)*
+*Ecowitt WiFi Gateway driver for Hubitat Elevation (LAN only - no cloud service needed)*
 
 
 ### Installation Instructions
@@ -22,7 +22,7 @@
     
     That's because this driver has not been installed yet and the hub has nowhere to forward the data to.
     
-2.  In "Drivers Code" add the new Ecowitt Gateway and RF Sensor drivers:
+2.  In "Drivers Code" add the Ecowitt [WiFi Gateway](https://raw.githubusercontent.com/mircolino/ecowitt/master/ecowitt_gateway.groovy) and [RF Sensor](https://raw.githubusercontent.com/mircolino/ecowitt/master/ecowitt_sensor.groovy) drivers:
 
     <img src="https://i.imgur.com/F66oitb.png">
     
