@@ -1,0 +1,6 @@
+TODO
+====
+
+1) Execute updateVersion() via cron once a week or so
+2) delete child drivers which no longer have an associated sensor
+3) Integrate with Hubitat Package Manager: https://community.hubitat.com/t/beta-hubitat-package-manager/38016

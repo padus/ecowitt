@@ -1,5 +1,5 @@
 ## Ecowitt WiFi Gateway
-*Ecowitt Wifi Gateway driver for Hubitat Elevation*
+*Ecowitt Wifi Gateway driver for Hubitat Elevation (LAN only - no cloud service needed)*
 
 
 ### Installation Instructions

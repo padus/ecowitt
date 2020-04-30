@@ -20,7 +20,7 @@
  *              Added support for more sensors: WH40, WH41, WH43, WS68 and WS80
 */
 
-public static String version() { return "v0.6.1"; }
+public static String version() { return "v0.6.2"; }
 
 // Metadata -------------------------------------------------------------------------------------------------------------------
 
