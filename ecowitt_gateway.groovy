@@ -16,11 +16,12 @@
  * Change Log:
  *
  * 2020.04.24 - Initial implementation
- * 2020.04.29 - Added GitHub versioning and 
+ * 2020.04.29 - Added GitHub versioning 
  *              Added support for more sensors: WH40, WH41, WH43, WS68 and WS80
+ * 2020.04.29 - Added sensor battery range conversion to 0-100%
 */
 
-public static String version() { return "v0.6.2"; }
+public static String version() { return "v0.6.3"; }
 
 // Metadata -------------------------------------------------------------------------------------------------------------------
 
@@ -82,31 +83,78 @@ metadata {
 
 // Versioning -----------------------------------------------------------------------------------------------------------------
 
+private Map extractVersion(String ver) {
+  //
+  // Given any version string (e.g. version 2.5.78-prerelease) will return a Map as following:
+  //   Map.major version
+  //   Map.minor version
+  //   Map.build version
+  //   Map.desc  version
+  // or "null" if no version info was found in the given string
+  //
+  Map val = null;
+
+  if (ver) {
+    String pattern = /.*?(\d+)\.(\d+)\.(\d+).*/
+    java.util.regex.Matcher matcher = ver =~ pattern;
+
+    if (matcher.groupCount() == 3) {
+      val = [:];
+      val.major = matcher[0][1] as Integer;
+      val.minor = matcher[0][2] as Integer;
+      val.build = matcher[0][3] as Integer;
+      val.desc = "v${val.major}.${val.minor}.${val.build}";
+    }
+  }
+
+  return (val);
+}
+
+// ------------------------------------------------------------
+
 void updateVersion() {
-  String verCurrent = version();
-  String verNew = null;
+  Map verCur = null;
+  Map verNew = null;
 
   try {
     logDebug("updateVersion()");
+    
+    // Retrieve current version
+    verCur = extractVersion(version());
+    if (verCur) {
+      // Retrieve latest (non pre) release metadata from GitHub
+      // If no releases have been staged yet, it will throw an exception
+      String releaseText = "https://api.github.com/repos/mircolino/ecowitt/releases/latest".toURL().getText();
+      if (releaseText) {
+        // text -> json
+        Object parser = new groovy.json.JsonSlurper();
+        Object release = parser.parseText(releaseText);  
 
-    // Retrieve latest (non pre) release metadata from GitHub
-    // If no releases have been staged yet, it will throw an exception
-    String releaseText = "https://api.github.com/repos/mircolino/ecowitt/releases/latest".toURL().getText();
-    if (releaseText) {
-      // text -> json
-      Object parser = new groovy.json.JsonSlurper();
-      Object release = parser.parseText(releaseText);  
-
-      // Compare versions: a bit rudimental but for now it will do
-      if (release.tag_name && release.tag_name > verCurrent) verNew = release.tag_name;
+        verNew = extractVersion(release.tag_name);
+        if (verNew) {
+          // Compare versions
+          if (verCur.major > verNew.major) verNew = null;
+          else if (verCur.major == verNew.major) {
+            if (verCur.minor > verNew.minor) verNew = null;
+            else if (verCur.minor == verNew.minor) {
+              if (verCur.build >= verNew.build) verNew = null;
+            }
+          }
+        }
+      }
     }
   }
   catch (Exception e) {
     logError("Exception in updateVersion(): ${e}");
   }
 
-  if (state.driverVer != verCurrent) sendEvent(name: "driverVer", value: verCurrent);
-  if (state.driverNew != verNew) sendEvent(name: "driverNew", value: verNew);
+  String str;
+
+  str = verCur? verCur.desc: null;
+  if (state.driverVer != str) sendEvent(name: "driverVer", value: str);
+
+  str = verNew? verNew.desc: null;
+  if (state.driverNew != str) sendEvent(name: "driverNew", value: str);
 }
 
 // MAC & DNI ------------------------------------------------------------------------------------------------------------------
@@ -366,8 +414,9 @@ void updated() {
     // Update Device Network ID
     updateDNI();
   
-    // Update driver version
+    // Update driver version now and every following Sunday @ 2am
     updateVersion();
+    schedule("0 0 2 ? * 1 *", updateVersion);
 
     // Turn off debug log in 30 minutes
     if (getLogLevel() > 2) runIn(1800, logDebugOff);

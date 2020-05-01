@@ -71,16 +71,40 @@ void updateStates(String key, String val) {
   //
   switch (key) {
 
+  case ~/soilbatt[1-8]/:
+    // The soil moisture sensor returns the battery voltage which, for regular AA alkaline, ranges from 1.40V (empty) to 1.65V (full)
+    Integer percent = Math.round((val as Float) * 100f);
+    if (percent < 140) percent = 140;
+    else if (percent > 165) percent = 165;
+
+    // Change range from (1.40V - 1.65V) to (0% - 100%)
+    percent = ((percent - 140) * (100 - 0)) / (165 - 140);
+
+    // Bring back to string
+    val = percent.toString();
+    if (state.battery != val) sendEvent(name: "battery", value: val, unit: "%");
+    break;
+  
+  case ~/pm25batt[1-4]/:
+    // The air quality sensor returns a battery value between 0 (empty) and 5 (full)
+    Integer percent = (val as Integer) * 20;
+    if (percent > 100) percent = 100;
+    
+    // Bring back to string
+    val = percent.toString();
+    if (state.battery != val) sendEvent(name: "battery", value: val, unit: "%");
+    break;
+  
   case "wh25batt":
   case "wh26batt":
   case ~/batt[1-8]/:
   case "wh40batt": 
-  case ~/pm25batt[1-4]/:
-  case ~/soilbatt[1-8]/:
   case "wh65batt":
+    // It seems like most sensors returns a battery value of either 0 (full) or 1 (empty)
+    val = (val == "0")? "100": "0";
     if (state.battery != val) sendEvent(name: "battery", value: val, unit: "%");
     break;
-
+  
   case "tempinf":
   case "tempf":
   case ~/temp[1-8]f/:

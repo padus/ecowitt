@@ -1,8 +1,5 @@
 TODO
 ====
 
-- Make sure batteries from different sensors all report back a 0-100% range
-- Execute updateVersion() via cron once a week or so
-- Remove "driverNew" state if driver version is current or newer
 - delete child drivers which no longer have an associated sensor
 - Integrate with Hubitat Package Manager: https://community.hubitat.com/t/beta-hubitat-package-manager/38016
