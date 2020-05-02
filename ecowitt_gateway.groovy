@@ -31,7 +31,7 @@ metadata {
 
     // Driver info
     attribute "driverVer", "string"; // Current driver version (e.g. "v1.0.3")
-    attribute "driverNew", "string"; // Has a new driver version been released on GitHub? (e.g. "v1.0.5")
+    attribute "githubVer", "string"; // Last release on GitHub (e.g. "v1.0.5")
 
     // Gateway info
     attribute "model", "string";     // Model number
@@ -154,7 +154,7 @@ void updateVersion() {
   if (state.driverVer != str) sendEvent(name: "driverVer", value: str);
 
   str = verNew? verNew.desc: null;
-  if (state.driverNew != str) sendEvent(name: "driverNew", value: str);
+  if (state.githubVer != str) sendEvent(name: "githubVer", value: str);
 }
 
 // MAC & DNI ------------------------------------------------------------------------------------------------------------------
@@ -414,7 +414,7 @@ void updated() {
     // Update Device Network ID
     updateDNI();
   
-    // Update driver version now and every following Sunday @ 2am
+    // Update driver version now and every Sunday @ 2am
     updateVersion();
     schedule("0 0 2 ? * 1 *", updateVersion);
 
