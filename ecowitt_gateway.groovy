@@ -21,7 +21,7 @@
  * 2020.04.29 - Added sensor battery range conversion to 0-100%
 */
 
-public static String version() { return "v0.6.3"; }
+public static String version() { return "v0.6.4"; }
 
 // Metadata -------------------------------------------------------------------------------------------------------------------
 
@@ -437,6 +437,7 @@ void uninstalled() {
 
     // Delete all children
     getChildDevices().each {
+      logDebug("deleteSensor(${it.deviceNetworkId})");
       deleteChildDevice(it.deviceNetworkId)
     }
   }

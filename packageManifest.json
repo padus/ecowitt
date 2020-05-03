@@ -1,0 +1,25 @@
+{
+  "packageName": "Ecowitt WiFi Gateway",
+  "minimumHEVersion": "2.1.9",
+  "author": "Mirco Caramori",
+  "version": "0.6.4",
+  "dateReleased": "2020-05-03",
+  "licenseFile": "",
+  "releaseNotes": "",
+  "drivers": [
+    {
+      "id": "8de1f519-ba1d-42f9-8b9b-c70086fec20a",
+      "name": "Ecowitt WiFi Gateway",
+      "namespace": "mircolino",
+      "location": "https://raw.githubusercontent.com/mircolino/ecowitt/master/ecowitt_gateway.groovy",
+      "required": true
+    },
+    {
+      "id": "34788010-9e52-4817-aa75-283ec0b1fad7",
+      "name": "Ecowitt RF Sensor",
+      "namespace": "mircolino",
+      "location": "https://raw.githubusercontent.com/mircolino/ecowitt/master/ecowitt_sensor.groovy",
+      "required": true
+    }
+  ]
+}

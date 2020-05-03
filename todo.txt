@@ -1,5 +1,2 @@
 TODO
 ====
-
-- delete child drivers which no longer have an associated sensor
-- Integrate with Hubitat Package Manager: https://community.hubitat.com/t/beta-hubitat-package-manager/38016
