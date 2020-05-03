@@ -4,8 +4,9 @@
   "author": "Mirco Caramori",
   "version": "0.6.4",
   "dateReleased": "2020-05-03",
-  "licenseFile": "",
-  "releaseNotes": "",
+  "releaseNotes": "Added Hubitat Package Manager integration",
+  "documentationLink": "https://github.com/mircolino/ecowitt/blob/master/readme.md",
+  "communityLink": "https://community.hubitat.com/t/release-ecowitt-gw1000-wi-fi-gateway/38983",
   "drivers": [
     {
       "id": "8de1f519-ba1d-42f9-8b9b-c70086fec20a",
