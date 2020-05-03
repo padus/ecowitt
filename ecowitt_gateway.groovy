@@ -122,15 +122,15 @@ void updateVersion() {
     // Retrieve current version
     verCur = extractVersion(version());
     if (verCur) {
-      // Retrieve latest (non pre) release metadata from GitHub
-      // If no releases have been staged yet, it will throw an exception
-      String releaseText = "https://api.github.com/repos/mircolino/ecowitt/releases/latest".toURL().getText();
-      if (releaseText) {
+      // Retrieve latest version from GitHub repository manifest
+      // If the file is not found, it will throw an exception
+      String manifestText = "https://raw.githubusercontent.com/mircolino/ecowitt/master/packageManifest.json".toURL().getText();
+      if (manifestText) {
         // text -> json
         Object parser = new groovy.json.JsonSlurper();
-        Object release = parser.parseText(releaseText);  
+        Object manifest = parser.parseText(manifestText);  
 
-        verNew = extractVersion(release.tag_name);
+        verNew = extractVersion(manifest.version);
         if (verNew) {
           // Compare versions
           if (verCur.major > verNew.major) verNew = null;
