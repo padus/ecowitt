@@ -77,7 +77,7 @@ metadata {
 
   preferences {
     input(name: "macAddress", type: "string", title: "<font style='font-size:12px; color:#1a77c9'>MAC Address</font>", description: "<font style='font-size:12px; font-style: italic'>Ecowitt WiFi Gateway MAC address</font>", defaultValue: "", required: true);
-    input(name: "logLevel", type: "enum", title: "<font style='font-size:12px; color:#1a77c9'>Log Verbosity</font>", description: "<font style='font-size:12px; font-style: italic'>Default: 'Debug' for 30 min and 'Info' thereafter</font>", options: [0:"Error", 1:"Warning", 2:"Info", 3:"Debug"], multiple: false, defaultValue: 3, required: true);
+    input(name: "logLevel", type: "enum", title: "<font style='font-size:12px; color:#1a77c9'>Log Verbosity</font>", description: "<font style='font-size:12px; font-style: italic'>Default: 'Debug' for 30 min and 'Info' thereafter</font>", options: [0:"Error", 1:"Warning", 2:"Info", 3:"Debug", 4:"Trace"], multiple: false, defaultValue: 3, required: true);
   }
 }
 
@@ -187,14 +187,15 @@ private void updateDNI() {
 
 // Logging --------------------------------------------------------------------------------------------------------------------
 
-int getLogLevel() {
+Integer getLogLevel() {
   //
   // Get the log level as an Integer:
   //
   //   0) log only Errors
   //   1) log Errors and Warnings
   //   2) log Errors, Warnings and Info
-  //   3) log Errors, Warnings, Info and Debug (everything)
+  //   3) log Errors, Warnings, Info and Debug
+  //   4) log Errors, Warnings, Info, Debug and Trace/diagnostic (everything)
   //
   // If the level is not yet set in the driver preferences, return a default of 2 (Info)
   // Declared public because it's being used by the child-devices as well
@@ -219,6 +220,7 @@ private void logError(String str) { log.error(str); }
 private void logWarning(String str) { if (getLogLevel() > 0) log.warn(str); }
 private void logInfo(String str) { if (getLogLevel() > 1) log.info(str); }
 private void logDebug(String str) { if (getLogLevel() > 2) log.debug(str); }
+private void logTrace(String str) { if (getLogLevel() > 3) log.trace(str); }
 
 // ------------------------------------------------------------
 
@@ -227,8 +229,10 @@ private void logData(Map data) {
   // Log all data received from the Ecowitt gateway
   // Used only for diagnostic/debug purposes
   //
-  data.each {
-    logDebug("$it.key = $it.value");
+  if (getLogLevel() > 3) {
+    data.each {
+      logTrace("$it.key = $it.value");
+    }
   }
 }
 
@@ -468,7 +472,7 @@ void parse(String msg) {
       data[keyValue[0]] = keyValue[1];
     }
 
-    // logData(data);
+    logData(data);
     updateStates(data);
 
   }

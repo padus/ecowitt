@@ -62,6 +62,7 @@ private void logError(String str) { log.error(str); }
 private void logWarning(String str) { if (parent.getLogLevel() > 0) log.warn(str); }
 private void logInfo(String str) { if (parent.getLogLevel() > 1) log.info(str); }
 private void logDebug(String str) { if (parent.getLogLevel() > 2) log.debug(str); }
+private void logTrace(String str) { if (parent.getLogLevel() > 3) log.trace(str); }
 
 // State handling --------------------------------------------------------------------------------------------------------------
 
