@@ -21,7 +21,7 @@
  * 2020.04.29 - Added sensor battery range conversion to 0-100%
 */
 
-public static String version() { return "v0.6.4"; }
+public static String version() { return "v0.6.5"; }
 
 // Metadata -------------------------------------------------------------------------------------------------------------------
 
