@@ -19,9 +19,11 @@
  * 2020.04.29 - Added GitHub versioning 
  *              Added support for more sensors: WH40, WH41, WH43, WS68 and WS80
  * 2020.04.29 - Added sensor battery range conversion to 0-100%
+ * 2020.05.03 - Optimized state dispatch and removed unnecessary attributes
+ * 2020.05.04 - Added metric/imperial unit conversion
 */
 
-public static String version() { return "v0.6.5"; }
+public static String version() { return "v0.7.1"; }
 
 // Metadata -------------------------------------------------------------------------------------------------------------------
 
@@ -29,59 +31,70 @@ metadata {
   definition(name: "Ecowitt WiFi Gateway", namespace: "mircolino", author: "Mirco Caramori") {
     capability "Sensor";
 
-    // Driver info
-    attribute "driverVer", "string"; // Current driver version (e.g. "v1.0.3")
-    attribute "githubVer", "string"; // Last release on GitHub (e.g. "v1.0.5")
-
     // Gateway info
     attribute "model", "string";     // Model number
     attribute "firmware", "string";  // Firmware version
     attribute "rf", "string";        // Sensors radio frequency
     attribute "time", "string";      // Time last data was posted
     attribute "passkey", "string";   // PASSKEY
-
-    // Weather Sensor (WH32 & WH31)  
-    attribute "wh32_b", "string";    // Internal/Indoor
-    attribute "wh32_e", "string";    // Outdoor
-    attribute "wh31_ch1", "string";  // CH1
-    attribute "wh31_ch2", "string";  // CH2
-    attribute "wh31_ch3", "string";  // CH3
-    attribute "wh31_ch4", "string";  // CH4
-    attribute "wh31_ch5", "string";  // CH5
-    attribute "wh31_ch6", "string";  // CH6
-    attribute "wh31_ch7", "string";  // CH7
-    attribute "wh31_ch8", "string";  // CH8
-
-    // Rain Gauge Sensor (WH40)
-    attribute "wh40", "string";
-
-    // Air Quality Sensor (WH41 & WH43)
-    attribute "wh41_ch1", "string";  // CH1
-    attribute "wh41_ch2", "string";  // CH2
-    attribute "wh41_ch3", "string";  // CH3
-    attribute "wh41_ch4", "string";  // CH4
-
-    // Soil Moisture Sensor (WH51)
-    attribute "wh51_ch1", "string";  // CH1
-    attribute "wh51_ch2", "string";  // CH2
-    attribute "wh51_ch3", "string";  // CH3
-    attribute "wh51_ch4", "string";  // CH4
-    attribute "wh51_ch5", "string";  // CH5
-    attribute "wh51_ch6", "string";  // CH6
-    attribute "wh51_ch7", "string";  // CH7
-    attribute "wh51_ch8", "string";  // CH8
-
-    // Wind & Light Sensor (WS80 & WS68)
-    attribute "ws80", "string";
   }
 
   preferences {
     input(name: "macAddress", type: "string", title: "<font style='font-size:12px; color:#1a77c9'>MAC Address</font>", description: "<font style='font-size:12px; font-style: italic'>Ecowitt WiFi Gateway MAC address</font>", defaultValue: "", required: true);
+    input(name: "unitSystem", type: "enum", title: "<font style='font-size:12px; color:#1a77c9'>Units</font>", description: "<font style='font-size:12px; font-style: italic'>System all values are converted to</font>", options: [0:"Imperial", 1:"Metric"], multiple: false, defaultValue: 0, required: true);
     input(name: "logLevel", type: "enum", title: "<font style='font-size:12px; color:#1a77c9'>Log Verbosity</font>", description: "<font style='font-size:12px; font-style: italic'>Default: 'Debug' for 30 min and 'Info' thereafter</font>", options: [0:"Error", 1:"Warning", 2:"Info", 3:"Debug", 4:"Trace"], multiple: false, defaultValue: 3, required: true);
   }
 }
 
-// Versioning -----------------------------------------------------------------------------------------------------------------
+/*
+ * State variables used by the driver
+ *
+ * Driver version info
+ *
+ * "driverVer", "string"; // Current driver version (e.g. "v1.0.3")
+ * "driverNew", "string"; // Latest driver version (e.g. "v1.0.5")
+ *
+ * Weather Sensor (WH32 & WH31)
+ *
+ * "wh32_b", "string";    // Internal/Indoor
+ * "wh32_e", "string";    // Outdoor
+ * "wh31_ch1", "string";  // CH1
+ * "wh31_ch2", "string";  // CH2
+ * "wh31_ch3", "string";  // CH3
+ * "wh31_ch4", "string";  // CH4
+ * "wh31_ch5", "string";  // CH5
+ * "wh31_ch6", "string";  // CH6
+ * "wh31_ch7", "string";  // CH7
+ * "wh31_ch8", "string";  // CH8
+ *
+ * Rain Gauge Sensor (WH40)
+ *
+ * "wh40", "string";
+ * 
+ * Air Quality Sensor (WH41 & WH43)
+ *
+ * "wh41_ch1", "string";  // CH1
+ * "wh41_ch2", "string";  // CH2
+ * "wh41_ch3", "string";  // CH3
+ * "wh41_ch4", "string";  // CH4
+ *
+ * Soil Moisture Sensor (WH51)
+ *
+ * "wh51_ch1", "string";  // CH1
+ * "wh51_ch2", "string";  // CH2
+ * "wh51_ch3", "string";  // CH3
+ * "wh51_ch4", "string";  // CH4
+ * "wh51_ch5", "string";  // CH5
+ * "wh51_ch6", "string";  // CH6
+ * "wh51_ch7", "string";  // CH7
+ * "wh51_ch8", "string";  // CH8
+ * 
+ * Wind & Light Sensor (WS80 & WS68)
+ *
+ * "ws80", "string";
+ */
+ 
+ // Versioning -----------------------------------------------------------------------------------------------------------------
 
 private Map extractVersion(String ver) {
   //
@@ -148,13 +161,11 @@ void updateVersion() {
     logError("Exception in updateVersion(): ${e}");
   }
 
-  String str;
+  if (verCur) state.driverVer = verCur.desc;
+  else state.remove("driverVer");
 
-  str = verCur? verCur.desc: null;
-  if (state.driverVer != str) sendEvent(name: "driverVer", value: str);
-
-  str = verNew? verNew.desc: null;
-  if (state.githubVer != str) sendEvent(name: "githubVer", value: str);
+  if (verNew) state.driverNew = verNew.desc;
+  else state.remove("driverNew");
 }
 
 // MAC & DNI ------------------------------------------------------------------------------------------------------------------
@@ -183,6 +194,17 @@ private void updateDNI() {
 
   if (mac) device.deviceNetworkId = mac;  
   else logError("The MAC address entered in the driver preferences is invalid");
+}
+
+// Conversion -----------------------------------------------------------------------------------------------------------------
+
+Boolean isSystemMetric() {
+  //
+  // Return true if the selected unit system is metric
+  // Declared public because it's being used by the child-devices
+  //
+  if (settings.unitSystem != null && (settings.unitSystem as Integer) != 0) return (true);
+  return (false);
 }
 
 // Logging --------------------------------------------------------------------------------------------------------------------
@@ -238,20 +260,42 @@ private void logData(Map data) {
 
 // Sensor handling ------------------------------------------------------------------------------------------------------------
 
-private String addSensor(String type, String model) {
-  String dni = model.toUpperCase();
+private void addSensorAndOrUpdate(String dni, String key, String value) {
+  //
+  // If not present, add the child sensor corresponding to the specified key
+  // and, if child sensor is present, update the state
+  //
   try {
-    logDebug("addSensor(${dni})");
+    if (state."${dni}" == null) {
+      // Sensor doesn't exist: we need to create it
+      String type = "Ecowitt RF Sensor";
 
-    addChildDevice(type, dni, [name: "${type} ${dni}"]);
-    sendEvent(name: model, value: dni);
+      logDebug("addSensor(${dni})");
+      addChildDevice(type, dni, [name: "${type} ${dni}"]);
+
+      logDebug("addSensorState(${dni})");
+      state."${dni}" = "OK";
+    }
+
+    if (state."${dni}") {
+      // Sensor exists: update it
+      getChildDevice(dni).updateStates(key, value);
+    }
   }
   catch (Exception e) {
-    logError("Exception in addSensor(): ${e}");
-    dni = null;
+    logError("Exception in addSensor(${dni}): ${e}");
   }
+}
 
-  return (dni);
+// ------------------------------------------------------------
+
+void deleteSensorState(String dni) {
+  //
+  // Called by the child to delete the sensor state (presence) when child is deleted either manually
+  // or programmatically
+  // 
+  logDebug("deleteSensorState(${dni})");
+  state.remove(dni);
 }
 
 // State handling --------------------------------------------------------------------------------------------------------------
@@ -260,7 +304,7 @@ private void updateStates(Map data) {
   //
   // Dispatch parent/childs state changes to hub
   //
-  String model;
+  String dni;
 
   data.each {
     switch (it.key) {
@@ -300,9 +344,7 @@ private void updateStates(Map data) {
     case "humidityin":
     case "baromrelin":
     case "baromabsin":
-      model = "wh32_b";
-      if (state."${model}" == null) state."${model}" = addSensor("Ecowitt RF Sensor", model);
-      if (state."${model}") getChildDevice(state."${model}").updateStates(it.key, it.value);
+      addSensorAndOrUpdate("WH32_B", it.key, it.value);
       break;
 
     //
@@ -311,9 +353,7 @@ private void updateStates(Map data) {
     case "wh26batt":
     case "tempf":
     case "humidity":
-      model = "wh32_e";
-      if (state."${model}" == null) state."${model}" = addSensor("Ecowitt RF Sensor", model);
-      if (state."${model}") getChildDevice(state."${model}").updateStates(it.key, it.value);
+      addSensorAndOrUpdate("WH32_E", it.key, it.value);
       break;
 
     //
@@ -322,9 +362,7 @@ private void updateStates(Map data) {
     case ~/batt([1-8])/:
     case ~/temp([1-8])f/:
     case ~/humidity([1-8])/:
-      model = "wh31_ch${java.util.regex.Matcher.lastMatcher.group(1)}";
-      if (state."${model}" == null) state."${model}" = addSensor("Ecowitt RF Sensor", model);
-      if (state."${model}") getChildDevice(state."${model}").updateStates(it.key, it.value);
+      addSensorAndOrUpdate("WH31_CH${java.util.regex.Matcher.lastMatcher.group(1)}", it.key, it.value);
       break;
 
     //
@@ -339,9 +377,7 @@ private void updateStates(Map data) {
     case "monthlyrainin":
     case "yearlyrainin":
     case "totalrainin":
-      model = "wh40";
-      if (state."${model}" == null) state."${model}" = addSensor("Ecowitt RF Sensor", model);
-      if (state."${model}") getChildDevice(state."${model}").updateStates(it.key, it.value);
+      addSensorAndOrUpdate("WH40", it.key, it.value);
       break;
 
     //
@@ -350,9 +386,7 @@ private void updateStates(Map data) {
     case ~/pm25batt([1-4])/:
     case ~/pm25_ch([1-4])/:
     case ~/pm25_avg_24h_ch([1-4])/:
-      model = "wh41_ch${java.util.regex.Matcher.lastMatcher.group(1)}";
-      if (state."${model}" == null) state."${model}" = addSensor("Ecowitt RF Sensor", model);
-      if (state."${model}") getChildDevice(state."${model}").updateStates(it.key, it.value);
+      addSensorAndOrUpdate("WH41_CH${java.util.regex.Matcher.lastMatcher.group(1)}", it.key, it.value);
       break;
 
     //
@@ -360,9 +394,7 @@ private void updateStates(Map data) {
     //
     case ~/soilbatt([1-8])/:
     case ~/soilmoisture([1-8])/:
-      model = "wh51_ch${java.util.regex.Matcher.lastMatcher.group(1)}";
-      if (state."${model}" == null) state."${model}" = addSensor("Ecowitt RF Sensor", model);
-      if (state."${model}") getChildDevice(state."${model}").updateStates(it.key, it.value);
+      addSensorAndOrUpdate("WH51_CH${java.util.regex.Matcher.lastMatcher.group(1)}", it.key, it.value);
       break;
 
     //
@@ -377,9 +409,7 @@ private void updateStates(Map data) {
     case "maxdailygust":
     case "uv":
     case "solarradiation":
-      model = "ws80";
-      if (state."${model}" == null) state."${model}" = addSensor("Ecowitt RF Sensor", model);
-      if (state."${model}") getChildDevice(state."${model}").updateStates(it.key, it.value);
+      addSensorAndOrUpdate("WS80", it.key, it.value);
       break;
 
     default:
@@ -444,6 +474,9 @@ void uninstalled() {
       logDebug("deleteSensor(${it.deviceNetworkId})");
       deleteChildDevice(it.deviceNetworkId)
     }
+
+    // Probably not necessary, but just in case
+    state.clear();
   }
   catch (Exception e) {
     logError("Exception in uninstalled(): ${e}");

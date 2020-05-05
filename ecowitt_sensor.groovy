@@ -59,22 +59,109 @@ metadata {
 // Logging --------------------------------------------------------------------------------------------------------------------
 
 private void logError(String str) { log.error(str); }
-private void logWarning(String str) { if (parent.getLogLevel() > 0) log.warn(str); }
-private void logInfo(String str) { if (parent.getLogLevel() > 1) log.info(str); }
-private void logDebug(String str) { if (parent.getLogLevel() > 2) log.debug(str); }
-private void logTrace(String str) { if (parent.getLogLevel() > 3) log.trace(str); }
+private void logWarning(String str) { if (getParent().getLogLevel() > 0) log.warn(str); }
+private void logInfo(String str) { if (getParent().getLogLevel() > 1) log.info(str); }
+private void logDebug(String str) { if (getParent().getLogLevel() > 2) log.debug(str); }
+private void logTrace(String str) { if (getParent().getLogLevel() > 3) log.trace(str); }
 
-// State handling --------------------------------------------------------------------------------------------------------------
+// Conversion -----------------------------------------------------------------------------------------------------------------
+
+private Map convertTemperature(String fahrenheit) {
+  
+  Map conv = [:];
+
+  if (getParent().isSystemMetric()) {
+    Float celsius = ((fahrenheit as Float) - 32.0f) / 1.8f;
+    celsius = celsius.round(2);
+
+    conv.value = celsius.toString();
+    conv.unit = "°C";
+  }
+  else {
+    conv.value = fahrenheit;
+    conv.unit = "°F";
+  }
+  
+  return (conv);
+}
+
+// ------------------------------------------------------------
+
+private Map convertPressure(String inch) {
+  
+  Map conv = [:];
+
+  if (getParent().isSystemMetric()) {
+    Float millimeter = (inch as Float) * 25.4f;
+    millimeter = millimeter.round(2);
+
+    conv.value = millimeter.toString();
+    conv.unit = "mmHg";
+  }
+  else {
+    conv.value = inch;
+    conv.unit = "inHg";
+  }
+  
+  return (conv);
+}
+
+// ------------------------------------------------------------
+
+private Map convertRain(String inch, Boolean hour = false) {
+  
+  Map conv = [:];
+
+  if (getParent().isSystemMetric()) {
+    Float millimeter = (inch as Float) * 25.4f;
+    millimeter = millimeter.round(2);
+
+    conv.value = millimeter.toString();
+    conv.unit = hour? "mm/h": "mm";
+  }
+  else {
+    conv.value = inch;
+    conv.unit = hour? "in/h": "in";
+  }
+  
+  return (conv);
+}
+
+// ------------------------------------------------------------
+
+private Map convertWind(String mile) {
+  
+  Map conv = [:];
+
+  if (getParent().isSystemMetric()) {
+    Float kilometer = (mile as Float) * 1.609344f;
+    kilometer = kilometer.round(2);
+
+    conv.value = kilometer.toString();
+    conv.unit = "km/h";
+  }
+  else {
+    conv.value = mile;
+    conv.unit = "mph";
+  }
+  
+  return (conv);
+}
+
+// State handling -------------------------------------------------------------------------------------------------------------
 
 void updateStates(String key, String val) {
   //
   // Dispatch state changes to hub
   //
+  Integer percent;
+  Map convert;
+
   switch (key) {
 
   case ~/soilbatt[1-8]/:
     // The soil moisture sensor returns the battery voltage which, for regular AA alkaline, ranges from 1.40V (empty) to 1.65V (full)
-    Integer percent = Math.round((val as Float) * 100f);
+    percent = Math.round((val as Float) * 100f);
     if (percent < 140) percent = 140;
     else if (percent > 165) percent = 165;
 
@@ -88,7 +175,7 @@ void updateStates(String key, String val) {
   
   case ~/pm25batt[1-4]/:
     // The air quality sensor returns a battery value between 0 (empty) and 5 (full)
-    Integer percent = (val as Integer) * 20;
+    percent = (val as Integer) * 20;
     if (percent > 100) percent = 100;
     
     // Bring back to string
@@ -109,7 +196,8 @@ void updateStates(String key, String val) {
   case "tempinf":
   case "tempf":
   case ~/temp[1-8]f/:
-    if (state.temperature != val) sendEvent(name: "temperature", value: val, unit: "°F");
+    convert = convertTemperature(val);
+    if (state.temperature != convert.value) sendEvent(name: "temperature", value: convert.value, unit: convert.unit);
     break;
 
   case "humidityin":
@@ -120,43 +208,53 @@ void updateStates(String key, String val) {
     break;
 
   case "baromrelin":
-    if (state.pressure != val) sendEvent(name: "pressure", value: val, unit: "inHg");
+    convert = convertPressure(val);
+    if (state.pressure != convert.value) sendEvent(name: "pressure", value: convert.value, unit: convert.unit);
     break;
 
   case "baromabsin":
-    if (state.pressureAbs != val) sendEvent(name: "pressureAbs", value: val, unit: "inHg");
+    convert = convertPressure(val);
+    if (state.pressureAbs != convert.value) sendEvent(name: "pressureAbs", value: convert.value, unit: convert.unit);
     break;
 
   case "rainratein":
-    if (state.rainRate != val) sendEvent(name: "rainRate", value: val, unit: "in/h");
+    convert = convertRain(val, true);
+    if (state.rainRate != convert.value) sendEvent(name: "rainRate", value: convert.value, unit: convert.unit);
     break;
 
   case "eventrainin":
-    if (state.rainEvent != val) sendEvent(name: "rainEvent", value: val, unit: "in");
+    convert = convertRain(val);
+    if (state.rainEvent != convert.value) sendEvent(name: "rainEvent", value: convert.value, unit: convert.unit);
     break;
 
   case "hourlyrainin":
-    if (state.rainHourly != val) sendEvent(name: "rainHourly", value: val, unit: "in");
+    convert = convertRain(val);
+    if (state.rainHourly != convert.value) sendEvent(name: "rainHourly", value: convert.value, unit: convert.unit);
     break;
 
   case "dailyrainin":
-    if (state.rainDaily != val) sendEvent(name: "rainDaily", value: val, unit: "in");
+    convert = convertRain(val);
+    if (state.rainDaily != convert.value) sendEvent(name: "rainDaily", value: convert.value, unit: convert.unit);
     break;
 
   case "weeklyrainin":
-    if (state.rainWeekly != val) sendEvent(name: "rainWeekly", value: val, unit: "in");
+    convert = convertRain(val);
+    if (state.rainWeekly != convert.value) sendEvent(name: "rainWeekly", value: convert.value, unit: convert.unit);
     break;
 
   case "monthlyrainin":
-    if (state.rainMonthly != val) sendEvent(name: "rainMonthly", value: val, unit: "in");
+    convert = convertRain(val);
+    if (state.rainMonthly != convert.value) sendEvent(name: "rainMonthly", value: convert.value, unit: convert.unit);
     break;
 
   case "yearlyrainin":
-    if (state.rainYearly != val) sendEvent(name: "rainYearly", value: val, unit: "in");
+    convert = convertRain(val);
+    if (state.rainYearly != convert.value) sendEvent(name: "rainYearly", value: convert.value, unit: convert.unit);
     break;
 
   case "totalrainin":
-    if (state.rainTotal != val) sendEvent(name: "rainTotal", value: val, unit: "in");
+    convert = convertRain(val);
+    if (state.rainTotal != convert.value) sendEvent(name: "rainTotal", value: convert.value, unit: convert.unit);
     break;
 
   case ~/pm25_ch[1-4]/:
@@ -185,28 +283,84 @@ void updateStates(String key, String val) {
     break;
 
   case "windspeedmph":
-    if (state.windSpeed != val) sendEvent(name: "windSpeed", value: val, unit: "mph");
+    convert = convertWind(val);
+    if (state.windSpeed != convert.value) sendEvent(name: "windSpeed", value: convert.value, unit: convert.unit);
     break;
 
   case "windspdmph_avg10m":
-    if (state.windSpeed_avg_10m != val) sendEvent(name: "windSpeed_avg_10m", value: val, unit: "mph");
+    convert = convertWind(val);
+    if (state.windSpeed_avg_10m != convert.value) sendEvent(name: "windSpeed_avg_10m", value: convert.value, unit: convert.unit);
     break;
 
   case "windgustmph":
-    if (state.windGust != val) sendEvent(name: "windGust", value: val, unit: "mph");
+    convert = convertWind(val);
+    if (state.windGust != convert.value) sendEvent(name: "windGust", value: convert.value, unit: convert.unit);
     break;
 
   case "maxdailygust":
-    if (state.windGustMaxDaily != val) sendEvent(name: "windGustMaxDaily", value: val, unit: "mph");
+    convert = convertWind(val);
+    if (state.windGustMaxDaily != convert.value) sendEvent(name: "windGustMaxDaily", value: convert.value, unit: convert.unit);
     break;
   }
 }
 
 // Driver lifecycle -----------------------------------------------------------------------------------------------------------
 
-void installed() { logDebug("installed()"); }
-void updated() { logDebug("updated()"); }
-void uninstalled() { logDebug("uninstalled()"); }
-void parse(String msg) { logDebug("parse()"); }
+void installed() { 
+  //
+  // Called once when the driver is created
+  //
+  try {
+    logDebug("installed(${device.deviceNetworkId})");
+  }
+  catch (Exception e) {
+    logError("Exception in installed(${device.deviceNetworkId}): ${e}");
+  }
+}
+
+// ------------------------------------------------------------
+
+void updated() {
+  //
+  // Never called
+  //
+  try {
+    logDebug("updated(${device.deviceNetworkId})");
+  }
+  catch (Exception e) {
+    logError("Exception in updated(${device.deviceNetworkId}): ${e}");
+  }
+}
+
+// ------------------------------------------------------------
+
+void uninstalled() {
+  //
+  // Called once when the driver is deleted
+  //
+  try {
+    logDebug("uninstalled(${device.deviceNetworkId})");
+
+    // We are being deleted: notify the parent to remove our state (presence)
+    getParent().deleteSensorState(device.deviceNetworkId);
+  }
+  catch (Exception e) {
+    logError("Exception in uninstalled(${device.deviceNetworkId}): ${e}");
+  }
+}
+
+// ------------------------------------------------------------
+
+void parse(String msg) {
+  //
+  // Never called
+  //
+  try {
+    logDebug("parse(${device.deviceNetworkId})");
+  }
+  catch (Exception e) {
+    logError("Exception in parse(${device.deviceNetworkId}): ${e}");
+  }
+}
 
 // EOF ------------------------------------------------------------------------------------------------------------------------
