@@ -1,6 +1,11 @@
 ## Ecowitt WiFi Gateway
-*Ecowitt WiFi Gateway driver for Hubitat Elevation (LAN only - no cloud service needed)*
+*Ecowitt WiFi Gateway driver for Hubitat Elevation*
 
+### Features
+
+- LAN comunication only, no cloud/weather service needed.
+- One Hubitat device for each Ecowitt sensor for easy dashboard tiles and RM rules handling.
+- On-the-fly Imperial <-> Metric conversion.
 
 ### Installation Instructions
 
@@ -32,7 +37,7 @@
 
 4.  Enter the Gateway MAC address (in any legal form) and click "Save Preferences":
 
-    <img src="https://i.imgur.com/8QLTMc0.png">
+    <img src="https://i.imgur.com/YKYtm98.png">
 
 5.  That should be all.
     The first time Hubitat receives data from the Gateway, the driver will automatically create child devices for all the present (and supported) sensors (depending on the frequency you setup your Gateway to POST, this may take a few minutes):
