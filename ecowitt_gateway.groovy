@@ -21,9 +21,10 @@
  * 2020.04.29 - Added sensor battery range conversion to 0-100%
  * 2020.05.03 - Optimized state dispatch and removed unnecessary attributes
  * 2020.05.04 - Added metric/imperial unit conversion
+ * 2020.05.05 - Gave child sensors a friendlier default name
 */
 
-public static String version() { return "v0.7.1"; }
+public static String version() { return "v0.7.2"; }
 
 // Metadata -------------------------------------------------------------------------------------------------------------------
 
@@ -51,47 +52,30 @@ metadata {
  *
  * Driver version info
  *
- * "driverVer", "string"; // Current driver version (e.g. "v1.0.3")
- * "driverNew", "string"; // Latest driver version (e.g. "v1.0.5")
+ * "driverVer" = "v1.0.3" // Current driver version
+ * "driverNew" = "v1.0.5" // Latest driver version
  *
  * Weather Sensor (WH32 & WH31)
  *
- * "wh32_b", "string";    // Internal/Indoor
- * "wh32_e", "string";    // Outdoor
- * "wh31_ch1", "string";  // CH1
- * "wh31_ch2", "string";  // CH2
- * "wh31_ch3", "string";  // CH3
- * "wh31_ch4", "string";  // CH4
- * "wh31_ch5", "string";  // CH5
- * "wh31_ch6", "string";  // CH6
- * "wh31_ch7", "string";  // CH7
- * "wh31_ch8", "string";  // CH8
+ * "WH32B" = "OK"          // Internal/Indoor
+ * "WH32E" = "OK"          // Outdoor
+ * "WH31B_CH[1-8]" = "OK"  // CH1 - CH8
  *
  * Rain Gauge Sensor (WH40)
  *
- * "wh40", "string";
+ * "WH40" = "OK"
  * 
  * Air Quality Sensor (WH41 & WH43)
  *
- * "wh41_ch1", "string";  // CH1
- * "wh41_ch2", "string";  // CH2
- * "wh41_ch3", "string";  // CH3
- * "wh41_ch4", "string";  // CH4
+ * "WH41_CH[1-4]" = "OK"   // CH1 - CH4
  *
  * Soil Moisture Sensor (WH51)
  *
- * "wh51_ch1", "string";  // CH1
- * "wh51_ch2", "string";  // CH2
- * "wh51_ch3", "string";  // CH3
- * "wh51_ch4", "string";  // CH4
- * "wh51_ch5", "string";  // CH5
- * "wh51_ch6", "string";  // CH6
- * "wh51_ch7", "string";  // CH7
- * "wh51_ch8", "string";  // CH8
+ * "WH51_CH[1-8]" = "OK"   // CH1 - CH8
  * 
  * Wind & Light Sensor (WS80 & WS68)
  *
- * "ws80", "string";
+ * "WH80" = "OK"
  */
  
  // Versioning -----------------------------------------------------------------------------------------------------------------
@@ -260,7 +244,7 @@ private void logData(Map data) {
 
 // Sensor handling ------------------------------------------------------------------------------------------------------------
 
-private void addSensorAndOrUpdate(String dni, String key, String value) {
+private void addSensorAndOrUpdate(String name, String dni, String key, String value) {
   //
   // If not present, add the child sensor corresponding to the specified key
   // and, if child sensor is present, update the state
@@ -271,7 +255,7 @@ private void addSensorAndOrUpdate(String dni, String key, String value) {
       String type = "Ecowitt RF Sensor";
 
       logDebug("addSensor(${dni})");
-      addChildDevice(type, dni, [name: "${type} ${dni}"]);
+      addChildDevice(type, dni, [name: "${name}"]);
 
       logDebug("addSensorState(${dni})");
       state."${dni}" = "OK";
@@ -305,6 +289,7 @@ private void updateStates(Map data) {
   // Dispatch parent/childs state changes to hub
   //
   String dni;
+  String channel;
 
   data.each {
     switch (it.key) {
@@ -344,7 +329,7 @@ private void updateStates(Map data) {
     case "humidityin":
     case "baromrelin":
     case "baromabsin":
-      addSensorAndOrUpdate("WH32_B", it.key, it.value);
+      addSensorAndOrUpdate("Ecowitt Indoor Weather Sensor", "WH32B", it.key, it.value);
       break;
 
     //
@@ -353,16 +338,17 @@ private void updateStates(Map data) {
     case "wh26batt":
     case "tempf":
     case "humidity":
-      addSensorAndOrUpdate("WH32_E", it.key, it.value);
+      addSensorAndOrUpdate("Ecowitt Outdoor Weather Sensor", "WH32E", it.key, it.value);
       break;
 
     //
-    // Multi-channel Weather Sensor (WH31)
+    // Multi-channel Weather Sensor (WH31B)
     //
     case ~/batt([1-8])/:
     case ~/temp([1-8])f/:
     case ~/humidity([1-8])/:
-      addSensorAndOrUpdate("WH31_CH${java.util.regex.Matcher.lastMatcher.group(1)}", it.key, it.value);
+      channel = java.util.regex.Matcher.lastMatcher.group(1); 
+      addSensorAndOrUpdate("Ecowitt Weather Sensor ${channel}", "WH31B_CH${channel}", it.key, it.value);
       break;
 
     //
@@ -377,16 +363,17 @@ private void updateStates(Map data) {
     case "monthlyrainin":
     case "yearlyrainin":
     case "totalrainin":
-      addSensorAndOrUpdate("WH40", it.key, it.value);
+      addSensorAndOrUpdate("Ecowitt Rain Gauge Sensor", "WH40", it.key, it.value);
       break;
 
     //
-    // Multi-channel  Air Quality Sensor (WH41 / WH43)
+    // Multi-channel Air Quality Sensor (WH41 / WH43)
     //
     case ~/pm25batt([1-4])/:
     case ~/pm25_ch([1-4])/:
     case ~/pm25_avg_24h_ch([1-4])/:
-      addSensorAndOrUpdate("WH41_CH${java.util.regex.Matcher.lastMatcher.group(1)}", it.key, it.value);
+      channel = java.util.regex.Matcher.lastMatcher.group(1); 
+      addSensorAndOrUpdate("Ecowitt Air Quality Sensor ${channel}", "WH41_CH${channel}", it.key, it.value);
       break;
 
     //
@@ -394,7 +381,8 @@ private void updateStates(Map data) {
     //
     case ~/soilbatt([1-8])/:
     case ~/soilmoisture([1-8])/:
-      addSensorAndOrUpdate("WH51_CH${java.util.regex.Matcher.lastMatcher.group(1)}", it.key, it.value);
+      channel = java.util.regex.Matcher.lastMatcher.group(1);
+      addSensorAndOrUpdate("Ecowitt Soil Moisture Sensor ${channel}", "WH51_CH${channel}", it.key, it.value);
       break;
 
     //
@@ -409,7 +397,7 @@ private void updateStates(Map data) {
     case "maxdailygust":
     case "uv":
     case "solarradiation":
-      addSensorAndOrUpdate("WS80", it.key, it.value);
+      addSensorAndOrUpdate("Ecowitt Wind Solar Sensor", "WH80", it.key, it.value);
       break;
 
     default:
