@@ -306,61 +306,9 @@ void updateStates(String key, String val) {
 
 // Driver lifecycle -----------------------------------------------------------------------------------------------------------
 
-void installed() { 
-  //
-  // Called once when the driver is created
-  //
-  try {
-    logDebug("installed(${device.deviceNetworkId})");
-  }
-  catch (Exception e) {
-    logError("Exception in installed(${device.deviceNetworkId}): ${e}");
-  }
-}
-
-// ------------------------------------------------------------
-
-void updated() {
-  //
-  // Never called
-  //
-  try {
-    logDebug("updated(${device.deviceNetworkId})");
-  }
-  catch (Exception e) {
-    logError("Exception in updated(${device.deviceNetworkId}): ${e}");
-  }
-}
-
-// ------------------------------------------------------------
-
-void uninstalled() {
-  //
-  // Called once when the driver is deleted
-  //
-  try {
-    logDebug("uninstalled(${device.deviceNetworkId})");
-
-    // We are being deleted: notify the parent to remove our state (presence)
-    getParent().deleteSensorState(device.deviceNetworkId);
-  }
-  catch (Exception e) {
-    logError("Exception in uninstalled(${device.deviceNetworkId}): ${e}");
-  }
-}
-
-// ------------------------------------------------------------
-
-void parse(String msg) {
-  //
-  // Never called
-  //
-  try {
-    logDebug("parse(${device.deviceNetworkId})");
-  }
-  catch (Exception e) {
-    logError("Exception in parse(${device.deviceNetworkId}): ${e}");
-  }
-}
+void installed() { logDebug("addedSensor(${device.deviceNetworkId})"); }
+void updated() {}
+void uninstalled() { logDebug("deletedSensor(${device.deviceNetworkId})"); }
+void parse(String msg) {}
 
 // EOF ------------------------------------------------------------------------------------------------------------------------

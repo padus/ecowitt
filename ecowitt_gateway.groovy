@@ -22,9 +22,10 @@
  * 2020.05.03 - Optimized state dispatch and removed unnecessary attributes
  * 2020.05.04 - Added metric/imperial unit conversion
  * 2020.05.05 - Gave child sensors a friendlier default name
+ * 2020.05.08 - Further state optimization and release to stable
 */
 
-public static String version() { return "v0.7.2"; }
+public static String version() { return "v1.0.5"; }
 
 // Metadata -------------------------------------------------------------------------------------------------------------------
 
@@ -250,36 +251,21 @@ private void addSensorAndOrUpdate(String name, String dni, String key, String va
   // and, if child sensor is present, update the state
   //
   try {
-    if (state."${dni}" == null) {
+    com.hubitat.app.ChildDeviceWrapper sensor = getChildDevice(dni);
+
+    if (sensor == null) {
       // Sensor doesn't exist: we need to create it
-      String type = "Ecowitt RF Sensor";
-
-      logDebug("addSensor(${dni})");
-      addChildDevice(type, dni, [name: "${name}"]);
-
-      logDebug("addSensorState(${dni})");
-      state."${dni}" = "OK";
+      sensor = addChildDevice("Ecowitt RF Sensor", dni, [name: "${name}"]);
     }
 
-    if (state."${dni}") {
+    if (sensor) {
       // Sensor exists: update it
-      getChildDevice(dni).updateStates(key, value);
+      sensor.updateStates(key, value);
     }
   }
   catch (Exception e) {
     logError("Exception in addSensor(${dni}): ${e}");
   }
-}
-
-// ------------------------------------------------------------
-
-void deleteSensorState(String dni) {
-  //
-  // Called by the child to delete the sensor state (presence) when child is deleted either manually
-  // or programmatically
-  // 
-  logDebug("deleteSensorState(${dni})");
-  state.remove(dni);
 }
 
 // State handling --------------------------------------------------------------------------------------------------------------
@@ -430,6 +416,9 @@ void updated() {
   try {
     logDebug("updated()");
 
+    // Clear previous states
+    state.clear();
+
     // Unschedule possible previous runIn() calls
     unschedule();
 
@@ -459,12 +448,8 @@ void uninstalled() {
 
     // Delete all children
     getChildDevices().each {
-      logDebug("deleteSensor(${it.deviceNetworkId})");
       deleteChildDevice(it.deviceNetworkId)
     }
-
-    // Probably not necessary, but just in case
-    state.clear();
   }
   catch (Exception e) {
     logError("Exception in uninstalled(): ${e}");
