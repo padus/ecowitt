@@ -6,7 +6,7 @@
 - LAN comunication only, no cloud/weather service needed.
 - One Hubitat device for each Ecowitt sensor for easy dashboard tiles and RM rules handling.
 - On-the-fly Imperial <-> Metric conversion.
-- Tile HTML templating, which allows endless tiles customization, including displaying multiple attributes in a single tile. See below how to use them. 
+- Tile [HTML templates](#templates), which allows endless tiles customization, including displaying multiple attributes in a single tile. 
 
 ### Installation Instructions
 
@@ -45,7 +45,7 @@
     
     <img src="https://i.imgur.com/Nad8ScL.png">
 
-#### HTML Template:
+### <a name="templates"></a> HTML Template:
 
 HTML templates are a powerful way to gang-up multiple Ecowitt sensor attributes in a single Hubitat dashboard tile with endless customization.
 The following is a basic example of what you can achieve with a simple HTML template:
