@@ -60,7 +60,7 @@ To use them:
 
 2.  In "Preferences -> HTML Tile Template" enter your template (see below how to format them) and click "Save Preferences"
 
-3.  Now, in any Hubitat dashboard, add a new tile, on the left select the Ecowitt sensor, in the center select "Attributes" and on the right select the "html" attribute:
+3.  Now, in any Hubitat dashboard, add a new tile, on the left select the Ecowitt sensor, in the center select "Attribute" and on the right select the "html" attribute:
     
     <img src="https://i.imgur.com/YxTja4A.png">   
 
