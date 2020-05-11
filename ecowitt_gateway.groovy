@@ -23,9 +23,11 @@
  * 2020.05.04 - Added metric/imperial unit conversion
  * 2020.05.05 - Gave child sensors a friendlier default name
  * 2020.05.08 - Further state optimization and release to stable
+ * 2020.05.11 - HTML templates
+ *              Normalization of floating values
 */
 
-public static String version() { return "v1.0.5"; }
+public static String version() { return "v1.1.8"; }
 
 // Metadata -------------------------------------------------------------------------------------------------------------------
 
@@ -51,32 +53,9 @@ metadata {
 /*
  * State variables used by the driver
  *
- * Driver version info
- *
  * "driverVer" = "v1.0.3" // Current driver version
  * "driverNew" = "v1.0.5" // Latest driver version
  *
- * Weather Sensor (WH32 & WH31)
- *
- * "WH32B" = "OK"          // Internal/Indoor
- * "WH32E" = "OK"          // Outdoor
- * "WH31B_CH[1-8]" = "OK"  // CH1 - CH8
- *
- * Rain Gauge Sensor (WH40)
- *
- * "WH40" = "OK"
- * 
- * Air Quality Sensor (WH41 & WH43)
- *
- * "WH41_CH[1-4]" = "OK"   // CH1 - CH4
- *
- * Soil Moisture Sensor (WH51)
- *
- * "WH51_CH[1-8]" = "OK"   // CH1 - CH8
- * 
- * Wind & Light Sensor (WS80 & WS68)
- *
- * "WH80" = "OK"
  */
  
  // Versioning -----------------------------------------------------------------------------------------------------------------
@@ -98,9 +77,9 @@ private Map extractVersion(String ver) {
 
     if (matcher.groupCount() == 3) {
       val = [:];
-      val.major = matcher[0][1] as Integer;
-      val.minor = matcher[0][2] as Integer;
-      val.build = matcher[0][3] as Integer;
+      val.major = matcher[0][1].toInteger();
+      val.minor = matcher[0][2].toInteger();
+      val.build = matcher[0][3].toInteger();
       val.desc = "v${val.major}.${val.minor}.${val.build}";
     }
   }
@@ -149,7 +128,7 @@ void updateVersion() {
   if (verCur) state.driverVer = verCur.desc;
   else state.remove("driverVer");
 
-  if (verNew) state.driverNew = verNew.desc;
+  if (verNew) state.driverNew = "<font style='color:#ff0000'>${verNew.desc}</font>";
   else state.remove("driverNew");
 }
 
@@ -188,7 +167,7 @@ Boolean isSystemMetric() {
   // Return true if the selected unit system is metric
   // Declared public because it's being used by the child-devices
   //
-  if (settings.unitSystem != null && (settings.unitSystem as Integer) != 0) return (true);
+  if (settings.unitSystem != null && settings.unitSystem.toInteger() != 0) return (true);
   return (false);
 }
 
@@ -207,7 +186,7 @@ Integer getLogLevel() {
   // If the level is not yet set in the driver preferences, return a default of 2 (Info)
   // Declared public because it's being used by the child-devices as well
   //
-  if (settings.logLevel != null) return (settings.logLevel as Integer);
+  if (settings.logLevel != null) return (settings.logLevel.toInteger());
   return (2);
 }
 
@@ -248,7 +227,7 @@ private void logData(Map data) {
 private void addSensorAndOrUpdate(String name, String dni, String key, String value) {
   //
   // If not present, add the child sensor corresponding to the specified key
-  // and, if child sensor is present, update the state
+  // and, if child sensor is present, update the attribute
   //
   try {
     com.hubitat.app.ChildDeviceWrapper sensor = getChildDevice(dni);
@@ -260,7 +239,7 @@ private void addSensorAndOrUpdate(String name, String dni, String key, String va
 
     if (sensor) {
       // Sensor exists: update it
-      sensor.updateStates(key, value);
+      sensor.updateAttribute(key, value);
     }
   }
   catch (Exception e) {
@@ -268,11 +247,11 @@ private void addSensorAndOrUpdate(String name, String dni, String key, String va
   }
 }
 
-// State handling --------------------------------------------------------------------------------------------------------------
+// Attribute handling ---------------------------------------------------------------------------------------------------------
 
-private void updateStates(Map data) {
+private void updateAttributes(Map data) {
   //
-  // Dispatch parent/childs state changes to hub
+  // Dispatch parent/childs attribute changes to hub
   //
   String dni;
   String channel;
@@ -280,31 +259,31 @@ private void updateStates(Map data) {
   data.each {
     switch (it.key) {
     //
-    // Gateway states
+    // Gateway attributes
     //
     case "model":
       // Eg: model = GW1000_Pro
-      if (state.model != it.value) sendEvent(name: "model", value: it.value);
+      if (device.currentValue("model").toString() != it.value) sendEvent(name: "model", value: it.value);
       break;
 
     case "stationtype":
       // Eg: firmware = GW1000B_V1.5.7
-      if (state.firmware != it.value) sendEvent(name: "firmware", value: it.value);
+      if (device.currentValue("firmware").toString() != it.value) sendEvent(name: "firmware", value: it.value);
       break;
 
     case "freq":
       // Eg: rf = 915M
-      if (state.rf != it.value) sendEvent(name: "rf", value: it.value);
+      if (device.currentValue("rf").toString() != it.value) sendEvent(name: "rf", value: it.value);
       break;
 
     case "dateutc":
       // Eg: time = 2020-04-25+05:03:56
-      if (state.time != it.value) sendEvent(name: "time", value: it.value);
+      if (device.currentValue("time").toString() != it.value) sendEvent(name: "time", value: it.value);
       break;
 
     case "PASSKEY":
       // Eg: passkey = 15CF2C872932F570B34AC469540099A4
-      if (state.passkey != it.value) sendEvent(name: "passkey", value: it.value);
+      if (device.currentValue("passkey").toString() != it.value) sendEvent(name: "passkey", value: it.value);
       break;
 
     //
@@ -387,7 +366,7 @@ private void updateStates(Map data) {
       break;
 
     default:
-      logDebug("Unrecognized state: ${it.key} = ${it.value}");
+      logDebug("Unrecognized attribute: ${it.key} = ${it.value}");
       break;
     }
   }
@@ -479,7 +458,7 @@ void parse(String msg) {
     }
 
     logData(data);
-    updateStates(data);
+    updateAttributes(data);
 
   }
   catch (Exception e) {

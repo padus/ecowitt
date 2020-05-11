@@ -52,7 +52,13 @@ metadata {
     attribute "windSpeed", "number";                           // mph
     attribute "windSpeed_avg_10m", "number";                   // mph - average over the last 10 minutes
     attribute "windGust", "number";                            // mph
-    attribute "windGustMaxDaily", "number";                    // mph - max in the current day  
+    attribute "windGustMaxDaily", "number";                    // mph - max in the current day 
+    
+    attribute "html", "string";                                // e.g. "<p>Temperature: ${temperature}°F</p><p>Humidity: ${humidity}%</p>"
+  }
+
+  preferences {
+    input(name: "htmlTemplate", type: "string", title: "<font style='font-size:12px; color:#1a77c9'>HTML Tile Template</font>", description: "<font style='font-size:12px; font-style: italic'>e.g.: &lt;p&gt;Temperature: <b>\${temperature}</b>&deg;F&lt;/p&gt;&lt;p&gt;Humidity: <b>\${humidity}</b>%&lt;/p&gt;</font>", defaultValue: "");
   }
 }
 
@@ -64,123 +70,140 @@ private void logInfo(String str) { if (getParent().getLogLevel() > 1) log.info(s
 private void logDebug(String str) { if (getParent().getLogLevel() > 2) log.debug(str); }
 private void logTrace(String str) { if (getParent().getLogLevel() > 3) log.trace(str); }
 
-// Conversion -----------------------------------------------------------------------------------------------------------------
+// Attribute handling ----------------------------------------------------------------------------------------------------------
 
-private Map convertTemperature(String fahrenheit) {
-  
-  Map conv = [:];
+private BigDecimal roundPrecision(BigDecimal val, Integer decimals = -1) {
 
-  if (getParent().isSystemMetric()) {
-    Float celsius = ((fahrenheit as Float) - 32.0f) / 1.8f;
-    celsius = celsius.round(2);
-
-    conv.value = celsius.toString();
-    conv.unit = "°C";
+  if (decimals >= 0) {
+    // If rounding is required we use the Float one because the BigDecimal is not supported/not working on Hubitat
+    val = val.toFloat().round(decimals).toBigDecimal();
   }
-  else {
-    conv.value = fahrenheit;
-    conv.unit = "°F";
-  }
-  
-  return (conv);
+
+  BigDecimal integer = val.toBigInteger();
+
+  // If we an integer we just return
+  if (val == integer) return (integer);
+
+  // Otherwise remove trailing zeros, if any
+  return (val.stripTrailingZeros());
 }
 
 // ------------------------------------------------------------
 
-private Map convertPressure(String inch) {
-  
-  Map conv = [:];
+private void updateNumber(BigDecimal val, String attribute, String measure, Integer decimals = -1) {
 
-  if (getParent().isSystemMetric()) {
-    Float millimeter = (inch as Float) * 25.4f;
-    millimeter = millimeter.round(2);
-
-    conv.value = millimeter.toString();
-    conv.unit = "mmHg";
-  }
-  else {
-    conv.value = inch;
-    conv.unit = "inHg";
-  }
-  
-  return (conv);
+  val = roundPrecision(val, decimals);
+  if (device.currentValue(attribute).toBigDecimal() != val) sendEvent(name: attribute, value: val, unit: measure);
 }
 
 // ------------------------------------------------------------
 
-private Map convertRain(String inch, Boolean hour = false) {
+private void updateTemperature(String val, String attribute) {
   
-  Map conv = [:];
+  BigDecimal degrees = val.toBigDecimal();
+  String measure = "°F";
 
+  // Convert to metric if requested
   if (getParent().isSystemMetric()) {
-    Float millimeter = (inch as Float) * 25.4f;
-    millimeter = millimeter.round(2);
+    degrees = (degrees - 32) / 1.8;
+    measure = "°C";
+  }
 
-    conv.value = millimeter.toString();
-    conv.unit = hour? "mm/h": "mm";
-  }
-  else {
-    conv.value = inch;
-    conv.unit = hour? "in/h": "in";
-  }
-  
-  return (conv);
+  degrees = roundPrecision(degrees, 1);
+
+  if (device.currentValue(attribute).toBigDecimal() != degrees) sendEvent(name: attribute, value: degrees, unit: measure);
 }
 
 // ------------------------------------------------------------
 
-private Map convertWind(String mile) {
+private void updatePressure(String val, String attribute) {
   
-  Map conv = [:];
+  BigDecimal length = val.toBigDecimal();
+  String measure = "inHg";
 
+  // Convert to metric if requested
   if (getParent().isSystemMetric()) {
-    Float kilometer = (mile as Float) * 1.609344f;
-    kilometer = kilometer.round(2);
+    length = length * 25.4;
+    measure = "mmHg";
+  }
 
-    conv.value = kilometer.toString();
-    conv.unit = "km/h";
-  }
-  else {
-    conv.value = mile;
-    conv.unit = "mph";
-  }
-  
-  return (conv);
+  length = roundPrecision(length, 2);
+
+  if (device.currentValue(attribute).toBigDecimal() != length) sendEvent(name: attribute, value: length, unit: measure);
 }
 
-// State handling -------------------------------------------------------------------------------------------------------------
+// ------------------------------------------------------------
 
-void updateStates(String key, String val) {
+private void updateRain(String val, String attribute, Boolean hour = false) {
+  
+  BigDecimal amount = val.toBigDecimal();
+  String measure = hour? "in/h": "in";
+
+  // Convert to metric if requested
+  if (getParent().isSystemMetric()) {
+    amount = amount * 25.4;
+    measure = hour? "mm/h": "mm";
+  }
+
+  amount = roundPrecision(amount, 2);
+
+  if (device.currentValue(attribute).toBigDecimal() != amount) sendEvent(name: attribute, value: amount, unit: measure);
+}
+
+// ------------------------------------------------------------
+
+private void updateWind(String val, String attribute) {
+  
+  BigDecimal speed = val.toBigDecimal();
+  String measure = "mph";
+
+  // Convert to metric if requested
+  if (getParent().isSystemMetric()) {
+    speed = speed * 1.609344;
+    measure = "km/h";
+  }
+
+  speed = roundPrecision(speed, 1);
+    
+  if (device.currentValue(attribute).toBigDecimal() != speed) sendEvent(name: attribute, value: speed, unit: measure);
+}
+
+// ------------------------------------------------------------
+
+private void updateHtml(String val) {
+
+  if (settings.htmlTemplate) {
+    // Create special compund/html tile  
+    val = settings.htmlTemplate.toString().replaceAll( ~/\$\{([A-Za-z][A-Za-z0-9_]*)\}/ ) { java.util.ArrayList m -> device.currentValue("${m[1]}").toString(); }
+    if (device.currentValue("html").toString() != val) sendEvent(name: "html", value: val);  
+  }
+}
+
+// ------------------------------------------------------------
+
+void updateAttribute(String key, String val) {
   //
-  // Dispatch state changes to hub
+  // Dispatch attributes changes to hub
   //
-  Integer percent;
-  Map convert;
-
   switch (key) {
 
   case ~/soilbatt[1-8]/:
     // The soil moisture sensor returns the battery voltage which, for regular AA alkaline, ranges from 1.40V (empty) to 1.65V (full)
-    percent = Math.round((val as Float) * 100f);
+    // Change range from (1.40V - 1.65V) to (0% - 100%)
+    BigDecimal percent = val.toBigDecimal() * 100;
     if (percent < 140) percent = 140;
     else if (percent > 165) percent = 165;
-
-    // Change range from (1.40V - 1.65V) to (0% - 100%)
     percent = ((percent - 140) * (100 - 0)) / (165 - 140);
 
-    // Bring back to string
-    val = percent.toString();
-    if (state.battery != val) sendEvent(name: "battery", value: val, unit: "%");
+    updateNumber(percent, "battery", "%", 0);
     break;
   
   case ~/pm25batt[1-4]/:
     // The air quality sensor returns a battery value between 0 (empty) and 5 (full)
-    percent = (val as Integer) * 20;
+    BigDecimal percent = val.toBigDecimal() * 20;
     if (percent > 100) percent = 100;
     
-    // Bring back to string
-    val = percent.toString();
-    if (state.battery != val) sendEvent(name: "battery", value: val, unit: "%");
+    updateNumber(percent, "battery", "%", 0);
     break;
   
   case "wh25batt":
@@ -189,119 +212,108 @@ void updateStates(String key, String val) {
   case "wh40batt": 
   case "wh65batt":
     // It seems like most sensors returns a battery value of either 0 (full) or 1 (empty)
-    val = (val == "0")? "100": "0";
-    if (state.battery != val) sendEvent(name: "battery", value: val, unit: "%");
+    BigDecimal percent = val.toBigDecimal();
+    percent = (percent == 0)? 100: 0;
+
+    updateNumber(percent, "battery", "%", 0);
     break;
   
   case "tempinf":
   case "tempf":
   case ~/temp[1-8]f/:
-    convert = convertTemperature(val);
-    if (state.temperature != convert.value) sendEvent(name: "temperature", value: convert.value, unit: convert.unit);
+    updateTemperature(val, "temperature");
     break;
 
   case "humidityin":
   case "humidity":
   case ~/humidity[1-8]/:
   case ~/soilmoisture[1-8]/:
-    if (state.humidity != val) sendEvent(name: "humidity", value: val, unit: "%");
+    updateNumber(val.toBigDecimal(), "humidity", "%");
     break;
 
   case "baromrelin":
-    convert = convertPressure(val);
-    if (state.pressure != convert.value) sendEvent(name: "pressure", value: convert.value, unit: convert.unit);
+    updatePressure(val, "pressure");
     break;
 
   case "baromabsin":
-    convert = convertPressure(val);
-    if (state.pressureAbs != convert.value) sendEvent(name: "pressureAbs", value: convert.value, unit: convert.unit);
+    updatePressure(val, "pressureAbs");
     break;
 
   case "rainratein":
-    convert = convertRain(val, true);
-    if (state.rainRate != convert.value) sendEvent(name: "rainRate", value: convert.value, unit: convert.unit);
+    updateRain(val, "rainRate", true);
     break;
 
   case "eventrainin":
-    convert = convertRain(val);
-    if (state.rainEvent != convert.value) sendEvent(name: "rainEvent", value: convert.value, unit: convert.unit);
+    updateRain(val, "rainEvent");
     break;
 
   case "hourlyrainin":
-    convert = convertRain(val);
-    if (state.rainHourly != convert.value) sendEvent(name: "rainHourly", value: convert.value, unit: convert.unit);
+    updateRain(val, "rainHourly");
     break;
 
   case "dailyrainin":
-    convert = convertRain(val);
-    if (state.rainDaily != convert.value) sendEvent(name: "rainDaily", value: convert.value, unit: convert.unit);
+    updateRain(val, "rainDaily");
     break;
 
   case "weeklyrainin":
-    convert = convertRain(val);
-    if (state.rainWeekly != convert.value) sendEvent(name: "rainWeekly", value: convert.value, unit: convert.unit);
+    updateRain(val, "rainWeekly");
     break;
 
   case "monthlyrainin":
-    convert = convertRain(val);
-    if (state.rainMonthly != convert.value) sendEvent(name: "rainMonthly", value: convert.value, unit: convert.unit);
+    updateRain(val, "rainMonthly");
     break;
 
   case "yearlyrainin":
-    convert = convertRain(val);
-    if (state.rainYearly != convert.value) sendEvent(name: "rainYearly", value: convert.value, unit: convert.unit);
+    updateRain(val, "rainYearly");
     break;
 
   case "totalrainin":
-    convert = convertRain(val);
-    if (state.rainTotal != convert.value) sendEvent(name: "rainTotal", value: convert.value, unit: convert.unit);
+    updateRain(val, "rainTotal");
     break;
 
   case ~/pm25_ch[1-4]/:
-    if (state.pm25 != val) sendEvent(name: "pm25", value: val, unit: "µg/cm³");
+    updateNumber(val.toBigDecimal(), "pm25", "µg/cm³");
     break;
 
   case ~/pm25_avg_24h_ch[1-4]/:
-    if (state.pm25_avg_24h != val) sendEvent(name: "pm25_avg_24h", value: val, unit: "µg/cm³");
+    updateNumber(val.toBigDecimal(), "pm25_avg_24h", "µg/cm³");
     break;
 
   case "uv":
-    if (state.ultravioletIndex != val) sendEvent(name: "ultravioletIndex", value: val, unit: "uvi");
+    updateNumber(val.toBigDecimal(), "ultravioletIndex", "uvi");
     break;
 
   case "solarradiation":
-    val = (val / 0.0079) as Long;
-    if (state.illuminance != val) sendEvent(name: "illuminance", value: val, unit: "lux");
+    BigDecimal amount = val.toBigDecimal() / 0.0079;
+    updateNumber(amount, "illuminance", "lux", 0);
     break;
 
   case "winddir":
-    if (state.windDirection != val) sendEvent(name: "windDirection", value: val, unit: "°");
+    updateNumber(val.toBigDecimal(), "windDirection", "°");
     break;
 
   case "winddir_avg10m":
-    if (state.windDirection_avg_10m != val) sendEvent(name: "windDirection_avg_10m", value: val, unit: "°");
+    updateNumber(val.toBigDecimal(), "windDirection_avg_10m", "°");
     break;
 
   case "windspeedmph":
-    convert = convertWind(val);
-    if (state.windSpeed != convert.value) sendEvent(name: "windSpeed", value: convert.value, unit: convert.unit);
+    updateWind(val, "windSpeed");
     break;
 
   case "windspdmph_avg10m":
-    convert = convertWind(val);
-    if (state.windSpeed_avg_10m != convert.value) sendEvent(name: "windSpeed_avg_10m", value: convert.value, unit: convert.unit);
+    updateWind(val, "windSpeed_avg_10m");
     break;
 
   case "windgustmph":
-    convert = convertWind(val);
-    if (state.windGust != convert.value) sendEvent(name: "windGust", value: convert.value, unit: convert.unit);
+    updateWind(val, "windGust");
     break;
 
   case "maxdailygust":
-    convert = convertWind(val);
-    if (state.windGustMaxDaily != convert.value) sendEvent(name: "windGustMaxDaily", value: convert.value, unit: convert.unit);
+    updateWind(val, "windGustMaxDaily");
     break;
   }
+
+  updateHtml(val);
 }
 
 // Driver lifecycle -----------------------------------------------------------------------------------------------------------

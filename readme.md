@@ -6,6 +6,7 @@
 - LAN comunication only, no cloud/weather service needed.
 - One Hubitat device for each Ecowitt sensor for easy dashboard tiles and RM rules handling.
 - On-the-fly Imperial <-> Metric conversion.
+- Tile HTML templating, which allows endless tiles customization, including displaying multiple attributes in a single tile. See below how to use them. 
 
 ### Installation Instructions
 
@@ -31,7 +32,7 @@
 
     <img src="https://i.imgur.com/F66oitb.png">
     
-3.  In "Devices" add a new "Ecowitt WiFi Gateway" virtual device:
+3.  In "Devices" add a new "Ecowitt WiFi Gateway" virtual device and click "Save Device":
 
     <img src="https://i.imgur.com/3oPQpJ2.png">
 
@@ -44,8 +45,47 @@
     
     <img src="https://i.imgur.com/Nad8ScL.png">
 
+#### HTML Template:
+
+HTML templates are a powerful way to gang-up multiple Ecowitt sensor attributes in a single Hubitat dashboard tile with endless customization.
+The following is a basic example of what you can achieve with a simple HTML template:
+
+<img src="https://i.imgur.com/9Bd0jmh.png" width="160" height="130">
+
+To use them:
+
+1.  In "Hubitat -> Devices" select the Ecowitt sensor (not the gateway) you'd like to "templetize":
+    
+    <img src="https://i.imgur.com/nkSaORs.png">
+
+2.  In "Preferences -> HTML Tile Template" enter your template (see below how to format them) and click "Save Preferences"
+
+3.  Now, in any Hubitat dashboard, add a new tile, on the left select the Ecowitt sensor, in the center select "Attributes" and on the right select the "html" attribute:
+    
+    <img src="https://i.imgur.com/YxTja4A.png">   
+
+    You can also remove the tile "html" title by entering the following in the dashboard CSS:
+
+     ```
+    #tile-0 .tile-secondary { visibility: hidden; }
+    ```
+   
+#### HTML Template Format:
+
+Templates are pure HTML code with embedded servlets, which are nothing but sensor attributes surrounded by a \$\{\} expression.
+For example the following template is used to create the tile in the example above:
+     
+  ```
+  <p>Temperature: ${temperature} °F</p><p>Humidity: ${humidity} %</p><p>Pressure: ${pressure} inHg</p>
+  ```
+Tips:
+
+1. When you enter the template in the device preferences DO NOT surround it with quotation marks.
+2. For each specific sensor template, ONLY use the attributes you see displayed on the upper-right corner of the sensor preferences.
+3. For obvious reasons, in a template, NEVER use the expression **\$\{html}**. Or your hub will enter a wormhole and resurface in a parallel universe made only of antimatter ;-) 
+
+***
+
 ### Disclaimer
 
 THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE, TITLE AND NON-INFRINGEMENT. IN NO EVENT SHALL THE COPYRIGHT HOLDERS OR ANYONE DISTRIBUTING THE SOFTWARE BE LIABLE FOR ANY DAMAGES OR OTHER LIABILITY, WHETHER IN CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
-
-In other words, install it on a production Hubitat hub at your own risk ;-)
