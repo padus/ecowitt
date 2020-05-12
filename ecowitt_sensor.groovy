@@ -76,9 +76,11 @@ private void logTrace(String str) { if (getParent().getLogLevel() > 3) log.trace
 
 // Attribute handling ----------------------------------------------------------------------------------------------------------
 
-private Boolean getSensorCapability(Integer capability) {
+/* Not used yet, but fully functional to display sensor preferences base on capabilities
+ 
+private Boolean isAttributeClassSupported(Integer class) {
   //
-  // Return current sensor capabilities
+  // Return 'true' if one of the following classes of attributes is supported by the current sensor
   //
   // 0) Temperature
   // 1) Humidity (air)
@@ -100,8 +102,10 @@ private Boolean getSensorCapability(Integer capability) {
   Boolean[] wh69e = [true,  true,  false, true,  true,  true,  true,  false, false];
 
   String model = device.getDeviceNetworkId().take(5).toLowerCase();
-  return ("${model}"[capability]);
+  return ("${model}"[class]);
 }
+
+*/
 
 // ------------------------------------------------------------
 
@@ -121,33 +125,29 @@ private String getAttributeString(String attribute) {
 
 // ------------------------------------------------------------
 
-private BigDecimal roundPrecision(BigDecimal val, Integer decimals = -1) {
+private void updateAttributeNumber(BigDecimal val, String attribute, String measure, Integer decimals = -1) {
 
-  if (decimals >= 0) {
-    // If rounding is required we use the Float one because the BigDecimal is not supported/not working on Hubitat
-    val = val.toFloat().round(decimals).toBigDecimal();
-  }
+  // If rounding is required we use the Float one because the BigDecimal is not supported/not working on Hubitat
+  if (decimals >= 0) val = val.toFloat().round(decimals).toBigDecimal();
 
   BigDecimal integer = val.toBigInteger();
 
-  // If we an integer we just return
-  if (val == integer) return (integer);
+  // We don't strip zeros on an integer otherwise it gets converted to scientific exponential notation
+  val = (val == integer)? integer: val.stripTrailingZeros();
 
-  // Otherwise remove trailing zeros, if any
-  return (val.stripTrailingZeros());
-}
-
-// ------------------------------------------------------------
-
-private void updateNumber(BigDecimal val, String attribute, String measure, Integer decimals = -1) {
-
-  val = roundPrecision(val, decimals);
   if (getAttributeNumber(attribute) != val) sendEvent(name: attribute, value: val, unit: measure);
 }
 
 // ------------------------------------------------------------
 
-private void updateBattery(String val, String attribute, String attributeOrg, Integer type) {
+private void updateAttributeString(String val, String attribute) {
+
+  if (getAttributeString(attribute) != val) sendEvent(name: attribute, value: val);
+}
+
+// ------------------------------------------------------------
+
+private void updateAttributeBattery(String val, String attribute, String attributeOrg, Integer type) {
   //
   // Convert all different batteries returned values to a 0-100% range
   // Type: 1) soil moisture sensor - range from 1.40V (empty) to 1.65V (full)
@@ -181,13 +181,13 @@ private void updateBattery(String val, String attribute, String attributeOrg, In
     unitOrg = "!bool";
   }
 
-  updateNumber(percent, attribute, "%", 0);
-  updateNumber(original, attributeOrg, unitOrg);
+  updateAttributeNumber(percent, attribute, "%", 0);
+  updateAttributeNumber(original, attributeOrg, unitOrg);
 }
 
 // ------------------------------------------------------------
 
-private void updateTemperature(String val, String attribute) {
+private void updateAttributeTemperature(String val, String attribute) {
   
   BigDecimal degrees = val.toBigDecimal();
   String measure = "°F";
@@ -198,14 +198,12 @@ private void updateTemperature(String val, String attribute) {
     measure = "°C";
   }
 
-  degrees = roundPrecision(degrees, 1);
-
-  if (getAttributeNumber(attribute) != degrees) sendEvent(name: attribute, value: degrees, unit: measure);
+  updateAttributeNumber(degrees, attribute, measure, 1);
 }
 
 // ------------------------------------------------------------
 
-private void updatePressure(String val, String attribute) {
+private void updateAttributePressure(String val, String attribute) {
   
   BigDecimal length = val.toBigDecimal();
   String measure = "inHg";
@@ -216,14 +214,12 @@ private void updatePressure(String val, String attribute) {
     measure = "mmHg";
   }
 
-  length = roundPrecision(length, 2);
-
-  if (getAttributeNumber(attribute) != length) sendEvent(name: attribute, value: length, unit: measure);
+  updateAttributeNumber(length, attribute, measure, 2);
 }
 
 // ------------------------------------------------------------
 
-private void updateRain(String val, String attribute, Boolean hour = false) {
+private void updateAttributeRain(String val, String attribute, Boolean hour = false) {
   
   BigDecimal amount = val.toBigDecimal();
   String measure = hour? "in/h": "in";
@@ -234,14 +230,12 @@ private void updateRain(String val, String attribute, Boolean hour = false) {
     measure = hour? "mm/h": "mm";
   }
 
-  amount = roundPrecision(amount, 2);
-
-  if (getAttributeNumber(attribute) != amount) sendEvent(name: attribute, value: amount, unit: measure);
+  updateAttributeNumber(amount, attribute, measure, 2);
 }
 
 // ------------------------------------------------------------
 
-private void updateWindSpeed(String val, String attribute) {
+private void updateAttributeWindSpeed(String val, String attribute) {
   
   BigDecimal speed = val.toBigDecimal();
   String measure = "mph";
@@ -252,47 +246,49 @@ private void updateWindSpeed(String val, String attribute) {
     measure = "km/h";
   }
 
-  speed = roundPrecision(speed, 1);
-    
-  if (getAttributeNumber(attribute) != speed) sendEvent(name: attribute, value: speed, unit: measure);
+  updateAttributeNumber(speed, attribute, measure, 1);
 }
 
 // ------------------------------------------------------------
 
-private void updateWindDirection(String val, String attribute, String attributeStr) {
+private void updateAttributeWindDirection(String val, String attribute, String attributeStr) {
+  
+  BigDecimal dir = val.toBigDecimal();
 
-  BigDecimal dir = val.toBigDecimal() % 360;
+  // BigDecimal doesn't support modulo operation so we roll up our own  
+  dir = dir - (dir.divideToIntegralValue(360) * 360);
+
   String dirStr;
 
   if (dir >= 348.75 || dir < 11.25) dirStr = "N";
   else if (dir < 33.75)             dirStr = "NNE";
-  else if (dir < 56.25) 	          dirStr = "NE";
-  else if (dir < 78.75) 		        dirStr = "ENE";
-  else if (dir < 101.25) 		        dirStr = "E";
-  else if (dir < 123.75) 		        dirStr = "ESE";
-  else if (dir < 146.25) 		        dirStr = "SE";
-  else if (dir < 168.75) 		        dirStr = "SSE";
-  else if (dir < 191.25) 		        dirStr = "S";
-  else if (dir < 213.75) 		        dirStr = "SSW";
-  else if (dir < 236.25) 		        dirStr = "SW";
-  else if (dir < 258.75) 		        dirStr = "WSW";
-  else if (dir < 281.25) 		        dirStr = "W";
-  else if (dir < 303.75) 		        dirStr = "WNW";
-  else if (dir < 326.25) 		        dirStr = "NW";
-  else                   		        dirStr = "NNW";
+  else if (dir < 56.25)             dirStr = "NE";
+  else if (dir < 78.75)             dirStr = "ENE";
+  else if (dir < 101.25)            dirStr = "E";
+  else if (dir < 123.75)            dirStr = "ESE";
+  else if (dir < 146.25)            dirStr = "SE";
+  else if (dir < 168.75)            dirStr = "SSE";
+  else if (dir < 191.25)            dirStr = "S";
+  else if (dir < 213.75)            dirStr = "SSW";
+  else if (dir < 236.25)            dirStr = "SW";
+  else if (dir < 258.75)            dirStr = "WSW";
+  else if (dir < 281.25)            dirStr = "W";
+  else if (dir < 303.75)            dirStr = "WNW";
+  else if (dir < 326.25)            dirStr = "NW";
+  else                              dirStr = "NNW";
   
-  updateNumber(dir, attribute, "°");  
-  if (getAttributeString(attributeStr) != dirStr) sendEvent(name: attributeStr, value: dirStr);
+  updateAttributeNumber(dir, attribute, "°");
+  updateAttributeString(dirStr, attributeStr);
 }
 
 // ------------------------------------------------------------
 
-private void updateHtml(String val) {
+private void updateAttributeHtml(String val) {
 
   if (settings.htmlTemplate) {
     // Create special compund/html tile  
     val = settings.htmlTemplate.toString().replaceAll( ~/\$\{\s*([A-Za-z][A-Za-z0-9_]*)\s*\}/ ) { java.util.ArrayList m -> getAttributeString("${m[1]}"); }
-    if (getAttributeString("html") != val) sendEvent(name: "html", value: val);
+    updateAttributeString(val, "html");
   }
 }
 
@@ -305,11 +301,11 @@ void updateAttribute(String key, String val) {
   switch (key) {
 
   case ~/soilbatt[1-8]/:
-    updateBattery(val, "battery", "batteryOrg", 1);
+    updateAttributeBattery(val, "battery", "batteryOrg", 1);
     break;
   
   case ~/pm25batt[1-4]/:
-    updateBattery(val, "battery", "batteryOrg", 2);
+    updateAttributeBattery(val, "battery", "batteryOrg", 2);
     break;
   
   case "wh25batt":
@@ -317,104 +313,104 @@ void updateAttribute(String key, String val) {
   case ~/batt[1-8]/:
   case "wh40batt": 
   case "wh65batt":
-    updateBattery(val, "battery", "batteryOrg", 0);
+    updateAttributeBattery(val, "battery", "batteryOrg", 0);
     break;
   
   case "tempinf":
   case "tempf":
   case ~/temp[1-8]f/:
-    updateTemperature(val, "temperature");
+    updateAttributeTemperature(val, "temperature");
     break;
 
   case "humidityin":
   case "humidity":
   case ~/humidity[1-8]/:
   case ~/soilmoisture[1-8]/:
-    updateNumber(val.toBigDecimal(), "humidity", "%");
+    updateAttributeNumber(val.toBigDecimal(), "humidity", "%");
     break;
 
   case "baromrelin":
-    updatePressure(val, "pressure");
+    updateAttributePressure(val, "pressure");
     break;
 
   case "baromabsin":
-    updatePressure(val, "pressureAbs");
+    updateAttributePressure(val, "pressureAbs");
     break;
 
   case "rainratein":
-    updateRain(val, "rainRate", true);
+    updateAttributeRain(val, "rainRate", true);
     break;
 
   case "eventrainin":
-    updateRain(val, "rainEvent");
+    updateAttributeRain(val, "rainEvent");
     break;
 
   case "hourlyrainin":
-    updateRain(val, "rainHourly");
+    updateAttributeRain(val, "rainHourly");
     break;
 
   case "dailyrainin":
-    updateRain(val, "rainDaily");
+    updateAttributeRain(val, "rainDaily");
     break;
 
   case "weeklyrainin":
-    updateRain(val, "rainWeekly");
+    updateAttributeRain(val, "rainWeekly");
     break;
 
   case "monthlyrainin":
-    updateRain(val, "rainMonthly");
+    updateAttributeRain(val, "rainMonthly");
     break;
 
   case "yearlyrainin":
-    updateRain(val, "rainYearly");
+    updateAttributeRain(val, "rainYearly");
     break;
 
   case "totalrainin":
-    updateRain(val, "rainTotal");
+    updateAttributeRain(val, "rainTotal");
     break;
 
   case ~/pm25_ch[1-4]/:
-    updateNumber(val.toBigDecimal(), "pm25", "µg/cm³");
+    updateAttributeNumber(val.toBigDecimal(), "pm25", "µg/cm³");
     break;
 
   case ~/pm25_avg_24h_ch[1-4]/:
-    updateNumber(val.toBigDecimal(), "pm25_avg_24h", "µg/cm³");
+    updateAttributeNumber(val.toBigDecimal(), "pm25_avg_24h", "µg/cm³");
     break;
 
   case "uv":
-    updateNumber(val.toBigDecimal(), "ultravioletIndex", "uvi");
+    updateAttributeNumber(val.toBigDecimal(), "ultravioletIndex", "uvi");
     break;
 
   case "solarradiation":
-    updateNumber((val.toBigDecimal() / 0.0079), "illuminance", "lux", 0);
+    updateAttributeNumber((val.toBigDecimal() / 0.0079), "illuminance", "lux", 0);
     break;
 
   case "winddir":
-    updateWindDirection(val, "windDirection", "windDirectionStr");
+    updateAttributeWindDirection(val, "windDirection", "windDirectionStr");
     break;
 
   case "winddir_avg10m":
-    updateWindDirection(val, "windDirection_avg_10m", "windDirectionStr_avg_10m");
+    updateAttributeWindDirection(val, "windDirection_avg_10m", "windDirectionStr_avg_10m");
     break;
 
   case "windspeedmph":
-    updateWindSpeed(val, "windSpeed");
+    updateAttributeWindSpeed(val, "windSpeed");
     break;
 
   case "windspdmph_avg10m":
-    updateWindSpeed(val, "windSpeed_avg_10m");
+    updateAttributeWindSpeed(val, "windSpeed_avg_10m");
     break;
 
   case "windgustmph":
-    updateWindSpeed(val, "windGust");
+    updateAttributeWindSpeed(val, "windGust");
     break;
 
   case "maxdailygust":
-    updateWindSpeed(val, "windGustMaxDaily");
+    updateAttributeWindSpeed(val, "windGustMaxDaily");
     break;
   }
 
-  updateHtml(val);
+  updateAttributeHtml(val);
 }
 
 // Driver lifecycle -----------------------------------------------------------------------------------------------------------
