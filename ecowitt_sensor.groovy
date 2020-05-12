@@ -32,6 +32,7 @@ metadata {
  // attribute "humidity", "number";                            // 0-100%
  // attribute "pressure", "number";                            // inHg - relative pressure corrected to sea-level
     attribute "pressureAbs", "number";                         // inHg - absolute pressure
+    attribute "batteryOrg", "number";                          // original/un-translated battery value returned by the sensor 
 
     attribute "rainRate", "number";                            // in/h - rainfall rate 
     attribute "rainEvent", "number";                           // in - rainfall in the current event
@@ -58,7 +59,7 @@ metadata {
   }
 
   preferences {
-    input(name: "htmlTemplate", type: "string", title: "<font style='font-size:12px; color:#1a77c9'>HTML Tile Template</font>", description: "<font style='font-size:12px; font-style: italic'>e.g.: &lt;p&gt;Temperature: <b>\${temperature}</b>&deg;F&lt;/p&gt;&lt;p&gt;Humidity: <b>\${humidity}</b>%&lt;/p&gt;</font>", defaultValue: "");
+    input(name: "htmlTemplate", type: "string", title: "<font style='font-size:12px; color:#1a77c9'>HTML Tile Template</font>", description: "<font style='font-size:12px; font-style: italic'>An HTML snippet formatted with one or more \${attribute} as described <a href='https://github.com/mircolino/ecowitt/blob/master/readme.md#templates' target='_blank'>here</a></font>", defaultValue: "");
   }
 }
 
@@ -71,6 +72,22 @@ private void logDebug(String str) { if (getParent().getLogLevel() > 2) log.debug
 private void logTrace(String str) { if (getParent().getLogLevel() > 3) log.trace(str); }
 
 // Attribute handling ----------------------------------------------------------------------------------------------------------
+
+private BigDecimal getAttributeNumber(String attribute) {
+  // This will force an implicit cast Object -> BigDecimal
+  // Return 'null' if the attribute has not been initialized
+  return (device.currentValue(attribute));
+}
+
+// ------------------------------------------------------------
+
+private String getAttributeString(String attribute) {
+  // This will force an implicit cast Object -> String
+  // Return 'null' if the attribute has not been initialized
+  return (device.currentValue(attribute));
+}
+
+// ------------------------------------------------------------
 
 private BigDecimal roundPrecision(BigDecimal val, Integer decimals = -1) {
 
@@ -93,7 +110,43 @@ private BigDecimal roundPrecision(BigDecimal val, Integer decimals = -1) {
 private void updateNumber(BigDecimal val, String attribute, String measure, Integer decimals = -1) {
 
   val = roundPrecision(val, decimals);
-  if (device.currentValue(attribute).toBigDecimal() != val) sendEvent(name: attribute, value: val, unit: measure);
+  if (getAttributeNumber(attribute) != val) sendEvent(name: attribute, value: val, unit: measure);
+}
+
+// ------------------------------------------------------------
+
+private void updateBattery(String val, String attribute, Integer type) {
+  //
+  // Convert all different batteries returned values to a 0-100% range
+  // Type: 1) soil moisture sensor - range from 1.40V (empty) to 1.65V (full)
+  //       2) air quality sensor - range from 0 (empty) to 5 (full)
+  //       0) other sensors - 0 (full) or 1 (empty)
+  //
+  BigDecimal original = val.toBigDecimal();
+  BigDecimal percent = original;
+
+  switch (type) {
+  case 1:
+    // Change range from (1.40V - 1.65V) to (0% - 100%)
+    percent = percent * 100;
+    if (percent < 140) percent = 140;
+    else if (percent > 165) percent = 165;
+    percent = ((percent - 140) * (100 - 0)) / (165 - 140);
+    break;
+
+  case 2:
+    // Change range from (0 - 5) to (0% - 100%)
+    percent = percent * 20;
+    if (percent > 100) percent = 100;
+    break;
+
+  default:
+    // Change range from (0  or 1) to (100% or 0%)
+    percent = (percent == 0)? 100: 0;
+  }
+
+  updateNumber(percent, attribute, "%", 0);
+  updateNumber(original, "${attribute}Org", "");
 }
 
 // ------------------------------------------------------------
@@ -111,7 +164,7 @@ private void updateTemperature(String val, String attribute) {
 
   degrees = roundPrecision(degrees, 1);
 
-  if (device.currentValue(attribute).toBigDecimal() != degrees) sendEvent(name: attribute, value: degrees, unit: measure);
+  if (getAttributeNumber(attribute) != degrees) sendEvent(name: attribute, value: degrees, unit: measure);
 }
 
 // ------------------------------------------------------------
@@ -129,7 +182,7 @@ private void updatePressure(String val, String attribute) {
 
   length = roundPrecision(length, 2);
 
-  if (device.currentValue(attribute).toBigDecimal() != length) sendEvent(name: attribute, value: length, unit: measure);
+  if (getAttributeNumber(attribute) != length) sendEvent(name: attribute, value: length, unit: measure);
 }
 
 // ------------------------------------------------------------
@@ -147,7 +200,7 @@ private void updateRain(String val, String attribute, Boolean hour = false) {
 
   amount = roundPrecision(amount, 2);
 
-  if (device.currentValue(attribute).toBigDecimal() != amount) sendEvent(name: attribute, value: amount, unit: measure);
+  if (getAttributeNumber(attribute) != amount) sendEvent(name: attribute, value: amount, unit: measure);
 }
 
 // ------------------------------------------------------------
@@ -165,7 +218,7 @@ private void updateWind(String val, String attribute) {
 
   speed = roundPrecision(speed, 1);
     
-  if (device.currentValue(attribute).toBigDecimal() != speed) sendEvent(name: attribute, value: speed, unit: measure);
+  if (getAttributeNumber(attribute) != speed) sendEvent(name: attribute, value: speed, unit: measure);
 }
 
 // ------------------------------------------------------------
@@ -174,8 +227,8 @@ private void updateHtml(String val) {
 
   if (settings.htmlTemplate) {
     // Create special compund/html tile  
-    val = settings.htmlTemplate.toString().replaceAll( ~/\$\{([A-Za-z][A-Za-z0-9_]*)\}/ ) { java.util.ArrayList m -> device.currentValue("${m[1]}").toString(); }
-    if (device.currentValue("html").toString() != val) sendEvent(name: "html", value: val);  
+    val = settings.htmlTemplate.toString().replaceAll( ~/\$\{\s*([A-Za-z][A-Za-z0-9_]*)\s*\}/ ) { java.util.ArrayList m -> getAttributeString("${m[1]}"); }
+    if (getAttributeString("html") != val) sendEvent(name: "html", value: val);  
   }
 }
 
@@ -188,22 +241,11 @@ void updateAttribute(String key, String val) {
   switch (key) {
 
   case ~/soilbatt[1-8]/:
-    // The soil moisture sensor returns the battery voltage which, for regular AA alkaline, ranges from 1.40V (empty) to 1.65V (full)
-    // Change range from (1.40V - 1.65V) to (0% - 100%)
-    BigDecimal percent = val.toBigDecimal() * 100;
-    if (percent < 140) percent = 140;
-    else if (percent > 165) percent = 165;
-    percent = ((percent - 140) * (100 - 0)) / (165 - 140);
-
-    updateNumber(percent, "battery", "%", 0);
+    updateBattery(val, "battery", 1);
     break;
   
   case ~/pm25batt[1-4]/:
-    // The air quality sensor returns a battery value between 0 (empty) and 5 (full)
-    BigDecimal percent = val.toBigDecimal() * 20;
-    if (percent > 100) percent = 100;
-    
-    updateNumber(percent, "battery", "%", 0);
+    updateBattery(val, "battery", 2);
     break;
   
   case "wh25batt":
@@ -211,11 +253,7 @@ void updateAttribute(String key, String val) {
   case ~/batt[1-8]/:
   case "wh40batt": 
   case "wh65batt":
-    // It seems like most sensors returns a battery value of either 0 (full) or 1 (empty)
-    BigDecimal percent = val.toBigDecimal();
-    percent = (percent == 0)? 100: 0;
-
-    updateNumber(percent, "battery", "%", 0);
+    updateBattery(val, "battery", 0);
     break;
   
   case "tempinf":
@@ -284,8 +322,7 @@ void updateAttribute(String key, String val) {
     break;
 
   case "solarradiation":
-    BigDecimal amount = val.toBigDecimal() / 0.0079;
-    updateNumber(amount, "illuminance", "lux", 0);
+    updateNumber((val.toBigDecimal() / 0.0079), "illuminance", "lux", 0);
     break;
 
   case "winddir":

@@ -27,7 +27,7 @@
  *              Normalization of floating values
 */
 
-public static String version() { return "v1.1.8"; }
+public static String version() { return "v1.1.9"; }
 
 // Metadata -------------------------------------------------------------------------------------------------------------------
 
