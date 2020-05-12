@@ -124,6 +124,7 @@ private void updateBattery(String val, String attribute, Integer type) {
   //
   BigDecimal original = val.toBigDecimal();
   BigDecimal percent = original;
+  String unitOrg;
 
   switch (type) {
   case 1:
@@ -132,21 +133,24 @@ private void updateBattery(String val, String attribute, Integer type) {
     if (percent < 140) percent = 140;
     else if (percent > 165) percent = 165;
     percent = ((percent - 140) * (100 - 0)) / (165 - 140);
+    unitOrg = "V";
     break;
 
   case 2:
     // Change range from (0 - 5) to (0% - 100%)
     percent = percent * 20;
     if (percent > 100) percent = 100;
+    unitOrg = "level";
     break;
 
   default:
     // Change range from (0  or 1) to (100% or 0%)
     percent = (percent == 0)? 100: 0;
+    unitOrg = "!bool";
   }
 
   updateNumber(percent, attribute, "%", 0);
-  updateNumber(original, "${attribute}Org", "");
+  updateNumber(original, "${attribute}Org", unitOrg);
 }
 
 // ------------------------------------------------------------
