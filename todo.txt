@@ -1,47 +1,8 @@
 TODO
 ====
 
+- Reset all attribute/states on updated()  *** not yet possible ***
 - Parse html template and make sure only valid attributes are use - prevent code execution
-- Reset all attribute/states on updated()
 - Localization
-- Wind direction string attribute
 - Calculated wind chill, dew point and heat index 
 - Detection and creation of PWS
-
-
-
-WH69E    
------
-wind direction
-wind speed
-UV
-light
-temperature
-humidity
-rain gauge
-
-WH40
-----
-rain gauge
-
-WH80
-----
-wind direction
-wind speed
-UV
-light
-temperature
-humidity
-
-WH68
-----
-wind direction
-wind speed
-wind gust
-UV
-light
-
-WH32E
------
-temperature
-humidity

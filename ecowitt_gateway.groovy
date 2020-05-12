@@ -27,7 +27,7 @@
  *              Normalization of floating values
 */
 
-public static String version() { return "v1.1.9"; }
+public static String version() { return "v1.1.10"; }
 
 // Metadata -------------------------------------------------------------------------------------------------------------------
 
@@ -156,7 +156,7 @@ private void updateDNI() {
   //
   String mac = getMacAddress();
 
-  if (mac) device.deviceNetworkId = mac;  
+  if (mac) device.setDeviceNetworkId(mac);  
   else logError("The MAC address entered in the driver preferences is invalid");
 }
 
@@ -317,7 +317,7 @@ private void updateAttributes(Map data) {
       break;
 
     //
-    // Rain Gauge Sensor (WH40)
+    // Rain Gauge Sensor (WH40, WH69E)
     //
     case "wh40batt": 
     case "rainratein":
@@ -332,7 +332,7 @@ private void updateAttributes(Map data) {
       break;
 
     //
-    // Multi-channel Air Quality Sensor (WH41 / WH43)
+    // Multi-channel Air Quality Sensor (WH41)
     //
     case ~/pm25batt([1-4])/:
     case ~/pm25_ch([1-4])/:
@@ -351,7 +351,7 @@ private void updateAttributes(Map data) {
       break;
 
     //
-    // Wind & Solar Sensor (WS68 / WS80)
+    // Wind & Solar Sensor (WH80, WH69E)
     //
     case "wh65batt":
     case "winddir":

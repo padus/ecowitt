@@ -54,6 +54,9 @@ metadata {
     attribute "windSpeed_avg_10m", "number";                   // mph - average over the last 10 minutes
     attribute "windGust", "number";                            // mph
     attribute "windGustMaxDaily", "number";                    // mph - max in the current day 
+
+    attribute "windDirectionStr", "string";                    // NNE
+    attribute "windDirectionStr_avg_10m", "string";            // NNE - average over the last 10 minutes 
     
     attribute "html", "string";                                // e.g. "<p>Temperature: ${temperature}°F</p><p>Humidity: ${humidity}%</p>"
   }
@@ -72,6 +75,35 @@ private void logDebug(String str) { if (getParent().getLogLevel() > 2) log.debug
 private void logTrace(String str) { if (getParent().getLogLevel() > 3) log.trace(str); }
 
 // Attribute handling ----------------------------------------------------------------------------------------------------------
+
+private Boolean getSensorCapability(Integer capability) {
+  //
+  // Return current sensor capabilities
+  //
+  // 0) Temperature
+  // 1) Humidity (air)
+  // 2) Pressure
+  // 3) Rain
+  // 4) Wind
+  // 5) UV
+  // 6) Light
+  // 7) Moisture (soil)
+  // 8) Quality (air)
+  //                 0      1      2      3      4      5      6      7      8
+  Boolean[] wh32b = [true,  true,  true,  false, false, false, false, false, false];
+  Boolean[] wh32e = [true,  true,  false, false, false, false, false, false, false];
+  Boolean[] wh31b = [true,  true,  false, false, false, false, false, false, false];
+  Boolean[] wh40  = [false, false, false, true,  false, false, false, false, false];
+  Boolean[] wh41_ = [false, false, false, false, false, false, false, false, true ];
+  Boolean[] wh51_ = [false, false, false, false, false, false, false, true,  false];
+  Boolean[] wh80  = [true,  true,  false, false, true,  true,  true,  false, false];
+  Boolean[] wh69e = [true,  true,  false, true,  true,  true,  true,  false, false];
+
+  String model = device.getDeviceNetworkId().take(5).toLowerCase();
+  return ("${model}"[capability]);
+}
+
+// ------------------------------------------------------------
 
 private BigDecimal getAttributeNumber(String attribute) {
   // This will force an implicit cast Object -> BigDecimal
@@ -115,7 +147,7 @@ private void updateNumber(BigDecimal val, String attribute, String measure, Inte
 
 // ------------------------------------------------------------
 
-private void updateBattery(String val, String attribute, Integer type) {
+private void updateBattery(String val, String attribute, String attributeOrg, Integer type) {
   //
   // Convert all different batteries returned values to a 0-100% range
   // Type: 1) soil moisture sensor - range from 1.40V (empty) to 1.65V (full)
@@ -150,7 +182,7 @@ private void updateBattery(String val, String attribute, Integer type) {
   }
 
   updateNumber(percent, attribute, "%", 0);
-  updateNumber(original, "${attribute}Org", unitOrg);
+  updateNumber(original, attributeOrg, unitOrg);
 }
 
 // ------------------------------------------------------------
@@ -209,7 +241,7 @@ private void updateRain(String val, String attribute, Boolean hour = false) {
 
 // ------------------------------------------------------------
 
-private void updateWind(String val, String attribute) {
+private void updateWindSpeed(String val, String attribute) {
   
   BigDecimal speed = val.toBigDecimal();
   String measure = "mph";
@@ -227,12 +259,40 @@ private void updateWind(String val, String attribute) {
 
 // ------------------------------------------------------------
 
+private void updateWindDirection(String val, String attribute, String attributeStr) {
+
+  BigDecimal dir = val.toBigDecimal() % 360;
+  String dirStr;
+
+  if (dir >= 348.75 || dir < 11.25) dirStr = "N";
+  else if (dir < 33.75)             dirStr = "NNE";
+  else if (dir < 56.25) 	          dirStr = "NE";
+  else if (dir < 78.75) 		        dirStr = "ENE";
+  else if (dir < 101.25) 		        dirStr = "E";
+  else if (dir < 123.75) 		        dirStr = "ESE";
+  else if (dir < 146.25) 		        dirStr = "SE";
+  else if (dir < 168.75) 		        dirStr = "SSE";
+  else if (dir < 191.25) 		        dirStr = "S";
+  else if (dir < 213.75) 		        dirStr = "SSW";
+  else if (dir < 236.25) 		        dirStr = "SW";
+  else if (dir < 258.75) 		        dirStr = "WSW";
+  else if (dir < 281.25) 		        dirStr = "W";
+  else if (dir < 303.75) 		        dirStr = "WNW";
+  else if (dir < 326.25) 		        dirStr = "NW";
+  else                   		        dirStr = "NNW";
+  
+  updateNumber(dir, attribute, "°");  
+  if (getAttributeString(attributeStr) != dirStr) sendEvent(name: attributeStr, value: dirStr);
+}
+
+// ------------------------------------------------------------
+
 private void updateHtml(String val) {
 
   if (settings.htmlTemplate) {
     // Create special compund/html tile  
     val = settings.htmlTemplate.toString().replaceAll( ~/\$\{\s*([A-Za-z][A-Za-z0-9_]*)\s*\}/ ) { java.util.ArrayList m -> getAttributeString("${m[1]}"); }
-    if (getAttributeString("html") != val) sendEvent(name: "html", value: val);  
+    if (getAttributeString("html") != val) sendEvent(name: "html", value: val);
   }
 }
 
@@ -245,11 +305,11 @@ void updateAttribute(String key, String val) {
   switch (key) {
 
   case ~/soilbatt[1-8]/:
-    updateBattery(val, "battery", 1);
+    updateBattery(val, "battery", "batteryOrg", 1);
     break;
   
   case ~/pm25batt[1-4]/:
-    updateBattery(val, "battery", 2);
+    updateBattery(val, "battery", "batteryOrg", 2);
     break;
   
   case "wh25batt":
@@ -257,7 +317,7 @@ void updateAttribute(String key, String val) {
   case ~/batt[1-8]/:
   case "wh40batt": 
   case "wh65batt":
-    updateBattery(val, "battery", 0);
+    updateBattery(val, "battery", "batteryOrg", 0);
     break;
   
   case "tempinf":
@@ -330,27 +390,27 @@ void updateAttribute(String key, String val) {
     break;
 
   case "winddir":
-    updateNumber(val.toBigDecimal(), "windDirection", "°");
+    updateWindDirection(val, "windDirection", "windDirectionStr");
     break;
 
   case "winddir_avg10m":
-    updateNumber(val.toBigDecimal(), "windDirection_avg_10m", "°");
+    updateWindDirection(val, "windDirection_avg_10m", "windDirectionStr_avg_10m");
     break;
 
   case "windspeedmph":
-    updateWind(val, "windSpeed");
+    updateWindSpeed(val, "windSpeed");
     break;
 
   case "windspdmph_avg10m":
-    updateWind(val, "windSpeed_avg_10m");
+    updateWindSpeed(val, "windSpeed_avg_10m");
     break;
 
   case "windgustmph":
-    updateWind(val, "windGust");
+    updateWindSpeed(val, "windGust");
     break;
 
   case "maxdailygust":
-    updateWind(val, "windGustMaxDaily");
+    updateWindSpeed(val, "windGustMaxDaily");
     break;
   }
 
