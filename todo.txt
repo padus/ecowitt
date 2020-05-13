@@ -6,3 +6,4 @@ TODO
 - Localization
 - Calculated wind chill, dew point and heat index 
 - Detection and creation of PWS
+

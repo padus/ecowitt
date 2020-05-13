@@ -25,10 +25,10 @@
  * 2020.05.08 - Further state optimization and release to stable
  * 2020.05.11 - HTML templates
  *              Normalization of floating values
- * 2020.05.12 - Added wind direction string attribute
+ * 2020.05.12 - Added windDirectionCompass, ultravioletDanger, ultravioletColor, aqiIndex, aqiDanger, aqiColor attributes
 */
 
-public static String version() { return "v1.1.10"; }
+public static String version() { return "v1.1.12"; }
 
 // Metadata -------------------------------------------------------------------------------------------------------------------
 

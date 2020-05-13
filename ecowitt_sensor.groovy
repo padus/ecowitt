@@ -28,11 +28,14 @@ metadata {
     capability "IlluminanceMeasurement";
 
  // attribute "battery", "number";                             // 0-100%
+    attribute "batteryOrg", "number";                          // original/un-translated battery value returned by the sensor 
+
  // attribute "temperature", "number";                         // °F
+
  // attribute "humidity", "number";                            // 0-100%
+
  // attribute "pressure", "number";                            // inHg - relative pressure corrected to sea-level
     attribute "pressureAbs", "number";                         // inHg - absolute pressure
-    attribute "batteryOrg", "number";                          // original/un-translated battery value returned by the sensor 
 
     attribute "rainRate", "number";                            // in/h - rainfall rate 
     attribute "rainEvent", "number";                           // in - rainfall in the current event
@@ -43,20 +46,30 @@ metadata {
     attribute "rainYearly", "number";                          // in - rainfall in the current year
     attribute "rainTotal", "number";                           // in - rainfall total since sensor installation
 
-    attribute "pm25", "number";                                // µg/cm³ - current PM2.5 particle reading 
-    attribute "pm25_avg_24h", "number";                        // µg/cm³ - average PM2.5 particle reading over the last 24 hours
+    attribute "pm25", "number";                                // µg/m³ - PM2.5 particle reading - current
+    attribute "aqiIndex", "number";                            // AQI index (0-500)
+    attribute "aqiDanger", "string";                           // AQI danger  
+    attribute "aqiColor", "string";                            // AQI HTML color  
 
- // attribute "ultravioletIndex", "number";                    // 0-11+ UV Index
+    attribute "pm25_avg_24h", "number";                        // µg/m³ - PM2.5 particle reading - average over the last 24 hours
+    attribute "aqiIndex_avg_24h", "number";                    // AQI index (0-500) 
+    attribute "aqiDanger_avg_24h", "string";                   // AQI danger
+    attribute "aqiColor_avg_24h", "string";                    // AQI HTML color  
+    
+ // attribute "ultravioletIndex", "number";                    // UV index (0-11+) 
+    attribute "ultravioletDanger", "string";                   // UV Danger (0-2.9) Low, (3-5.9) Medium, (6-7.9) High, (8-10.9) Very High, (11+) Extreme
+    attribute "ultravioletColor", "string";                    // UV HTML color
+
  // attribute "illuminance", "number";                         // lux
+
     attribute "windDirection", "number";                       // 0-359°
+    attribute "windDirectionCompass", "string";                // NNE
     attribute "windDirection_avg_10m", "number";               // 0-359° - average over the last 10 minutes 
+    attribute "windDirectionCompass_avg_10m", "string";        // NNE - average over the last 10 minutes 
     attribute "windSpeed", "number";                           // mph
     attribute "windSpeed_avg_10m", "number";                   // mph - average over the last 10 minutes
     attribute "windGust", "number";                            // mph
     attribute "windGustMaxDaily", "number";                    // mph - max in the current day 
-
-    attribute "windDirectionStr", "string";                    // NNE
-    attribute "windDirectionStr_avg_10m", "string";            // NNE - average over the last 10 minutes 
     
     attribute "html", "string";                                // e.g. "<p>Temperature: ${temperature}°F</p><p>Humidity: ${humidity}%</p>"
   }
@@ -235,6 +248,82 @@ private void updateAttributeRain(String val, String attribute, Boolean hour = fa
 
 // ------------------------------------------------------------
 
+private void updateAttributePM25(String val, String attribute, String attributeIndex, String attributeDanger, String attributeColor) {
+  //
+  // Conversions based on https://en.wikipedia.org/wiki/Air_quality_index
+  //
+  BigDecimal pm25 = val.toBigDecimal();
+
+  BigDecimal aqi;
+  String danger;
+  String color;
+
+  if (pm25 < 12.1) {
+    aqi = 50;
+    danger = "Good";
+    color = "#3EA72D";
+  }
+  else if (pm25 < 35.5) {
+    aqi = 100;
+    danger = "Moderate";
+    color = "#FFF300";
+  }
+  else if (pm25 < 55.5) {
+    aqi = 150;
+    danger = "Unhealthy for Sensitive Groups";
+    color = "#F18B00";
+  }
+  else if (pm25 < 150.5) {
+    aqi = 200;
+    danger = "Unhealthy";
+    color = "#E53210";
+  }
+  else if (pm25 < 250.5) {
+    aqi = 300;
+    danger = "Very Unhealthy";
+    color = "#B567A4";
+  }
+  else if (pm25 < 350.5) {
+    aqi = 400;
+    danger = "Hazardous";
+    color = "#7E0023";
+  }
+  else {
+    aqi = 500;
+    danger = "Hazardous";
+    color = "#7E0023";
+  }
+
+  updateAttributeNumber(pm25, attribute, "µg/m³");
+  updateAttributeNumber(aqi, attributeIndex, "AQI");
+  updateAttributeString(danger, attributeDanger);
+  updateAttributeString(color, attributeColor);
+}
+
+// ------------------------------------------------------------
+
+private void updateAttributeUV(String val, String attribute, String attributeDanger, String attributeColor) {
+  //
+  // Conversions based on https://en.wikipedia.org/wiki/Ultraviolet_index
+  // 
+  BigDecimal index = val.toBigDecimal();
+
+  String danger;
+  String color;
+
+  if (index < 3)       { danger = "Low";       color = "#3EA72D"; }
+  else if (index < 6)  { danger = "Medium";    color = "#FFF300"; }
+  else if (index < 8)  { danger = "High";      color = "#F18B00"; }
+  else if (index < 11) { danger = "Very High"; color = "#E53210"; }
+  else                 { danger = "Extreme";   color = "#B567A4"; }
+    
+  updateAttributeNumber(index, attribute, "uvi");
+  updateAttributeString(danger, attributeDanger);
+  updateAttributeString(color, attributeColor);
+}
+
+// ------------------------------------------------------------
+
 private void updateAttributeWindSpeed(String val, String attribute) {
   
   BigDecimal speed = val.toBigDecimal();
@@ -251,34 +340,34 @@ private void updateAttributeWindSpeed(String val, String attribute) {
 
 // ------------------------------------------------------------
 
-private void updateAttributeWindDirection(String val, String attribute, String attributeStr) {
+private void updateAttributeWindDirection(String val, String attribute, String attributeCompass) {
   
-  BigDecimal dir = val.toBigDecimal();
+  BigDecimal direction = val.toBigDecimal();
 
   // BigDecimal doesn't support modulo operation so we roll up our own  
-  dir = dir - (dir.divideToIntegralValue(360) * 360);
+  direction = direction - (direction.divideToIntegralValue(360) * 360);
 
-  String dirStr;
+  String compass;
 
-  if (dir >= 348.75 || dir < 11.25) dirStr = "N";
-  else if (dir < 33.75)             dirStr = "NNE";
-  else if (dir < 56.25)             dirStr = "NE";
-  else if (dir < 78.75)             dirStr = "ENE";
-  else if (dir < 101.25)            dirStr = "E";
-  else if (dir < 123.75)            dirStr = "ESE";
-  else if (dir < 146.25)            dirStr = "SE";
-  else if (dir < 168.75)            dirStr = "SSE";
-  else if (dir < 191.25)            dirStr = "S";
-  else if (dir < 213.75)            dirStr = "SSW";
-  else if (dir < 236.25)            dirStr = "SW";
-  else if (dir < 258.75)            dirStr = "WSW";
-  else if (dir < 281.25)            dirStr = "W";
-  else if (dir < 303.75)            dirStr = "WNW";
-  else if (dir < 326.25)            dirStr = "NW";
-  else                              dirStr = "NNW";
+  if (direction >= 348.75 || direction < 11.25) compass = "N";
+  else if (direction < 33.75)                   compass = "NNE";
+  else if (direction < 56.25)                   compass = "NE";
+  else if (direction < 78.75)                   compass = "ENE";
+  else if (direction < 101.25)                  compass = "E";
+  else if (direction < 123.75)                  compass = "ESE";
+  else if (direction < 146.25)                  compass = "SE";
+  else if (direction < 168.75)                  compass = "SSE";
+  else if (direction < 191.25)                  compass = "S";
+  else if (direction < 213.75)                  compass = "SSW";
+  else if (direction < 236.25)                  compass = "SW";
+  else if (direction < 258.75)                  compass = "WSW";
+  else if (direction < 281.25)                  compass = "W";
+  else if (direction < 303.75)                  compass = "WNW";
+  else if (direction < 326.25)                  compass = "NW";
+  else                                          compass = "NNW";
   
-  updateAttributeNumber(dir, attribute, "°");
-  updateAttributeString(dirStr, attributeStr);
+  updateAttributeNumber(direction, attribute, "°");
+  updateAttributeString(compass, attributeCompass);
 }
 
 // ------------------------------------------------------------
@@ -370,15 +459,15 @@ void updateAttribute(String key, String val) {
     break;
 
   case ~/pm25_ch[1-4]/:
-    updateAttributeNumber(val.toBigDecimal(), "pm25", "µg/cm³");
+    updateAttributePM25(val, "pm25", "aqiIndex", "aqiDanger", "aqiColor");
     break;
 
   case ~/pm25_avg_24h_ch[1-4]/:
-    updateAttributeNumber(val.toBigDecimal(), "pm25_avg_24h", "µg/cm³");
+    updateAttributePM25(val, "pm25_avg_24h", "aqiIndex_avg_24h", "aqiDanger_avg_24h", "aqiColor_avg_24h");
     break;
 
   case "uv":
-    updateAttributeNumber(val.toBigDecimal(), "ultravioletIndex", "uvi");
+    updateAttributeUV(val, "ultravioletIndex", "ultravioletDanger", "ultravioletColor");
     break;
 
   case "solarradiation":
@@ -386,11 +475,11 @@ void updateAttribute(String key, String val) {
     break;
 
   case "winddir":
-    updateAttributeWindDirection(val, "windDirection", "windDirectionStr");
+    updateAttributeWindDirection(val, "windDirection", "windDirectionCompass");
     break;
 
   case "winddir_avg10m":
-    updateAttributeWindDirection(val, "windDirection_avg_10m", "windDirectionStr_avg_10m");
+    updateAttributeWindDirection(val, "windDirection_avg_10m", "windDirectionCompass_avg_10m");
     break;
 
   case "windspeedmph":
