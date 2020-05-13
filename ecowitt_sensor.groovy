@@ -89,7 +89,7 @@ private void logTrace(String str) { if (getParent().getLogLevel() > 3) log.trace
 
 // Attribute handling ----------------------------------------------------------------------------------------------------------
 
-/* Not used yet, but fully functional to display sensor preferences base on capabilities
+/* Not used yet, but fully functional to display sensor preferences based on capabilities
  
 private Boolean isAttributeClassSupported(Integer class) {
   //
@@ -119,6 +119,23 @@ private Boolean isAttributeClassSupported(Integer class) {
 }
 
 */
+
+// ------------------------------------------------------------
+
+private BigDecimal translateAttributeRange(BigDecimal val, BigDecimal inMin, BigDecimal inMax, BigDecimal outMin, BigDecimal outMax, Boolean returnInt = true) {
+  // Let make sure ranges are correct
+  assert (inMin <= inMax);
+  assert (outMin <= outMax);
+
+  // Refrain input value
+  if (val < inMin) val = inMin;
+  else if (val > inMax) val = inMax;
+
+  val = ((val - inMin) * (outMax - outMin)) / (inMax - inMin);
+  if (returnInt) val = val.toBigInteger();
+
+  return (val);
+}
 
 // ------------------------------------------------------------
 
@@ -168,29 +185,25 @@ private void updateAttributeBattery(String val, String attribute, String attribu
   //       0) other sensors - 0 (full) or 1 (empty)
   //
   BigDecimal original = val.toBigDecimal();
-  BigDecimal percent = original;
+  BigDecimal percent;
   String unitOrg;
 
   switch (type) {
   case 1:
     // Change range from (1.40V - 1.65V) to (0% - 100%)
-    percent = percent * 100;
-    if (percent < 140) percent = 140;
-    else if (percent > 165) percent = 165;
-    percent = ((percent - 140) * (100 - 0)) / (165 - 140);
+    percent = translateAttributeRange(original, 1.40, 1.65, 0, 100);
     unitOrg = "V";
     break;
 
   case 2:
     // Change range from (0 - 5) to (0% - 100%)
-    percent = percent * 20;
-    if (percent > 100) percent = 100;
+    percent = translateAttributeRange(original, 0, 5, 0, 100);
     unitOrg = "level";
     break;
 
   default:
     // Change range from (0  or 1) to (100% or 0%)
-    percent = (percent == 0)? 100: 0;
+    percent = (original == 0)? 100: 0;
     unitOrg = "!bool";
   }
 
@@ -259,37 +272,37 @@ private void updateAttributePM25(String val, String attribute, String attributeI
   String color;
 
   if (pm25 < 12.1) {
-    aqi = 50;
+    aqi = translateAttributeRange(pm25, 0, 12, 0, 50);
     danger = "Good";
     color = "#3EA72D";
   }
   else if (pm25 < 35.5) {
-    aqi = 100;
+    aqi = translateAttributeRange(pm25, 12.1, 35.4, 51, 100);
     danger = "Moderate";
     color = "#FFF300";
   }
   else if (pm25 < 55.5) {
-    aqi = 150;
+    aqi = translateAttributeRange(pm25, 35.5, 55.4, 101, 150);
     danger = "Unhealthy for Sensitive Groups";
     color = "#F18B00";
   }
   else if (pm25 < 150.5) {
-    aqi = 200;
+    aqi = translateAttributeRange(pm25, 55.5, 150.4, 151, 200);
     danger = "Unhealthy";
     color = "#E53210";
   }
   else if (pm25 < 250.5) {
-    aqi = 300;
+    aqi = translateAttributeRange(pm25, 150.5, 250.4, 201, 300);
     danger = "Very Unhealthy";
     color = "#B567A4";
   }
   else if (pm25 < 350.5) {
-    aqi = 400;
+    aqi = translateAttributeRange(pm25, 250.5, 350.4, 301, 400);
     danger = "Hazardous";
     color = "#7E0023";
   }
   else {
-    aqi = 500;
+    aqi = translateAttributeRange(pm25, 350.5, 500.4, 401, 500);
     danger = "Hazardous";
     color = "#7E0023";
   }
