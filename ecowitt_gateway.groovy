@@ -41,7 +41,7 @@
  *            - Code optimization
 */
 
-public static String version() { return "v1.2.17"; }
+public static String version() { return "v1.2.18"; }
 
 // Metadata -------------------------------------------------------------------------------------------------------------------
 
@@ -374,8 +374,11 @@ private Boolean sensorUpdate(String key, String value, Integer id = null, Intege
       String dni = sensorDni(id, channel);
 
       com.hubitat.app.ChildDeviceWrapper sensor = getChildDevice(dni);
-      if (sensor == null) {
+      if (sensor == null && value) {
+        //
         // Sensor doesn't exist: we need to create it
+        // val != null ensures that it's not an injected (fake) key which will create a ghost child sensor
+        //
         sensor = addChildDevice("Ecowitt RF Sensor", dni, [name: sensorName(id, channel), isComponent: true]);
         
         state.remove("Sensor Error");
@@ -686,6 +689,7 @@ void parse(String msg) {
     }
 
     // Inject special keys to notify the children to update calculated values such as: dewpoint, heatindex, windchill etc.)
+    // value needs to be null to ensures that it's not detected as real sensor data for which a (ghost) child will be created
     data["inferdewpoint"] = null;
     data["inferheatindex"] = null;
     data["inferwindchill"] = null;
