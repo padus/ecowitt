@@ -1,9 +1,16 @@
 TODO
 ====
 
-- Reset all attribute/states on updated()  *** not yet possible ***
-- Parse html template and make sure only valid attributes are use - prevent code execution
-- Localization
-- Calculated wind chill, dew point and heat index 
-- Detection and creation of PWS
+Common
+------
 
+- Localization
+
+Parent
+------
+
+
+Child
+-----
+
+- Pass time to children to easily detect if sensors go dead

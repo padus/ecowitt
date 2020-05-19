@@ -2,9 +2,9 @@
   "packageName": "Ecowitt WiFi Gateway",
   "minimumHEVersion": "2.1.9",
   "author": "Mirco Caramori",
-  "version": "1.1.12",
-  "dateReleased": "2020-05-12",
-  "releaseNotes": "added windDirectionCompass, ultravioletDanger, ultravioletColor, aqiIndex, aqiDanger and aqiColor attributes",
+  "version": "1.2.17",
+  "dateReleased": "2020-05-14",
+  "releaseNotes": "Refactoring",
   "documentationLink": "https://github.com/mircolino/ecowitt/blob/master/readme.md",
   "communityLink": "https://community.hubitat.com/t/release-ecowitt-gw1000-wi-fi-gateway/38983",
   "drivers": [
