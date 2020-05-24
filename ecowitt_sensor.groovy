@@ -24,8 +24,8 @@ metadata {
     capability "Temperature Measurement";
     capability "Relative Humidity Measurement";
     capability "Pressure Measurement";
-    capability "UltravioletIndex";
-    capability "IlluminanceMeasurement";
+    capability "Ultraviolet Index";
+    capability "Illuminance Measurement";
 
     // command "test1";
     // command "test2";
@@ -115,7 +115,7 @@ private BigDecimal convertRange(BigDecimal val, BigDecimal inMin, BigDecimal inM
   if (val < inMin) val = inMin;
   else if (val > inMax) val = inMax;
 
-  val = ((val - inMin) * (outMax - outMin)) / (inMax - inMin);
+  val = ((val - inMin) * (outMax - outMin)) / (inMax - inMin) + outMin;
   if (returnInt) {
     // If integer is required we use the Float round because the BigDecimal one is not supported/not working on Hubitat
     val = val.toFloat().round().toBigDecimal();

@@ -39,9 +39,11 @@
  *            - Time of data received converted from UTC to hubitat default locale format
  *            - Added error handling using state variables
  *            - Code optimization
+ * 2020.05.22 - Added orphaned sensor garbage collection using "Resync Sensors" commands
+ * 2020.05.23 - Fixed a bug in the PM2.5 to AQI conversion
 */
 
-public static String version() { return "v1.2.18"; }
+public static String version() { return "v1.3.25"; }
 
 // Metadata -------------------------------------------------------------------------------------------------------------------
 
@@ -51,6 +53,8 @@ metadata {
 
     // command "test1";
     // command "test2";
+
+    command "resyncSensors";
 
     // Gateway info
     attribute "driver", "string";                              // Driver version (new version notification)
@@ -282,7 +286,7 @@ private void logData(Map data) {
 
 // Sensor handling ------------------------------------------------------------------------------------------------------------
 
-String sensorMap(Integer id) {
+String sensorUnmap(Integer id) {
 
   assert (id >= 0 && id <= 9);
 
@@ -344,7 +348,7 @@ private String sensorName(Integer id, Integer channel) {
                   "WH57": "Lightning Detection Sensor",
                   "WH80": "Wind Solar Sensor"];
 
-  String model = sensorId."${sensorMap(id)}";
+  String model = sensorId."${sensorUnmap(id)}";
 
   return (channel? "${model} ${channel}": model);
 }
@@ -353,9 +357,53 @@ private String sensorName(Integer id, Integer channel) {
 
 private String sensorDni(Integer id, Integer channel) {
 
-  String model = sensorMap(id);
+  String model = sensorUnmap(id);
 
   return (channel? "${model}_CH${channel}": model);
+}
+
+// ------------------------------------------------------------
+
+private void sensorGarbageCollect() {
+  //
+  // Match the new (soon to be created) sensor list with the existing one
+  // and delete sensors in the existing list that are not in the new one
+  //
+  ArrayList<String> sensorList = [];
+
+  String value = device.getDataValue("sensorList");
+  if (value) sensorList = value.tokenize("[, ]");
+
+  List<com.hubitat.app.ChildDeviceWrapper> list = getChildDevices();
+  if (list) list.each { 
+    String dni = it.getDeviceNetworkId();
+    if (sensorList.contains(dni) == false) deleteChildDevice(dni);
+  }
+}
+
+// ------------------------------------------------------------
+
+private Boolean sensorEnumerate(String key, String value, Integer id = null, Integer channel = null) {
+  //
+  // Enumerate sensors needed for the current data
+  //
+  if (id && value) {
+    String dni = sensorDni(id, channel);
+
+    ArrayList<String> sensorList = [];
+
+    value = device.getDataValue("sensorList");
+    if (value) sensorList = value.tokenize("[, ]");
+
+    if (sensorList.contains(dni) == false) {
+      sensorList.add(dni);
+
+      // Save the list in the state variables
+      device.updateDataValue("sensorList", sensorList.toString());
+    }
+  }
+
+  return (true);
 }
 
 // ------------------------------------------------------------
@@ -420,7 +468,7 @@ private Boolean attributeUpdateString(String val, String attribute) {
 
 // ------------------------------------------------------------
 
-private Boolean attributeUpdate(Map data) {
+private Boolean attributeUpdate(Map data, Closure sensor) {
   //
   // Dispatch parent/childs attribute changes to hub
   //
@@ -438,6 +486,8 @@ private Boolean attributeUpdate(Map data) {
 
     case "stationtype":
       // Eg: firmware = GW1000B_V1.5.7
+      Map ver = versionExtract(it.value);
+      if (ver) it.value = ver.desc;
       updated = attributeUpdateString(it.value, "firmware");
       break;
 
@@ -464,7 +514,7 @@ private Boolean attributeUpdate(Map data) {
     case "humidityin":
     case "baromrelin":
     case "baromabsin":
-      updated = sensorUpdate(it.key, it.value, 1);
+      updated = sensor(it.key, it.value, 1);
       break;
 
     //
@@ -475,7 +525,7 @@ private Boolean attributeUpdate(Map data) {
     case "humidity":
     case "inferdewpoint":
     case "inferheatindex":
-      updated = sensorUpdate(it.key, it.value, 2);
+      updated = sensor(it.key, it.value, 2);
       break;
 
     //
@@ -484,7 +534,7 @@ private Boolean attributeUpdate(Map data) {
     case ~/batt([1-8])/:
     case ~/temp([1-8])f/:
     case ~/humidity([1-8])/:
-      updated = sensorUpdate(it.key, it.value, 3, java.util.regex.Matcher.lastMatcher.group(1).toInteger());
+      updated = sensor(it.key, it.value, 3, java.util.regex.Matcher.lastMatcher.group(1).toInteger());
       break;
 
     //
@@ -499,7 +549,7 @@ private Boolean attributeUpdate(Map data) {
     case "monthlyrainin":
     case "yearlyrainin":
     case "totalrainin":
-      updated = sensorUpdate(it.key, it.value, 4);
+      updated = sensor(it.key, it.value, 4);
       break;
 
     //
@@ -508,7 +558,7 @@ private Boolean attributeUpdate(Map data) {
     case ~/pm25batt([1-4])/:
     case ~/pm25_ch([1-4])/:
     case ~/pm25_avg_24h_ch([1-4])/:
-      updated = sensorUpdate(it.key, it.value, 5, java.util.regex.Matcher.lastMatcher.group(1).toInteger());
+      updated = sensor(it.key, it.value, 5, java.util.regex.Matcher.lastMatcher.group(1).toInteger());
       break;
 
     //
@@ -516,21 +566,21 @@ private Boolean attributeUpdate(Map data) {
     //
     case ~/soilbatt([1-8])/:
     case ~/soilmoisture([1-8])/:
-      updated = sensorUpdate(it.key, it.value, 6, java.util.regex.Matcher.lastMatcher.group(1).toInteger());
+      updated = sensor(it.key, it.value, 6, java.util.regex.Matcher.lastMatcher.group(1).toInteger());
       break;
 
     //
     // Multi-channel Water Leak Sensor (WH55)
     //
     case ~/whatdoiknow$([1-4])/:
-      updated = sensorUpdate(it.key, it.value, 7, java.util.regex.Matcher.lastMatcher.group(1).toInteger());
+      updated = sensor(it.key, it.value, 7, java.util.regex.Matcher.lastMatcher.group(1).toInteger());
       break;
 
     //
     // Lightning Detection Sensor (WH57)
     //
     case "whatdoiknow":
-      updated = sensorUpdate(it.key, it.value, 8);
+      updated = sensor(it.key, it.value, 8);
       break;
 
     //
@@ -546,12 +596,12 @@ private Boolean attributeUpdate(Map data) {
     case "inferwindchill":
     case "uv":
     case "solarradiation":
-      updated = sensorUpdate(it.key, it.value, 9);
+      updated = sensor(it.key, it.value, 9);
       break;
 
     case "htmltemplate":
       // Special key to notify all children to update the HTML template 
-      updated = sensorUpdate(it.key, it.value);
+      updated = sensor(it.key, it.value);
       break;
 
     default:
@@ -596,6 +646,20 @@ void test2() {
 } 
 
 */
+
+// ------------------------------------------------------------
+
+void resyncSensors() {
+  try {
+    logDebug("resyncSensors()");
+
+    // This will trigger a sensor remapping and cleanup
+    device.updateDataValue("sensorList", null);
+  }
+  catch (Exception e) {
+    logError("Exception in resyncSensors(): ${e}");
+  }
+}
 
 // Driver lifecycle -----------------------------------------------------------------------------------------------------------
 
@@ -698,8 +762,23 @@ void parse(String msg) {
     data["htmltemplate"] = null;
 
     logData(data);
-    if (device.getDataValue("sensorMap") == null) sensorMapping(data);
-    attributeUpdate(data);
+
+    if (device.getDataValue("sensorList") == null) {
+      // We execute this block only the first time we receive data from the wifi gateway
+      // or when the user presses the "Resynchronize Sensors" command
+
+      // (Re)create sensor map
+      sensorMapping(data);
+
+      // (Re)create sensor list
+      attributeUpdate(data, this.&sensorEnumerate);
+
+      // Match the new (soon to be created) sensor list with the existing one
+      // and delete sensors in the existing list that are not in the new one
+      sensorGarbageCollect();
+    }
+
+    attributeUpdate(data, this.&sensorUpdate);
   }
   catch (Exception e) {
     logError("Exception in parse(): ${e}");

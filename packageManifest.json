@@ -2,9 +2,9 @@
   "packageName": "Ecowitt WiFi Gateway",
   "minimumHEVersion": "2.1.9",
   "author": "Mirco Caramori",
-  "version": "1.2.18",
-  "dateReleased": "2020-05-18",
-  "releaseNotes": "Refactoring",
+  "version": "1.3.25",
+  "dateReleased": "2020-05-23",
+  "releaseNotes": "Added orphaned sensor garbage collection",
   "documentationLink": "https://github.com/mircolino/ecowitt/blob/master/readme.md",
   "communityLink": "https://community.hubitat.com/t/release-ecowitt-gw1000-wi-fi-gateway/38983",
   "drivers": [
