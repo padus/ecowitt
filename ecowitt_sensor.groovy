@@ -27,9 +27,6 @@ metadata {
     capability "Ultraviolet Index";
     capability "Illuminance Measurement";
 
-    // command "test1";
-    // command "test2";
-
  // attribute "battery", "number";                             // 0-100%
     attribute "batteryOrg", "number";                          // original/un-translated battery value returned by the sensor 
 
@@ -91,7 +88,7 @@ metadata {
 }
 
 /*
- * State variables used by the driver
+ * State variables used by the driver:
  *
  * "HTML Template Error"                                        // User error notification
  */
@@ -805,42 +802,6 @@ Boolean attributeUpdate(String key, String val) {
   return (updated);
 }
 
-// Commands -------------------------------------------------------------------------------------------------------------------
-
-/*
-
-void test1() {
-  try {
-    logDebug("test1()");
-
-    //-------------------------
-
-
-    //-------------------------
-  }
-  catch (Exception e) {
-    logError("Exception in test1(): ${e}");
-  }
-} 
-
-// ------------------------------------------------------------
-
-void test2() {
-  try {
-    logDebug("test2()");
-
-    //-------------------------
-
-
-    //-------------------------
-  }
-  catch (Exception e) {
-    logError("Exception in test2(): ${e}");
-  }
-} 
-
-*/
-
 // Driver lifecycle -----------------------------------------------------------------------------------------------------------
 
 void installed() {
@@ -892,7 +853,7 @@ void parse(String msg) {
   }
 }
 
-// Recycle --------------------------------------------------------------------------------------------------------------------
+// Recycle bin ----------------------------------------------------------------------------------------------------------------
 
 /*
 

@@ -41,18 +41,16 @@
  *            - Code optimization
  * 2020.05.22 - Added orphaned sensor garbage collection using "Resync Sensors" commands
  * 2020.05.23 - Fixed a bug in the PM2.5 to AQI conversion
+ * 2020.05.24 - Fixed a possible command() and parse() race condition
 */
 
-public static String version() { return "v1.3.25"; }
+public static String version() { return "v1.3.26"; }
 
 // Metadata -------------------------------------------------------------------------------------------------------------------
 
 metadata {
   definition(name: "Ecowitt WiFi Gateway", namespace: "mircolino", author: "Mirco Caramori") {
     capability "Sensor";
-
-    // command "test1";
-    // command "test2";
 
     command "resyncSensors";
 
@@ -76,10 +74,18 @@ metadata {
 }
 
 /*
- * State variables used by the driver
+ * State variables used by the driver:
  *
  * "MAC Error"                                                 // MAC address error notification
  * "Sensor Error"                                              // Child Sensor error notification
+ */
+
+/*
+ * Data variables used by the driver:
+ *
+ * "sensorResync"                                              // User command triggered condition to cleanup/resynchronize the sensors 
+ * "sensorMap"                                                 // Map of whether sensors have been combined or not into a PWS
+ * "sensorList"                                                // List of children DNIs
  */
  
  // Versioning -----------------------------------------------------------------------------------------------------------------
@@ -288,7 +294,7 @@ private void logData(Map data) {
 
 String sensorUnmap(Integer id) {
 
-  assert (id >= 0 && id <= 9);
+  // assert (id >= 0 && id <= 9);
 
   //                      0     1     2     3     4     5     6     7     8     9    
   // String sensorMap = "[WH69, WH25, WH26, WH31, WH40, WH41, WH51, WH55, WH57, WH80]";
@@ -613,48 +619,14 @@ private Boolean attributeUpdate(Map data, Closure sensor) {
 
 // Commands -------------------------------------------------------------------------------------------------------------------
 
-/*
-
-void test1() {
-  try {
-    logDebug("test1()");
-
-    //-------------------------
-
-
-    //-------------------------
-  }
-  catch (Exception e) {
-    logError("Exception in test1(): ${e}");
-  }
-} 
-
-// ------------------------------------------------------------
-
-void test2() {
-  try {
-    logDebug("test2()");
-
-    //-------------------------
-
-
-    //-------------------------
-  }
-  catch (Exception e) {
-    logError("Exception in test2(): ${e}");
-  }
-} 
-
-*/
-
-// ------------------------------------------------------------
-
 void resyncSensors() {
+  //
+  // This will trigger a sensor remapping and cleanup
+  //
   try {
     logDebug("resyncSensors()");
 
-    // This will trigger a sensor remapping and cleanup
-    device.updateDataValue("sensorList", null);
+    device.updateDataValue("sensorResync", "true");
   }
   catch (Exception e) {
     logError("Exception in resyncSensors(): ${e}");
@@ -669,6 +641,9 @@ void installed() {
   //
   try {
     logDebug("installed()");
+
+    // Force the first sensor resync
+    resyncSensors();
   }
   catch (Exception e) {
     logError("Exception in installed(): ${e}");
@@ -763,14 +738,18 @@ void parse(String msg) {
 
     logData(data);
 
-    if (device.getDataValue("sensorList") == null) {
+    if (device.getDataValue("sensorResync")) {
       // We execute this block only the first time we receive data from the wifi gateway
       // or when the user presses the "Resynchronize Sensors" command
+      device.updateDataValue("sensorResync", null);
+      device.data.remove("sensorResync");
 
       // (Re)create sensor map
+      device.updateDataValue("sensorMap", null);
       sensorMapping(data);
 
       // (Re)create sensor list
+      device.updateDataValue("sensorList", null);
       attributeUpdate(data, this.&sensorEnumerate);
 
       // Match the new (soon to be created) sensor list with the existing one
@@ -785,86 +764,21 @@ void parse(String msg) {
   }
 }
 
-// Recycle --------------------------------------------------------------------------------------------------------------------
+// Recycle bin ----------------------------------------------------------------------------------------------------------------
 
 /*
 
-private void attributeInvalidate() {
-  //
-  // Invalidate (n/a) attributes only if not-null (we don't create them if they are not already there)
-  //
-  String attrib;
-
-  List<com.hubitat.hub.domain.Attribute> device.getSupportedAttributes().each {
-    attrib = it.toString();
-    if (device.currentValue(attrib) != null) attributeUpdateString("n/a", attrib);
-  }
-
-  // Invalidate all children attributes as well
-  sensorUpdate("attribinvalidate", null);
-}
-
-// ------------------------------------------------------------
-
-private void sensorDelete() {
-  //
-  // Delete 0 or more child devices
-  //
-  try {
-
-
-
-    //
-    // Done deleting sensors
-    // Let's clear the list of sensors in the device global data
-    //
-    String[] sensor = new String[30];
-    sensor.each { it = null; }
-
-    device.updateDataValue("sensorList", "${sensor}");
-  }
-  catch (Exception e) {
-    logError("Exception in sensorDelete(): ${e}");
-  }
-}
-
-// ------------------------------------------------------------
-
-void sensorDeleted(String dni) {
-  //
-  // Called by the children when they are being deleted. Either manually or programmatically.
-  //
-
-  // <TBD>
+synchronized(this) {
 
 }
 
-// ------------------------------------------------------------
 
-private String[] sensorGet() {
-  //
-  // Get list of sensors from device global data
-  // Return 'null' if empty
-  //
-  try {
-    Boolean empty = true;
+@Field static java.util.concurrent.Semaphore mutex = new java.util.concurrent.Semaphore(1)
 
-    String str = device.getDataValue("sensorList");
+if (!mutex.tryAcquire())
 
-    // Remove "[" and "]" and split while checking if the list is empty
-    String[] sensor = str.substring(1, str.length() - 1).split(/\s*[,]\s asterisk /).each { dni ->
-      if (dni == "null") dni = null;
-      else empty = false;
-    }
+mutex.release()
 
-    return (empty? null: sensor);
-  }
-  catch (Exception e) {
-    logError("Exception in sensorGet(): ${e}");
-  }
-
-  return (null);
-}
 
 */
 
