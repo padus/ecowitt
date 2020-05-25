@@ -5,12 +5,12 @@
 
 @font-face {
   font-family: "Ecowitt Icons";
-  src: url("https://github.com/mircolino/ecowitt/raw/master/icons/ecowitt.ttf");
+  src: url("https://github.com/mircolino/ecowitt/raw/master/icons/ecowitt.ttf") format("truetype");
   font-weight: normal;
   font-style: normal;
 }
 
-.ewi {
+[class*="ewi-"]:before {
   display: inline-block;
   font-family: "Ecowitt Icons";
   font-style: normal;
@@ -21,57 +21,132 @@
 }
 
 .ewi-air:before {
-  content: "\0041"; /* A */
+  content: "\0041";
 }
 
 .ewi-chill:before {
-  content: "\0043"; /* C */
+  content: "\0043";
 }
 
 .ewi-dew:before {
-  content: "\0044"; /* D */
+  content: "\0044";
 }
 
 .ewi-heat:before {
-  content: "\0046"; /* F */
+  content: "\0046";
 }
 
 .ewi-humidity:before {
-  content: "\0048"; /* H */
+  content: "\0048";
 }
 
 .ewi-lightning:before {
-  content: "\004c"; /* L */
+  content: "\004c";
 }
 
 .ewi-pressure:before {
-  content: "\0050"; /* P */
+  content: "\0050";
 }
 
 .ewi-rain:before {
-  content: "\0052"; /* R */
+  content: "\0052";
 }
 
 .ewi-light:before {
-  content: "\0053"; /* S */
+  content: "\0053";
 }
 
 .ewi-temperature:before {
-  content: "\0054"; /* T */
+  content: "\0054";
 }
 
 .ewi-UV:before {
-  content: "\0055"; /* U */
+  content: "\0055";
 }
 
 .ewi-water:before {
-  content: "\0057"; /* W */
-}
-
-.ewi-winddir:before {
-  content: "\0058"; /* X */
+  content: "\0057";
 }
 
 .ewi-windspeed:before {
-  content: "\0059"; /* Y */
+  content: "\0058";
+}
+
+.ewi-windN:before {
+  content: "\0059";
+}
+
+.ewi-windNNE:before {
+  content: "\0059";
+  transform: rotate(22.5deg);
+}
+
+.ewi-windNE:before {
+  content: "\0059";
+  transform: rotate(45deg);
+}
+
+.ewi-windENE:before {
+  transform: rotate(67.5deg);
+  content: "\0059";
+}
+
+.ewi-windE:before {
+  transform: rotate(90deg);
+  content: "\0059";
+}
+
+.ewi-windESE:before {
+  transform: rotate(112.5deg);
+  content: "\0059";
+}
+
+.ewi-windSE:before {
+  transform: rotate(135deg);
+  content: "\0059";
+}
+
+.ewi-windSSE:before {
+  transform: rotate(157.5deg);
+  content: "\0059";
+}
+
+.ewi-windS:before {
+  transform: rotate(180deg);
+  content: "\0059";
+}
+
+.ewi-windSSW:before {
+  transform: rotate(-157.5deg);
+  content: "\0059";
+}
+
+.ewi-windSW:before {
+  transform: rotate(-135deg);
+  content: "\0059";
+}
+
+.ewi-windWSW:before {
+  transform: rotate(-112.5deg);
+  content: "\0059";
+}
+
+.ewi-windW:before {
+  transform: rotate(-90deg);
+  content: "\0059";
+}
+
+.ewi-windWNW:before {
+  transform: rotate(-67.5deg);
+  content: "\0059";
+}
+
+.ewi-windNW:before {
+  transform: rotate(-45deg);
+  content: "\0059";
+}
+
+.ewi-windNNW:before {
+  transform: rotate(-22.5deg);
+  content: "\0059";
 }
