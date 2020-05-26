@@ -84,6 +84,48 @@ Tips:
 2. For each specific sensor template, ONLY use the attributes you see displayed on the upper-right corner of the sensor preferences.
 3. For obvious reasons, in a template, NEVER use the expression **\$\{html}**. Or your hub will enter a wormhole and resurface in a parallel universe made only of antimatter ;-) 
 
+#### <a name="icons"></a> HTML Template Icons:
+
+Using a small true-type font with only specific weather icons, it is possible to add dynamic icons to the Ecowitt dashboard tiles.
+
+For example, using the driver **windCompass** attribute, the following is the syntax to obtain a 360° wind icon which always points to the current wind direction as reported by the Ecowitt gateway:
+
+  ```
+  <i class="ewi-wind${windCompass}"></i>
+  ```
+
+These icons are in reality text, so of course all the standard CSS font styling, shuch as size, color etc. applies as well.
+
+[This is a complete list](https://mircolino.github.io/ecowitt/ecowitt.html) of all the icons available. Just access the page source html to see all the defined icon classes, and how to use them.
+
+<img src="https://i.imgur.com/2gAbAbM.png" width="350" height="360">
+
+To start using HTML templates including weather icons, simple add the following line to the beginning of your dashboard CSS:
+
+  ```
+  @import url("https://mircolino.github.io/ecowitt/ecowitt.css");
+  ```
+
+That's all. Now an Ecowitt Indoor Weather Sensor with the following template:
+
+  ```
+  <div class="ewv"><i class="ewi-temperature"></i> ${temperature} <span class="ewu">°F</span><br><i class="ewi-humidity"></i> ${humidity} <span class="ewu">%</span><br><i class="ewi-pressure"></i> ${pressure} <span class="ewu">inHg</span></div>
+  ```
+and an Ecowitt Air Quality Sensor with the following template:
+
+  ```
+  <div class="ewv"><i class="ewi-air" style="color:#${aqiColor}"></i> ${aqiDanger}<br>PM2.5: ${pm25} <span class="ewu">µg/m³</span><br>AQI: ${aqi}</div>
+  ```
+will produce the following tiles:
+
+<img src="https://i.imgur.com/Lf73tCk.png" width="320" height="130">
+
+
+The only hard limitation imposed by the hubitat driver interface is the template lenght which ***cannot be longer than 256 characters***.
+A template longer than that will trigger a "Server Error 500" in hubitat. 
+
+
+
 ***
 
 ### Disclaimer
