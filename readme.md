@@ -98,7 +98,7 @@ These icons are in reality text, so of course all the standard CSS font styling,
 
 [This is a complete list](https://mircolino.github.io/ecowitt/ecowitt.html) of all the icons available. Just access the page source html to see all the defined icon classes, and how to use them.
 
-<img src="https://i.imgur.com/2gAbAbM.png" width="500" height="500">
+<img src="https://i.imgur.com/RRlwsHw.png" width="430" height="510">
 
 To start using HTML templates including weather icons, simply add the following line to the beginning of your dashboard CSS:
 
