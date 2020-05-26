@@ -150,3 +150,19 @@
   transform: rotate(-22.5deg);
   content: "\0059";
 }
+
+/*
+ * Ecowitt value class
+ */
+
+.ewv {
+  font-size: 18px;
+}
+
+/*
+ * Ecowitt unit class
+ */
+
+.ewu {
+  font-size: 12px;
+}

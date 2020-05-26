@@ -93,6 +93,14 @@ metadata {
  * "HTML Template Error"                                        // User error notification
  */
 
+/* 
+ *  Add to dashboard CSS:    @import url("https://mircolino.github.io/ecowitt/ecowitt.css");
+ *
+ *  Indoor Weather Sensor:   <div class="ewv"><i class="ewi-temperature"></i> ${temperature} <span class="ewu">°F</span><br><i class="ewi-humidity"></i> ${humidity} <span class="ewu">%</span><br><i class="ewi-pressure"></i> ${pressure} <span class="ewu">inHg</span></div>
+ *  Weather Sensor:          <div class="ewv"><i class="ewi-temperature"></i> ${temperature} <span class="ewu">°F</span><br><i class="ewi-humidity"></i> ${humidity} <span class="ewu">%</span></div>
+ *  Air Quality Sensor:      <div class="ewv"><i class="ewi-air" style="color:#${aqiColor}"></i> ${aqiDanger}<br>PM2.5: ${pm25} <span class="ewu">µg/m³</span><br>AQI: ${aqi}</div> 
+ */
+
 // Logging --------------------------------------------------------------------------------------------------------------------
 
 private void logError(String str) { log.error(str); }
@@ -609,12 +617,18 @@ private Boolean attributeUpdateHtml(String val, String attribHtml, Boolean check
 
   String error = "HTML Template Error";
 
-  if (state."${error}" == null && val) {
+  if (state."${error}" == null) {
 
     String pattern = /\$\{([^}]+)\}/;
 
     if (checkSyntax) {
       // Check template syntax: between ${} we only allow valid child attributes
+
+      if (!val) {
+        // Template is null/empty: we invalidate it
+        attributeInvalidate(attribHtml);
+        return (updated);
+      }
       
       // Build a list of valid attributes names excluding the null ones and ourself (for obvious reasons)
       List<String> attribDrv = attributeEnumerate();
@@ -640,7 +654,7 @@ private Boolean attributeUpdateHtml(String val, String attribHtml, Boolean check
       else updated = attributeUpdateString("pending", attribHtml);
       // else updated = true;
     }
-    else {
+    else if (val) {
       // Expand template  
       // Coerce Object -> String
       val = val.replaceAll(~pattern) { java.util.ArrayList match -> (device.currentValue(match[1].trim()) as String); }

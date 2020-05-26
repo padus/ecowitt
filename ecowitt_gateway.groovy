@@ -42,9 +42,10 @@
  * 2020.05.22 - Added orphaned sensor garbage collection using "Resync Sensors" commands
  * 2020.05.23 - Fixed a bug in the PM2.5 to AQI conversion
  * 2020.05.24 - Fixed a possible command() and parse() race condition
+ * 2020.05.26 - Added icons support in the HTML template
 */
 
-public static String version() { return "v1.3.26"; }
+public static String version() { return "v1.3.27"; }
 
 // Metadata -------------------------------------------------------------------------------------------------------------------
 
