@@ -100,7 +100,7 @@ These icons are in reality text, so of course all the standard CSS font styling,
 
 <img src="https://i.imgur.com/2gAbAbM.png" width="500" height="500">
 
-To start using HTML templates including weather icons, simple add the following line to the beginning of your dashboard CSS:
+To start using HTML templates including weather icons, simply add the following line to the beginning of your dashboard CSS:
 
   ```
   @import url("https://mircolino.github.io/ecowitt/ecowitt.css");
