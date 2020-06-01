@@ -14,55 +14,55 @@
 
 1.  Make sure all your sensors are properly registered:  
 
-    <img src="https://github.com/mircolino/ecowitt/raw/master/images/01.png" width="300" height="600">  
+    <img src="https://github.com/mircolino/ecowitt/raw/master/images/D01.png" width="300" height="600">  
 
 2.  <span>Setup a local/customized weather service as follow (replacing hostname/IP with your own):  
 
-    <img src="https://github.com/mircolino/ecowitt/raw/master/images/02.png" width="300" height="600">
+    <img src="https://github.com/mircolino/ecowitt/raw/master/images/D02.png" width="300" height="600">
 
 #### Hubitat: 
 
 1.  If the Ecowitt Gateway has been setup correctly, every 5 minutes, you should see the following warning in the Hubitat system log:
 
-    <img src="https://github.com/mircolino/ecowitt/raw/master/images/03.png">
+    <img src="https://github.com/mircolino/ecowitt/raw/master/images/D03.png">
     
     That's because this driver has not been installed yet and the hub has nowhere to forward the gateway data to.
     
 2.  In "Drivers Code" add the Ecowitt [WiFi Gateway](https://raw.githubusercontent.com/mircolino/ecowitt/master/ecowitt_gateway.groovy) and [RF Sensor](https://raw.githubusercontent.com/mircolino/ecowitt/master/ecowitt_sensor.groovy) drivers:
 
-    <img src="https://github.com/mircolino/ecowitt/raw/master/images/04.png">
+    <img src="https://github.com/mircolino/ecowitt/raw/master/images/D04.png">
     
 3.  In "Devices" add a new "Ecowitt WiFi Gateway" virtual device and click "Save Device":
 
-    <img src="https://github.com/mircolino/ecowitt/raw/master/images/05.png">
+    <img src="https://github.com/mircolino/ecowitt/raw/master/images/D05.png">
 
 4.  Enter the Gateway MAC address (in any legal form) and click "Save Preferences":
 
-    <img src="https://github.com/mircolino/ecowitt/raw/master/images/06.png">
+    <img src="https://github.com/mircolino/ecowitt/raw/master/images/D06.png">
 
 5.  That should be all.
     The first time Hubitat receives data from the Gateway, the driver will automatically create child devices for all the present (and supported) sensors (depending on the frequency you setup your Gateway to send data, this may take a few minutes):
     
-    <img src="https://github.com/mircolino/ecowitt/raw/master/images/07.png">
+    <img src="https://github.com/mircolino/ecowitt/raw/master/images/D07.png">
 
 ### <a name="templates"></a> HTML Templates
 
 HTML templates are a powerful way to gang-up multiple Ecowitt sensor attributes in a single Hubitat dashboard tile with endless customization.
 The following is a basic example of what you can achieve with a simple HTML template:
 
-<img src="https://github.com/mircolino/ecowitt/raw/master/images/08.png" width="400" height="110">
+<img src="https://github.com/mircolino/ecowitt/raw/master/images/D08.png" width="400" height="110">
 
 To use them:
 
 1.  In "Hubitat -> Devices" select an Ecowitt sensor (not the gateway) you'd like to "templetize":
     
-    <img src="https://github.com/mircolino/ecowitt/raw/master/images/09.png">
+    <img src="https://github.com/mircolino/ecowitt/raw/master/images/D09.png">
 
 2.  In "Preferences -> HTML Tile Template" enter your template (see below how to format them) and click "Save Preferences"
 
 3.  Now, in any Hubitat dashboard, add a new tile, on the left select the Ecowitt sensor, in the center select "Attribute" and on the right select the "html" attribute:
     
-    <img src="https://github.com/mircolino/ecowitt/raw/master/images/10.png">   
+    <img src="https://github.com/mircolino/ecowitt/raw/master/images/D10.png">   
 
     You can also remove the tile "html" title by entering the following in the dashboard CSS:
 
@@ -127,7 +127,7 @@ A template longer than that will trigger a "Server Error 500" in hubitat.
 #### <a name="repository"></a> HTML Template Repository
 
 To facilitate reusing and sharing templates, the Ecowitt driver uses a [central JSON repository](https://raw.githubusercontent.com/mircolino/ecowitt/master/html/ecowitt.json) where all the templates can be accessed by ID.
-This is a complete up-to-date list of all the templates available in the repository.
+This is a [complete up-to-date list](https://github.com/mircolino/ecowitt/blob/master/templates.md) of all the templates available in the repository.
 
 If you come up with interesting and useful new templates, please [share them](https://community.hubitat.com/t/release-ecowitt-gw1000-wi-fi-gateway/38983), along with an image of the generated tile, and I'll add them to the repository.
 
