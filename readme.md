@@ -14,43 +14,43 @@
 
 1.  Make sure all your sensors are properly registered:  
 
-    <img src="https://i.imgur.com/YBOsGDg.png" width="300" height="600">  
+    <img src="https://github.com/mircolino/ecowitt/raw/master/images/01.png" width="300" height="600">  
 
 2.  <span>Setup a local/customized weather service as follow (replacing hostname/IP with your own):  
 
-    <img src="https://i.imgur.com/STF5v6d.png" width="300" height="600">
+    <img src="https://github.com/mircolino/ecowitt/raw/master/images/02.png" width="300" height="600">
 
 #### Hubitat: 
 
 1.  If the Ecowitt Gateway has been setup correctly, every 5 minutes, you should see the following warning in the Hubitat system log:
 
-    <img src="https://i.imgur.com/Q6w2S7W.png">
+    <img src="https://github.com/mircolino/ecowitt/raw/master/images/03.png">
     
-    That's because this driver has not been installed yet and the hub has nowhere to forward the data to.
+    That's because this driver has not been installed yet and the hub has nowhere to forward the gateway data to.
     
 2.  In "Drivers Code" add the Ecowitt [WiFi Gateway](https://raw.githubusercontent.com/mircolino/ecowitt/master/ecowitt_gateway.groovy) and [RF Sensor](https://raw.githubusercontent.com/mircolino/ecowitt/master/ecowitt_sensor.groovy) drivers:
 
-    <img src="https://i.imgur.com/F66oitb.png">
+    <img src="https://github.com/mircolino/ecowitt/raw/master/images/04.png">
     
 3.  In "Devices" add a new "Ecowitt WiFi Gateway" virtual device and click "Save Device":
 
-    <img src="https://i.imgur.com/3oPQpJ2.png">
+    <img src="https://github.com/mircolino/ecowitt/raw/master/images/05.png">
 
 4.  Enter the Gateway MAC address (in any legal form) and click "Save Preferences":
 
-    <img src="https://i.imgur.com/YKYtm98.png">
+    <img src="https://github.com/mircolino/ecowitt/raw/master/images/06.png">
 
 5.  That should be all.
-    The first time Hubitat receives data from the Gateway, the driver will automatically create child devices for all the present (and supported) sensors (depending on the frequency you setup your Gateway to POST, this may take a few minutes):
+    The first time Hubitat receives data from the Gateway, the driver will automatically create child devices for all the present (and supported) sensors (depending on the frequency you setup your Gateway to send data, this may take a few minutes):
     
-    <img src="https://i.imgur.com/Nad8ScL.png">
+    <img src="https://github.com/mircolino/ecowitt/raw/master/images/07.png">
 
 ### <a name="templates"></a> HTML Template:
 
 HTML templates are a powerful way to gang-up multiple Ecowitt sensor attributes in a single Hubitat dashboard tile with endless customization.
 The following is a basic example of what you can achieve with a simple HTML template:
 
-<img src="https://i.imgur.com/9Bd0jmh.png" width="160" height="130">
+<img src="https://github.com/mircolino/ecowitt/raw/master/images/08.png" width="400" height="110">
 
 To use them:
 
