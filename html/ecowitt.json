@@ -4,7 +4,7 @@
     "2": "<i class=\"ewi-air\" style=\"color:#${aqiColor}\"></i> ${aqiDanger}<br>PM2.5: ${pm25} &micro;g/m&sup3;<br>AQI: ${aqi}"
   },
   "templatesImperial": {
-    "0": "<i class=\"ewi-temperature\"></i> ${temperature} &deg;F<br><i class=\"ewi-humidity\"></i> ${humidity} %</div>",
+    "0": "<i class=\"ewi-temperature\"></i> ${temperature} &deg;F<br><i class=\"ewi-humidity\"></i> ${humidity} %",
     "1": "<i class=\"ewi-temperature\"></i> ${temperature} &deg;F<br><i class=\"ewi-humidity\"></i> ${humidity} %<br><i class=\"ewi-pressure\"></i> ${pressure} inHg",
     "3": "<i class=\"ewi-windspeed\"></i> ${windSpeed} mph<br><i class=\"ewi-wind${windCompass}\"></i> ${windDirection} &deg; ${windCompass}<br><i class=\"ewi-rain\"></i> ${rainRate} in/h<br><i class=\"ewi-light\"></i> ${illuminance} lux<br>UV ${ultravioletDanger}"
   },

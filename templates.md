@@ -7,7 +7,7 @@
 <img src="https://github.com/mircolino/ecowitt/raw/master/images/T00.png" width="140" height="100">
 
 ```
-<div><i class="ewi-temperature"></i> ${temperature} &deg;C<br><i class="ewi-humidity"></i> ${humidity} %</div>
+<i class="ewi-temperature"></i> ${temperature} &deg;C<br><i class="ewi-humidity"></i> ${humidity} %
 ```
 Valid for:
 
@@ -24,7 +24,7 @@ Valid for:
 <img src="https://github.com/mircolino/ecowitt/raw/master/images/T01.png" width="140" height="100">
 
 ```
-<div><i class="ewi-temperature"></i> ${temperature} &deg;F<br><i class="ewi-humidity"></i> ${humidity} %<br><i class="ewi-pressure"></i> ${pressure} inHg</div>
+<i class="ewi-temperature"></i> ${temperature} &deg;F<br><i class="ewi-humidity"></i> ${humidity} %<br><i class="ewi-pressure"></i> ${pressure} inHg
 ```
 Valid for:
 
@@ -37,7 +37,7 @@ Valid for:
 <img src="https://github.com/mircolino/ecowitt/raw/master/images/T02.png" width="140" height="100">
 
 ```
-<div><i class="ewi-air" style="color:#${aqiColor}"></i> ${aqiDanger}<br>PM2.5: ${pm25} &micro;g/m&sup3;<br>AQI: ${aqi}</div>
+<i class="ewi-air" style="color:#${aqiColor}"></i> ${aqiDanger}<br>PM2.5: ${pm25} &micro;g/m&sup3;<br>AQI: ${aqi}
 ```
 Valid for:
 
@@ -50,7 +50,7 @@ Valid for:
 <img src="https://github.com/mircolino/ecowitt/raw/master/images/T03.png" width="100" height="100">
 
 ```
-<div><i class="ewi-windspeed"></i> ${windSpeed} mhp<br><i class="ewi-wind${windCompass}"></i> ${windDirection}&deg; ${windCompass}<br><i class="ewi-rain"></i> ${rainRate} in/h<br><i class="ewi-light"></i> ${illuminance} lux<br>UV ${ultravioletDanger}</div>
+<i class="ewi-windspeed"></i> ${windSpeed} mhp<br><i class="ewi-wind${windCompass}"></i> ${windDirection}&deg; ${windCompass}<br><i class="ewi-rain"></i> ${rainRate} in/h<br><i class="ewi-light"></i> ${illuminance} lux<br>UV ${ultravioletDanger}
 ```
 Valid for:
 

@@ -59,12 +59,12 @@ Each sensor can specify up to 5 templates which will allow the creation of 5 cus
 Templates are pure HTML code with embedded servlets, which are nothing but sensor attributes surrounded by a \$\{\} expression.
 For example the following two templates are used to create the tiles in the image above:
      
-  ```
-  <div><i class="ewi-temperature"></i> ${temperature} &deg;F<br><i class="ewi-humidity"></i> ${humidity} %<br><i class="ewi-pressure"></i> ${pressure} inHg</div>
-  ```  
-  ```
-  <div><i class="ewi-air" style="color:#${aqiColor}"></i> ${aqiDanger}<br>PM2.5: ${pm25} &micro;g/m&sup3;<br>AQI: ${aqi}</div>
-  ```
+   ```
+   <i class="ewi-temperature"></i> ${temperature} &deg;F<br><i class="ewi-humidity"></i> ${humidity} %<br><i class="ewi-pressure"></i> ${pressure} inHg
+   ```  
+   ```
+   <i class="ewi-air" style="color:#${aqiColor}"></i> ${aqiDanger}<br>PM2.5: ${pm25} &micro;g/m&sup3;<br>AQI: ${aqi}
+   ```
 NB:
 
 1. When you enter the template in the device preferences DO NOT surround it with quotation marks.
