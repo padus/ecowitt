@@ -48,7 +48,7 @@
  *            - Fixed wind icon as direction is reported as "from" where the wind originates
 */
 
-public static String version() { return "v1.4.13"; }
+public static String version() { return "v1.4.19"; }
 
 // Metadata -------------------------------------------------------------------------------------------------------------------
 

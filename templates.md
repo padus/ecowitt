@@ -7,7 +7,7 @@
 <img src="https://github.com/mircolino/ecowitt/raw/master/images/T00.png" width="140" height="100">
 
 ```
-<i class="ewi-temperature"></i> ${temperature} &deg;C<br><i class="ewi-humidity"></i> ${humidity} %
+<i class="ewi-temperature"></i> ${temperature} &deg;F<br><i class="ewi-humidity"></i> ${humidity} %
 ```
 Valid for:
 
@@ -50,7 +50,7 @@ Valid for:
 <img src="https://github.com/mircolino/ecowitt/raw/master/images/T03.png" width="100" height="100">
 
 ```
-<i class="ewi-windspeed"></i> ${windSpeed} mhp<br><i class="ewi-wind${windCompass}"></i> ${windDirection}&deg; ${windCompass}<br><i class="ewi-rain"></i> ${rainRate} in/h<br><i class="ewi-light"></i> ${illuminance} lux<br>UV ${ultravioletDanger}
+<i class="ewi-windspeed"></i> ${windSpeed} mph<br><i class="ewi-wind${windCompass}"></i> ${windDirection}&deg; ${windCompass}<br><i class="ewi-rain"></i> ${rainRate} in/h<br><i class="ewi-light"></i> ${illuminance} lux<br>UV ${ultravioletDanger}
 ```
 Valid for:
 

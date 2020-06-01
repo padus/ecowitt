@@ -906,8 +906,8 @@ private List<String> htmlGetUserInput(String input, Integer count) {
 
   List<String> templateList = [];
 
-  if (input[0] == "<") {
-    // If input starts with an html tag then it's a real template
+  if (input.find(/[<>{};:=\'\"#&\$]/)) {
+    // If input has at least one typical html character, then it's a real template
     templateList.add(input);
   }
   else {
