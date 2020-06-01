@@ -45,6 +45,7 @@
  * 2020.05.26 - Added icons support in the HTML template
  * 2020.05.30 - Added HTML template repository
  *            - Added support for multiple (up to 5) HTML template to each child sensor
+ *            - Fixed wind icon as direction is reported as "from" where the wind originates
 */
 
 public static String version() { return "v1.4.13"; }

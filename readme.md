@@ -129,7 +129,7 @@ A template longer than that will trigger a "Server Error 500" in hubitat.
 To facilitate reusing and sharing templates, the Ecowitt driver uses a [central JSON repository](https://raw.githubusercontent.com/mircolino/ecowitt/master/html/ecowitt.json) where all the templates can be accessed by ID.
 This is a [complete up-to-date list](https://github.com/mircolino/ecowitt/blob/master/templates.md) of all the templates available in the repository.
 
-If you come up with interesting and useful new templates, please [share them](https://community.hubitat.com/t/release-ecowitt-gw1000-wi-fi-gateway/38983), along with an image of the generated tile, and I'll add them to the repository.
+If you come up with interesting and useful new templates, please [share them](https://community.hubitat.com/t/release-ecowitt-gw1000-wi-fi-gateway/38983/last), along with an image of the generated tile, and I'll add them to the repository.
 
 
 ***

@@ -74,80 +74,80 @@
 
 .ewi-windN:before {
   content: "\0059";
+  transform: rotate(180deg);
 }
 
 .ewi-windNNE:before {
   content: "\0059";
-  transform: rotate(22.5deg);
+  transform: rotate(-157.5deg);
 }
 
 .ewi-windNE:before {
   content: "\0059";
-  transform: rotate(45deg);
+  transform: rotate(-135deg);
 }
 
 .ewi-windENE:before {
-  transform: rotate(67.5deg);
-  content: "\0059";
-}
-
-.ewi-windE:before {
-  transform: rotate(90deg);
-  content: "\0059";
-}
-
-.ewi-windESE:before {
-  transform: rotate(112.5deg);
-  content: "\0059";
-}
-
-.ewi-windSE:before {
-  transform: rotate(135deg);
-  content: "\0059";
-}
-
-.ewi-windSSE:before {
-  transform: rotate(157.5deg);
-  content: "\0059";
-}
-
-.ewi-windS:before {
-  transform: rotate(180deg);
-  content: "\0059";
-}
-
-.ewi-windSSW:before {
-  transform: rotate(-157.5deg);
-  content: "\0059";
-}
-
-.ewi-windSW:before {
-  transform: rotate(-135deg);
-  content: "\0059";
-}
-
-.ewi-windWSW:before {
   transform: rotate(-112.5deg);
   content: "\0059";
 }
 
-.ewi-windW:before {
+.ewi-windE:before {
   transform: rotate(-90deg);
   content: "\0059";
 }
 
-.ewi-windWNW:before {
+.ewi-windESE:before {
   transform: rotate(-67.5deg);
   content: "\0059";
 }
 
-.ewi-windNW:before {
+.ewi-windSE:before {
   transform: rotate(-45deg);
   content: "\0059";
 }
 
-.ewi-windNNW:before {
+.ewi-windSSE:before {
   transform: rotate(-22.5deg);
+  content: "\0059";
+}
+
+.ewi-windS:before {
+  content: "\0059";
+}
+
+.ewi-windSSW:before {
+  transform: rotate(22.5deg);
+  content: "\0059";
+}
+
+.ewi-windSW:before {
+  transform: rotate(45deg);
+  content: "\0059";
+}
+
+.ewi-windWSW:before {
+  transform: rotate(67.5deg);
+  content: "\0059";
+}
+
+.ewi-windW:before {
+  transform: rotate(90deg);
+  content: "\0059";
+}
+
+.ewi-windWNW:before {
+  transform: rotate(112.5deg);
+  content: "\0059";
+}
+
+.ewi-windNW:before {
+  transform: rotate(135deg);
+  content: "\0059";
+}
+
+.ewi-windNNW:before {
+  transform: rotate(157.5deg);
   content: "\0059";
 }
 
