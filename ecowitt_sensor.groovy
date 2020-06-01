@@ -79,26 +79,32 @@ metadata {
     attribute "windDanger", "string";                          // Windchill danger level
     attribute "windColor", "string";                           // Windchill HTML color
 
-    attribute "html", "string";                                // e.g. "<p>Temperature: ${temperature}°F</p><p>Humidity: ${humidity}%</p>"
+    attribute "html", "string";                                // 
+    attribute "html1", "string";                               // 
+    attribute "html2", "string";                               // e.g. "<div>Temperature: ${temperature}°F<br>Humidity: ${humidity}%</div>"
+    attribute "html3", "string";                               // 
+    attribute "html4", "string";                               // 
   }
 
   preferences {
-    input(name: "htmlTemplate", type: "string", title: "<font style='font-size:12px; color:#1a77c9'>HTML Tile Template</font>", description: "<font style='font-size:12px; font-style: italic'>An HTML snippet formatted with one or more \${attribute} as described <a href='https://github.com/mircolino/ecowitt/blob/master/readme.md#templates' target='_blank'>here</a></font>", defaultValue: "");
+    input(name: "htmlTemplate", type: "string", title: "<font style='font-size:12px; color:#1a77c9'>Tile HTML Template(s)</font>", description: "<font style='font-size:12px; font-style: italic'>See <a href='https://github.com/mircolino/ecowitt/blob/master/readme.md#templates' target='_blank'>documentation</a> for input formats</font>", defaultValue: "");
   }
 }
 
 /*
  * State variables used by the driver:
  *
- * "HTML Template Error"                                        // User error notification
+ * "HTML Template Error"                                       // User error notification
  */
 
-/* 
- *  Add to dashboard CSS:    @import url("https://mircolino.github.io/ecowitt/ecowitt.css");
+/*
+ * Data variables used by the driver:
  *
- *  Indoor Weather Sensor:   <div class="ewv"><i class="ewi-temperature"></i> ${temperature} <span class="ewu">°F</span><br><i class="ewi-humidity"></i> ${humidity} <span class="ewu">%</span><br><i class="ewi-pressure"></i> ${pressure} <span class="ewu">inHg</span></div>
- *  Weather Sensor:          <div class="ewv"><i class="ewi-temperature"></i> ${temperature} <span class="ewu">°F</span><br><i class="ewi-humidity"></i> ${humidity} <span class="ewu">%</span></div>
- *  Air Quality Sensor:      <div class="ewv"><i class="ewi-air" style="color:#${aqiColor}"></i> ${aqiDanger}<br>PM2.5: ${pm25} <span class="ewu">µg/m³</span><br>AQI: ${aqi}</div> 
+ * "htmlTemplate"                                              // User template 0
+ * "htmlTemplate1"                                             // User template 1
+ * "htmlTemplate2"                                             // User template 2
+ * "htmlTemplate3"                                             // User template 3
+ * "htmlTemplate4"                                             // User template 4
  */
 
 // Logging --------------------------------------------------------------------------------------------------------------------
@@ -110,6 +116,15 @@ private void logDebug(String str) { if (getParent().logGetLevel() > 2) log.debug
 private void logTrace(String str) { if (getParent().logGetLevel() > 3) log.trace(str); }
 
 // Conversions ----------------------------------------------------------------------------------------------------------------
+
+private Boolean unitSystemIsMetric() {
+  //
+  // Return true if the selected unit system is metric
+  //
+  return (getParent().unitSystemIsMetric());
+}
+
+// ------------------------------------------------------------
 
 private BigDecimal convertRange(BigDecimal val, BigDecimal inMin, BigDecimal inMax, BigDecimal outMin, BigDecimal outMax, Boolean returnInt = true) {
   // Let make sure ranges are correct
@@ -204,6 +219,27 @@ private Boolean attributeUpdateString(String val, String attribute) {
   return (false);
 }
 
+
+// ------------------------------------------------------------
+
+private Boolean attributeUpdateIfPresent(String val, String attribute = null) {
+  //
+  // Update "attribute" if != null or all the attributes if == null
+  // Update only those that have been already created (non-null ones)
+  // Return true if (any) "attribute" has actually been updated
+  //
+  Boolean updated = false;
+
+  if (attribute) {
+    if (device.currentValue(attribute) != null) updated = attributeUpdateString(val, attribute);
+  }
+  else {
+    /* List<String> */ attributeEnumerate().each { if (attributeUpdateString(val, it)) updated = true; }
+  }
+
+  return (updated);
+}
+
 // ------------------------------------------------------------
 
 private Boolean attributeUpdateNumber(BigDecimal val, String attribute, String measure = null, Integer decimals = -1) {
@@ -236,7 +272,7 @@ private List<String> attributeEnumerate(Boolean existing = true) {
   //
   // Return a list of all available attributes
   // If "existing" == true return only those that have been already created (non-null ones)
-  // Never return null
+  // Returned list can be empty but never return null
   //
   List<String> list = [];
   List<com.hubitat.hub.domain.Attribute> attrib = device.getSupportedAttributes();
@@ -247,26 +283,6 @@ private List<String> attributeEnumerate(Boolean existing = true) {
   }
 
   return (list);
-}
-
-// ------------------------------------------------------------
-
-private Boolean attributeInvalidate(String attribute = null) {
-  //
-  // Invalidate ("n/a") "attribute" if != null or all the attributes if == null
-  // Invalidate only those that have been already created (non-null ones)
-  // Return true if (any) "attribute" has actually been updated
-  //
-  Boolean invalidated = false;
-
-  if (attribute) {
-    if (device.currentValue(attribute) != null) invalidated = attributeUpdateString("n/a", attribute);
-  }
-  else {
-    /* List<String> */ attributeEnumerate().each { if (attributeUpdateString("n/a", it)) invalidated = true; }
-  }
-
-  return (invalidated);
 }
 
 // ------------------------------------------------------------
@@ -315,7 +331,7 @@ private Boolean attributeUpdateTemperature(String val, String attribTemperature)
   String measure = "°F";
 
   // Convert to metric if requested
-  if (getParent().unitSystemIsMetric()) {
+  if (unitSystemIsMetric()) {
     degrees = convert_F_to_C(degrees);
     measure = "°C";
   }
@@ -340,7 +356,7 @@ private Boolean attributeUpdatePressure(String val, String attribPressure) {
   String measure = "inHg";
 
   // Convert to metric if requested
-  if (getParent().unitSystemIsMetric()) {
+  if (unitSystemIsMetric()) {
     length = convert_inHg_to_hPa(length);
     measure = "hPa";
   }
@@ -356,7 +372,7 @@ private Boolean attributeUpdateRain(String val, String attribRain, Boolean hour 
   String measure = hour? "in/h": "in";
 
   // Convert to metric if requested
-  if (getParent().unitSystemIsMetric()) {
+  if (unitSystemIsMetric()) {
     amount = convert_in_to_mm(amount);
     measure = hour? "mm/h": "mm";
   }
@@ -464,7 +480,7 @@ private Boolean attributeUpdateWindSpeed(String val, String attribWindSpeed) {
   String measure = "mph";
 
   // Convert to metric if requested
-  if (getParent().unitSystemIsMetric()) {
+  if (unitSystemIsMetric()) {
     speed = convert_mi_to_km(speed);
     measure = "km/h";
   }
@@ -513,7 +529,7 @@ private Boolean attributeUpdateDewPoint(String val, String attribDewPoint) {
 
   BigDecimal temperature = (device.currentValue("temperature") as BigDecimal);
   if (temperature != null) {
-    if (getParent().unitSystemIsMetric()) {
+    if (unitSystemIsMetric()) {
       // Convert temperature back to F
       temperature = convert_C_to_F(temperature);
     }  
@@ -536,7 +552,7 @@ private Boolean attributeUpdateHeatIndex(val, attribHeatIndex, attribHeatDanger,
 
   BigDecimal temperature = (device.currentValue("temperature") as BigDecimal);
   if (temperature != null) {
-    if (getParent().unitSystemIsMetric()) {
+    if (unitSystemIsMetric()) {
       // Convert temperature back to F
       temperature = convert_C_to_F(temperature);
     }  
@@ -578,7 +594,7 @@ private Boolean attributeUpdateWindChill(val, attribWindChill, attribWindDanger,
 
   BigDecimal temperature = (device.currentValue("temperature") as BigDecimal);
   if (temperature != null) {
-    if (getParent().unitSystemIsMetric()) {
+    if (unitSystemIsMetric()) {
       // Convert temperature back to F
       temperature = convert_C_to_F(temperature);
     } 
@@ -611,55 +627,23 @@ private Boolean attributeUpdateWindChill(val, attribWindChill, attribWindDanger,
 
 // ------------------------------------------------------------
 
-private Boolean attributeUpdateHtml(String val, String attribHtml, Boolean checkSyntax = false) {
+private Boolean attributeUpdateHtml(String templHtml, String attribHtml) {
 
   Boolean updated = false;
 
-  String error = "HTML Template Error";
+  String pattern = /\$\{([^}]+)\}/;
 
-  if (state."${error}" == null) {
+  String index;
+  String val;
 
-    String pattern = /\$\{([^}]+)\}/;
+  for (Integer idx = 0; idx < 16; idx++) {
+    index = idx? "${idx}": "";
 
-    if (checkSyntax) {
-      // Check template syntax: between ${} we only allow valid child attributes
+    val = device.getDataValue("${templHtml}${index}");
+    if (!val) break;
 
-      if (!val) {
-        // Template is null/empty: we invalidate it
-        attributeInvalidate(attribHtml);
-        return (updated);
-      }
-      
-      // Build a list of valid attributes names excluding the null ones and ourself (for obvious reasons)
-      List<String> attribDrv = attributeEnumerate();
-      attribDrv.remove(attribHtml);
-
-      // Go through all the ${attribute} expressions in the template and collect both good and bad ones
-      List<String> attribOk = [];
-      List<String> attribErr = [];
-      String attrib;
-
-      val.findAll(~pattern) { java.util.ArrayList match -> 
-        attrib = match[1].trim();  
-
-        if (attribDrv.contains(attrib)) attribOk.add(attrib);
-        else attribErr.add(attrib);
-      }
-
-      if (attribErr.size() != 0) state."${error}" = "<font style='color:#ff0000'>\"${attribErr[0]}\" is not a valid attribute.</font>";
-      else if (attribOk.size() == 0) state."${error}" = "<font style='color:#ff0000'>No valid attributes found.</font>";
-
-      // Invalidate (without creating it) the current html attribute if an error is pending
-      if (state."${error}" != null) attributeInvalidate(attribHtml);
-      else updated = attributeUpdateString("pending", attribHtml);
-      // else updated = true;
-    }
-    else if (val) {
-      // Expand template  
-      // Coerce Object -> String
-      val = val.replaceAll(~pattern) { java.util.ArrayList match -> (device.currentValue(match[1].trim()) as String); }
-      updated = attributeUpdateString(val, attribHtml);
-    }
+    val = val.replaceAll(~pattern) { java.util.ArrayList match -> (device.currentValue(match[1].trim()) as String); }
+    if (attributeUpdateString(val, "${attribHtml}${index}")) updated = true;
   }
 
   return (updated);
@@ -801,11 +785,11 @@ Boolean attributeUpdate(String key, String val) {
     break;
 
   case "htmltemplate":
-    updated = attributeUpdateHtml(settings.htmlTemplate as String, "html");
+    updated = attributeUpdateHtml("htmlTemplate", "html");
     break;
 
   case "attribinvalidate":
-    updated = attributeInvalidate();
+    updated = attributeUpdateIfPresent("n/a");
     break;
 
   default:
@@ -814,6 +798,206 @@ Boolean attributeUpdate(String key, String val) {
   }
 
   return (updated);
+}
+
+// HTML templates --------------------------------------------------------------------------------------------------------------
+
+private Object htmlGetRepository() {
+  //
+  // Return an Object containing all the templates
+  // or null if something went wrong
+  //
+  Object repository = null;
+
+  try {
+    String repositoryText = "https://mircolino.github.io/ecowitt/ecowitt.json".toURL().getText();
+    if (repositoryText) {
+      // text -> json
+      Object parser = new groovy.json.JsonSlurper();
+      repository = parser.parseText(repositoryText);
+    }
+  }
+  catch (Exception e) {
+    logError("Exception in versionUpdate(): ${e}");
+  }
+
+  return (repository);
+}
+
+// ------------------------------------------------------------
+
+private Integer htmlCountAttributes(String htmlAttrib) {
+  //
+  // Return the number of html attributes the driver has
+  //
+  Integer count = 0;
+
+  // Get a list of all attributes (present/null or not)
+  List<String> attribDrv = attributeEnumerate(false);
+  String attrib;
+
+  for (Integer idx = 0; idx < 16; idx++) {
+    attrib = idx? "${htmlAttrib}${idx}": htmlAttrib;
+
+    if (attribDrv.contains(attrib) == false) break;
+    count++;
+  }
+
+  return (count);
+} 
+
+// ------------------------------------------------------------
+
+private void htmlSetAttributes(String htmlAttrib, String val, Integer count) {
+
+  String attrib;
+
+  for (Integer idx = 0; idx < count; idx++) {
+    attrib = idx? "${htmlAttrib}${idx}": htmlAttrib;
+
+    attributeUpdateIfPresent(val, attrib);
+  }
+}
+
+// ------------------------------------------------------------
+
+private Integer htmlValidateTemplate(String htmlTempl, String htmlAttrib, Integer count) {
+  //
+  // Return  <0) number of invalid attributes in "htmlTempl"
+  //        >=0) number of valid attributes in "htmlTempl"
+  // Template is valid only if return > 0
+  //
+  String pattern = /\$\{([^}]+)\}/;
+
+  // Build a list of valid attributes names excluding the null ones and ourself (for obvious reasons)
+  List<String> attribDrv = attributeEnumerate();
+  String attrib;
+
+  for (Integer idx = 0; idx < count; idx++) {
+    attrib = idx? "${htmlAttrib}${idx}": htmlAttrib;
+
+    attribDrv.remove(attrib);
+  }
+
+  // Go through all the ${attribute} expressions in the htmlTempl and collect both good and bad ones
+  List<String> attribOk = [];
+  List<String> attribErr = [];
+
+  htmlTempl.findAll(~pattern) { java.util.ArrayList match -> 
+    attrib = match[1].trim();  
+
+    if (attribDrv.contains(attrib)) attribOk.add(attrib);
+    else attribErr.add(attrib);
+  }
+
+  if (attribErr.size() != 0) return (-attribErr.size());
+  return (attribOk.size());
+}
+
+// ------------------------------------------------------------
+
+private List<String> htmlGetUserInput(String input, Integer count) {
+  //
+  // Return null if user input is null or empty
+  // Return empty list if user input is invalid: template(s) not found, duplicates, too many, etc.
+  // Otherwise return a list of (unvalidated) templates entered by the user
+  //
+  if (!input) return (null);
+
+  List<String> templateList = [];
+
+  if (input[0] == "<") {
+    // If input starts with an html tag then it's a real template
+    templateList.add(input);
+  }
+  else {
+    // Input is an array of repository template IDs
+    List<String> idList = input.tokenize("[, ]");
+    if (idList) {
+      // We found at least one template ID in the user input, make sure they are not too many
+      Object repository = htmlGetRepository();
+      if (repository) {
+        Boolean metric = unitSystemIsMetric();
+
+        for (Integer idx = 0; idx < idList.size(); idx++) {
+          // Try first the normal templates
+          input = repository.templates."${idList[idx]}";
+
+          // If not found try the unit templates
+          if (!input) input = metric? repository.templatesMetric."${idList[idx]}": repository.templatesImperial."${idList[idx]}";
+
+          // If still not found, or already found, or exceeded number of templates, return error
+          if (!input || templateList.contains(input) || templateList.size() == count) return ([]);
+
+          // Good one, let's add it
+          templateList.add(input);
+        }
+      }
+    }
+  }
+
+  return (templateList);
+}
+
+// ------------------------------------------------------------
+
+private Boolean htmlUpdateUserInput(String input) {
+  //
+  // Return true if HTML templates have been pre-processed sucesfully
+  //
+  String htmlTemplate = "htmlTemplate";
+  String htmlAttrib = "html";
+  String error = "HTML Template Error";
+
+  String template;
+
+  // Get the maximum number of supported templates
+  Integer count = htmlCountAttributes(htmlAttrib);
+
+  // Return if we do not support HTML templates 
+  if (!count) return (true);
+
+  // Cleanup previous states
+  htmlSetAttributes(htmlAttrib, "n/a", count);
+
+  for (Integer idx = 0; idx < count; idx++) {
+    template = idx? "${htmlTemplate}${idx}": htmlTemplate;
+
+    if (device.getDataValue(template)) device.updateDataValue(template, null);
+    device.data.remove(template);
+  }
+
+  // Parse user input
+  List<String> templateList = htmlGetUserInput(input, count);
+  if (templateList == null) {
+    // Templates are disabled/empty
+    return (true);
+  }
+
+  if (templateList.size() == 0) {
+    // Invalid user input
+    state."${error}" = "<font style='color:#ff0000'>Invalid template(s) id, count or repetition.</font>";
+    return (false);
+  }
+
+  for (Integer idx = 0; idx < templateList.size(); idx++) {
+    // We have valid templates: let's validate them    
+    if (htmlValidateTemplate(templateList[idx], htmlAttrib, count) < 1) {
+      // Invalid or no attribute in template
+      state."${error}" = "<font style='color:#ff0000'>Invalid attribute or template for the current sensor.</font>";
+      return (false);    
+    }
+  }
+
+  // Finally! We have a (1 <= number <= count) of valid templates: let's write them down
+  for (Integer idx = 0; idx < templateList.size(); idx++) {
+    template = idx? "${htmlTemplate}${idx}": htmlTemplate;
+
+    device.updateDataValue(template, templateList[idx]);
+  }
+
+  htmlSetAttributes(htmlAttrib, "pending", templateList.size());
+  return (true);
 }
 
 // Driver lifecycle -----------------------------------------------------------------------------------------------------------
@@ -834,8 +1018,8 @@ void updated() {
     // Clear previous states
     state.clear();
 
-    // Check HTML template syntax (if any)
-    attributeUpdateHtml(settings.htmlTemplate as String, "html", true);
+    // Pre-process HTML templates (if any)
+    htmlUpdateUserInput(settings.htmlTemplate as String);
   }
   catch (Exception e) {
     logError("Exception in updated(): ${e}");
@@ -871,36 +1055,6 @@ void parse(String msg) {
 
 /*
 
-private Boolean attributeIsClassSupported(Integer class) {
-  //
-  // Return 'true' if one of the following classes of attributes is supported by the current sensor
-  //
-  //10) Lightning -------------------------------------------------------------------------
-  // 9) Water (leak) ---------------------------------------------------------------       |
-  // 8) Pollution (air) -----------------------------------------------------       |      |
-  // 7) Moisture (soil) ----------------------------------------------       |      |      |
-  // 6) Light -------------------------------------------------       |      |      |      |
-  // 5) UV ---------------------------------------------       |      |      |      |      |
-  // 4) Wind ------------------------------------       |      |      |      |      |      |
-  // 3) Rain -----------------------------       |      |      |      |      |      |      |
-  // 2) Pressure ------------------       |      |      |      |      |      |      |      |
-  // 1) Humidity (air) -----       |      |      |      |      |      |      |      |      |
-  // 0) Temperature -       |      |      |      |      |      |      |      |      |      |
-  //                 0      1      2      3      4      5      6      7      8      9      10
-  Boolean[] WH25 = [true,  true,  true,  false, false, false, false, false, false, false, false];
-  Boolean[] WH26 = [true,  true,  false, false, false, false, false, false, false, false, false];
-  Boolean[] WH31 = [true,  true,  false, false, false, false, false, false, false, false, false];
-  Boolean[] WH40 = [false, false, false, true,  false, false, false, false, false, false, false];
-  Boolean[] WH41 = [false, false, false, false, false, false, false, false, true,  false, false];
-  Boolean[] WH51 = [false, false, false, false, false, false, false, true,  false, false, false];
-  Boolean[] WH55 = [false, false, false, false, false, false, false, false, false, true,  false];
-  Boolean[] WH57 = [false, false, false, false, false, false, false, false, false, false, true ];
-  Boolean[] WH80 = [true,  true,  false, false, true,  true,  true,  false, false, false, false];
-  Boolean[] WH69 = [true,  true,  false, true,  true,  true,  true,  false, false, false, false];
-
-  String model = device.getDeviceNetworkId().take(4).toUpperCase();
-  return ("${model}"[class]);
-}
 
 */
 

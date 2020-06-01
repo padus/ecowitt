@@ -43,9 +43,11 @@
  * 2020.05.23 - Fixed a bug in the PM2.5 to AQI conversion
  * 2020.05.24 - Fixed a possible command() and parse() race condition
  * 2020.05.26 - Added icons support in the HTML template
+ * 2020.05.30 - Added HTML template repository
+ *            - Added support for multiple (up to 5) HTML template to each child sensor
 */
 
-public static String version() { return "v1.3.27"; }
+public static String version() { return "v1.4.13"; }
 
 // Metadata -------------------------------------------------------------------------------------------------------------------
 
@@ -579,7 +581,7 @@ private Boolean attributeUpdate(Map data, Closure sensor) {
     //
     // Multi-channel Water Leak Sensor (WH55)
     //
-    case ~/whatdoiknow$([1-4])/:
+    case ~/whatdoiknow([1-4])/:
       updated = sensor(it.key, it.value, 7, java.util.regex.Matcher.lastMatcher.group(1).toInteger());
       break;
 
