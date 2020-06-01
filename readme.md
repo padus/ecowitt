@@ -125,6 +125,8 @@ These icons are in reality text, so of course all the standard CSS font styling,
 To facilitate reusing and sharing templates, the Ecowitt driver uses a [central JSON repository](https://raw.githubusercontent.com/mircolino/ecowitt/master/html/ecowitt.json) where all the templates can be accessed by ID.
 This is a [complete up-to-date list](https://github.com/mircolino/ecowitt/blob/master/templates.md) of all the templates available in the repository.
 
+*Templates in the repository are measurement system agnostic and will display the correct unit system based on the parent selection.* 
+
 If you come up with interesting and useful new templates, please [share them here](https://community.hubitat.com/t/release-ecowitt-gw1000-wi-fi-gateway/38983/last), along with an image of the rendered tile, and I'll add them to the repository.
 
 
