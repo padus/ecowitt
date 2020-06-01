@@ -98,10 +98,10 @@ NB:
     
     <img src="https://github.com/mircolino/ecowitt/raw/master/images/D11.png"> 
 
-    Tip: you can remove the tile "html" title by entering the following in the dashboard CSS (assuming the tile ID is 5):
+    Tip: you can remove the tile "html" title by entering the following in the dashboard CSS (assuming the tile ID is 66):
 
      ```
-    #tile-5 .tile-secondary { visibility: hidden; }
+    #tile-66 .tile-secondary { visibility: hidden; }
     ```
 
 #### <a name="icons"></a> HTML Template Icons
@@ -118,7 +118,7 @@ These icons are in reality text, so of course all the standard CSS font styling,
 
 [This is a complete list](https://mircolino.github.io/ecowitt/ecowitt.html) of all the icons available. Just access the page source html to see all the defined icon classes, and how to use them.
 
-<img src="https://github.com/mircolino/ecowitt/raw/master/images/D12.png" width="375" height="340">
+<img src="https://github.com/mircolino/ecowitt/raw/master/images/D12.png">
 
 #### <a name="repository"></a> HTML Template Repository
 
