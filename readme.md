@@ -45,7 +45,7 @@
     
     <img src="https://github.com/mircolino/ecowitt/raw/master/images/07.png">
 
-### <a name="templates"></a> HTML Template:
+### <a name="templates"></a> HTML Templates
 
 HTML templates are a powerful way to gang-up multiple Ecowitt sensor attributes in a single Hubitat dashboard tile with endless customization.
 The following is a basic example of what you can achieve with a simple HTML template:
@@ -54,15 +54,15 @@ The following is a basic example of what you can achieve with a simple HTML temp
 
 To use them:
 
-1.  In "Hubitat -> Devices" select the Ecowitt sensor (not the gateway) you'd like to "templetize":
+1.  In "Hubitat -> Devices" select an Ecowitt sensor (not the gateway) you'd like to "templetize":
     
-    <img src="https://i.imgur.com/nkSaORs.png">
+    <img src="https://github.com/mircolino/ecowitt/raw/master/images/09.png">
 
 2.  In "Preferences -> HTML Tile Template" enter your template (see below how to format them) and click "Save Preferences"
 
 3.  Now, in any Hubitat dashboard, add a new tile, on the left select the Ecowitt sensor, in the center select "Attribute" and on the right select the "html" attribute:
     
-    <img src="https://i.imgur.com/YxTja4A.png">   
+    <img src="https://github.com/mircolino/ecowitt/raw/master/images/10.png">   
 
     You can also remove the tile "html" title by entering the following in the dashboard CSS:
 
@@ -70,7 +70,7 @@ To use them:
     #tile-0 .tile-secondary { visibility: hidden; }
     ```
    
-#### HTML Template Format:
+#### <a name="format"></a> HTML Template Format
 
 Templates are pure HTML code with embedded servlets, which are nothing but sensor attributes surrounded by a \$\{\} expression.
 For example the following template is used to create the tile in the example above:
@@ -84,7 +84,7 @@ Tips:
 2. For each specific sensor template, ONLY use the attributes you see displayed on the upper-right corner of the sensor preferences.
 3. For obvious reasons, in a template, NEVER use the expression **\$\{html}**. Or your hub will enter a wormhole and resurface in a parallel universe made only of antimatter ;-) 
 
-#### <a name="icons"></a> HTML Template Icons:
+#### <a name="icons"></a> HTML Template Icons
 
 Using a small true-type font with only specific weather icons, it is possible to add dynamic icons to the Ecowitt dashboard tiles.
 
@@ -124,6 +124,12 @@ will produce the following tiles:
 The only hard limitation imposed by the hubitat driver interface is the template lenght which ***cannot be longer than 256 characters***.
 A template longer than that will trigger a "Server Error 500" in hubitat. 
 
+#### <a name="repository"></a> HTML Template Repository
+
+To facilitate reusing and sharing templates, the Ecowitt driver uses a [central JSON repository](https://raw.githubusercontent.com/mircolino/ecowitt/master/html/ecowitt.json) where all the templates can be accessed by ID.
+This is a complete up-to-date list of all the templates available in the repository.
+
+If you come up with interesting and useful new templates, please [share them](https://community.hubitat.com/t/release-ecowitt-gw1000-wi-fi-gateway/38983), along with an image of the generated tile, and I'll add them to the repository.
 
 
 ***
