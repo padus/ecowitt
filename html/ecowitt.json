@@ -1,19 +1,14 @@
 {
   "name": "Ecowitt HTML template repository",
   "templates": {
-    "1": "<div><i class=\"ewi-humidity\"></i> ${humidity} %</div>",
-    "5": "<div><i class=\"ewi-air\" style=\"color:#${aqiColor}\"></i> ${aqiDanger}<br>PM2.5: ${pm25} &micro;g/m&sup3;<br>AQI: ${aqi}</div>"
+    "2": "<div><i class=\"ewi-air\" style=\"color:#${aqiColor}\"></i> ${aqiDanger}<br>PM2.5: ${pm25} &micro;g/m&sup3;<br>AQI: ${aqi}</div>"
   },
   "templatesImperial": {
-    "0": "<div><i class=\"ewi-temperature\"></i> ${temperature} &deg;F</div>",
-    "2": "<div><i class=\"ewi-pressure\"></i> ${pressure} inHg</div>",
-    "3": "<div><i class=\"ewi-temperature\"></i> ${temperature} &deg;F<br><i class=\"ewi-humidity\"></i> ${humidity} %</div>",
-    "4": "<div><i class=\"ewi-temperature\"></i> ${temperature} &deg;F<br><i class=\"ewi-humidity\"></i> ${humidity} %<br><i class=\"ewi-pressure\"></i> ${pressure} inHg</div>"
+    "0": "<div><i class=\"ewi-temperature\"></i> ${temperature} &deg;F<br><i class=\"ewi-humidity\"></i> ${humidity} %</div>",
+    "1": "<div><i class=\"ewi-temperature\"></i> ${temperature} &deg;F<br><i class=\"ewi-humidity\"></i> ${humidity} %<br><i class=\"ewi-pressure\"></i> ${pressure} inHg</div>"
   },
   "templatesMetric": {
-    "0": "<div><i class=\"ewi-temperature\"></i> ${temperature} &deg;C</div>",
-    "2": "<div><i class=\"ewi-pressure\"></i> ${pressure} hPa</div>",
-    "3": "<div><i class=\"ewi-temperature\"></i> ${temperature} &deg;C<br><i class=\"ewi-humidity\"></i> ${humidity} %</div>",
-    "4": "<div><i class=\"ewi-temperature\"></i> ${temperature} &deg;C<br><i class=\"ewi-humidity\"></i> ${humidity} %<br><i class=\"ewi-pressure\"></i> ${pressure} hPa</div>"
+    "0": "<div><i class=\"ewi-temperature\"></i> ${temperature} &deg;C<br><i class=\"ewi-humidity\"></i> ${humidity} %</div>",
+    "1": "<div><i class=\"ewi-temperature\"></i> ${temperature} &deg;C<br><i class=\"ewi-humidity\"></i> ${humidity} %<br><i class=\"ewi-pressure\"></i> ${pressure} hPa</div>"
   }
 }

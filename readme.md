@@ -52,37 +52,57 @@ The following is a basic example of what you can achieve with a simple HTML temp
 
 <img src="https://github.com/mircolino/ecowitt/raw/master/images/D08.png" width="400" height="110">
 
-To use them:
+Each sensor can specify up to 5 templates which will allow the creation of 5 customized dashboard tiles.
 
-1.  In "Hubitat -> Devices" select an Ecowitt sensor (not the gateway) you'd like to "templetize":
-    
-    <img src="https://github.com/mircolino/ecowitt/raw/master/images/D09.png">
-
-2.  In "Preferences -> HTML Tile Template" enter your template (see below how to format them) and click "Save Preferences"
-
-3.  Now, in any Hubitat dashboard, add a new tile, on the left select the Ecowitt sensor, in the center select "Attribute" and on the right select the "html" attribute:
-    
-    <img src="https://github.com/mircolino/ecowitt/raw/master/images/D10.png">   
-
-    You can also remove the tile "html" title by entering the following in the dashboard CSS:
-
-     ```
-    #tile-0 .tile-secondary { visibility: hidden; }
-    ```
-   
 #### <a name="format"></a> HTML Template Format
 
 Templates are pure HTML code with embedded servlets, which are nothing but sensor attributes surrounded by a \$\{\} expression.
-For example the following template is used to create the tile in the example above:
+For example the following two templates are used to create the tiles in the image above:
      
   ```
-  <p>Temperature: ${temperature} °F</p><p>Humidity: ${humidity} %</p><p>Pressure: ${pressure} inHg</p>
+  <div><i class="ewi-temperature"></i> ${temperature} &deg;F<br><i class="ewi-humidity"></i> ${humidity} %<br><i class="ewi-pressure"></i> ${pressure} inHg</div>
+  ```  
   ```
-Tips:
+  <div><i class="ewi-air" style="color:#${aqiColor}"></i> ${aqiDanger}<br>PM2.5: ${pm25} &micro;g/m&sup3;<br>AQI: ${aqi}</div>
+  ```
+NB:
 
 1. When you enter the template in the device preferences DO NOT surround it with quotation marks.
-2. For each specific sensor template, ONLY use the attributes you see displayed on the upper-right corner of the sensor preferences.
-3. For obvious reasons, in a template, NEVER use the expression **\$\{html}**. Or your hub will enter a wormhole and resurface in a parallel universe made only of antimatter ;-) 
+2. The maximum lenght of a template (imposed by the Hubitat GUI) is 256 characters. If you enter a longer template, Hubitat will return a "Server 500 error".
+3. For each specific sensor template, ONLY use the attributes you see displayed on the upper-right corner of the sensor preferences (those highlighted in red in the image below).
+4. For obvious reasons, in a template, NEVER use the expression **\$\{html}**. Or your hub will enter a wormhole and resurface in a parallel universe made only of antimatter ;-) 
+
+#### HTML Templates Quick Start
+
+1.  In "Hubitat -> Devices" select an Ecowitt sensor (not the gateway) you'd like to "templetize".
+    
+    Then In "Preferences -> HTML Tile Template" enter, either your template directly or up to five (comma separated) pre-made template IDs which the driver will automatically retrieve from the [template repository](#repository).
+
+    Finally click "Save Preferences".
+    
+    <img src="https://github.com/mircolino/ecowitt/raw/master/images/D09.png">
+
+    NB: if you enter a template directly, make sure it's 256 character or shorter. If you enter a list of templates make sure it's 5 IDs or shorter without duplicates.
+
+2.  In the Hubitat dashboard you intend to use to create HTML template tiles, click "Cog icon -> Advanced -> CSS" and add the following line to the beginning of the CSS file:
+    
+     ```  
+    @import url("https://mircolino.github.io/ecowitt/ecowitt.css");
+    ```
+     Click "Save CSS"
+
+    <img src="https://github.com/mircolino/ecowitt/raw/master/images/D10.png">   
+
+
+3.  Now, in the same dashboard, add a new tile, on the left select the Ecowitt sensor, in the center select "Attribute" and on the right select the "html" attribute
+    
+    <img src="https://github.com/mircolino/ecowitt/raw/master/images/D11.png"> 
+
+    Tip: you can remove the tile "html" title by entering the following in the dashboard CSS (assuming the tile ID is 5):
+
+     ```
+    #tile-5 .tile-secondary { visibility: hidden; }
+    ```
 
 #### <a name="icons"></a> HTML Template Icons
 
@@ -98,38 +118,14 @@ These icons are in reality text, so of course all the standard CSS font styling,
 
 [This is a complete list](https://mircolino.github.io/ecowitt/ecowitt.html) of all the icons available. Just access the page source html to see all the defined icon classes, and how to use them.
 
-<img src="https://i.imgur.com/RRlwsHw.png" width="430" height="510">
-
-To start using HTML templates including weather icons, simply add the following line to the beginning of your dashboard CSS:
-
-  ```
-  @import url("https://mircolino.github.io/ecowitt/ecowitt.css");
-  ```
-
-That's all. Now an Ecowitt Indoor Weather Sensor with the following template:
-
-  ```
-  <div class="ewv"><i class="ewi-temperature"></i> ${temperature} <span class="ewu">°F</span><br><i class="ewi-humidity"></i> ${humidity} <span class="ewu">%</span><br><i class="ewi-pressure"></i> ${pressure} <span class="ewu">inHg</span></div>
-  ```
-and an Ecowitt Air Quality Sensor with the following template:
-
-  ```
-  <div class="ewv"><i class="ewi-air" style="color:#${aqiColor}"></i> ${aqiDanger}<br>PM2.5: ${pm25} <span class="ewu">µg/m³</span><br>AQI: ${aqi}</div>
-  ```
-will produce the following tiles:
-
-<img src="https://i.imgur.com/Lf73tCk.png" width="320" height="130">
-
-
-The only hard limitation imposed by the hubitat driver interface is the template lenght which ***cannot be longer than 256 characters***.
-A template longer than that will trigger a "Server Error 500" in hubitat. 
+<img src="https://github.com/mircolino/ecowitt/raw/master/images/D12.png" width="375" height="340">
 
 #### <a name="repository"></a> HTML Template Repository
 
 To facilitate reusing and sharing templates, the Ecowitt driver uses a [central JSON repository](https://raw.githubusercontent.com/mircolino/ecowitt/master/html/ecowitt.json) where all the templates can be accessed by ID.
 This is a [complete up-to-date list](https://github.com/mircolino/ecowitt/blob/master/templates.md) of all the templates available in the repository.
 
-If you come up with interesting and useful new templates, please [share them](https://community.hubitat.com/t/release-ecowitt-gw1000-wi-fi-gateway/38983/last), along with an image of the generated tile, and I'll add them to the repository.
+If you come up with interesting and useful new templates, please [share them here](https://community.hubitat.com/t/release-ecowitt-gw1000-wi-fi-gateway/38983/last), along with an image of the rendered tile, and I'll add them to the repository.
 
 
 ***
