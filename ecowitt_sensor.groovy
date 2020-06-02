@@ -219,27 +219,6 @@ private Boolean attributeUpdateString(String val, String attribute) {
   return (false);
 }
 
-
-// ------------------------------------------------------------
-
-private Boolean attributeUpdateIfPresent(String val, String attribute = null) {
-  //
-  // Update "attribute" if != null or all the attributes if == null
-  // Update only those that have been already created (non-null ones)
-  // Return true if (any) "attribute" has actually been updated
-  //
-  Boolean updated = false;
-
-  if (attribute) {
-    if (device.currentValue(attribute) != null) updated = attributeUpdateString(val, attribute);
-  }
-  else {
-    /* List<String> */ attributeEnumerate().each { if (attributeUpdateString(val, it)) updated = true; }
-  }
-
-  return (updated);
-}
-
 // ------------------------------------------------------------
 
 private Boolean attributeUpdateNumber(BigDecimal val, String attribute, String measure = null, Integer decimals = -1) {
@@ -788,10 +767,6 @@ Boolean attributeUpdate(String key, String val) {
     updated = attributeUpdateHtml("htmlTemplate", "html");
     break;
 
-  case "attribinvalidate":
-    updated = attributeUpdateIfPresent("n/a");
-    break;
-
   default:
     logDebug("Unrecognized attribute: ${key} = ${val}");
     break;
@@ -848,15 +823,21 @@ private Integer htmlCountAttributes(String htmlAttrib) {
 
 // ------------------------------------------------------------
 
-private void htmlSetAttributes(String htmlAttrib, String val, Integer count) {
+private Boolean htmlSetAttributes(String val, String htmlAttrib, Integer count, Boolean onlyPresent) {
+
+  Boolean updated = false;
 
   String attrib;
 
   for (Integer idx = 0; idx < count; idx++) {
     attrib = idx? "${htmlAttrib}${idx}": htmlAttrib;
 
-    attributeUpdateIfPresent(val, attrib);
+    if (onlyPresent == false || device.currentValue(attrib) != null) {
+      if (attributeUpdateString(val, attrib)) updated = true;
+    }
   }
+
+  return (updated);
 }
 
 // ------------------------------------------------------------
@@ -958,7 +939,7 @@ private Boolean htmlUpdateUserInput(String input) {
   if (!count) return (true);
 
   // Cleanup previous states
-  htmlSetAttributes(htmlAttrib, "n/a", count);
+  htmlSetAttributes("n/a", htmlAttrib, count, true);
 
   for (Integer idx = 0; idx < count; idx++) {
     template = idx? "${htmlTemplate}${idx}": htmlTemplate;
@@ -996,7 +977,7 @@ private Boolean htmlUpdateUserInput(String input) {
     device.updateDataValue(template, templateList[idx]);
   }
 
-  htmlSetAttributes(htmlAttrib, "pending", templateList.size());
+  htmlSetAttributes("pending", htmlAttrib, templateList.size(), false);
   return (true);
 }
 

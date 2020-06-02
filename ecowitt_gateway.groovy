@@ -46,9 +46,10 @@
  * 2020.05.30 - Added HTML template repository
  *            - Added support for multiple (up to 5) HTML template to each child sensor
  *            - Fixed wind icon as direction is reported as "from" where the wind originates
+ * 2020.06.01 - Fixed a cosmetic bug where "pending" status would not be set on non-existing attributes
 */
 
-public static String version() { return "v1.4.19"; }
+public static String version() { return "v1.4.20"; }
 
 // Metadata -------------------------------------------------------------------------------------------------------------------
 
