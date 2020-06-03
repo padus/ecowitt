@@ -633,7 +633,7 @@ void resyncSensors() {
     logDebug("resyncSensors()");
 
     device.updateDataValue("sensorResync", "true");
-    attributeUpdateString("<font style='color:#ff0000'>Resync pending</font>", "time");
+    attributeUpdateString("<font style='color:#3ea72d'>Resync pending</font>", "time");
   }
   catch (Exception e) {
     logError("Exception in resyncSensors(): ${e}");
