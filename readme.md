@@ -76,7 +76,7 @@ NB:
 
 1.  In "Hubitat -> Devices" select an Ecowitt sensor (not the gateway) you'd like to "templetize".
     
-    Then In "Preferences -> HTML Tile Template" enter, either your template directly or up to five (comma separated) pre-made template IDs which the driver will automatically retrieve from the [template repository](#repository).
+    Then In "Preferences -> HTML Tile Template" enter, either your template directly or up to five (comma separated) pre-made template IDs which the driver will automatically retrieve from the [template repository](https://github.com/mircolino/ecowitt/blob/master/templates.md).
 
     Finally click "Save Preferences".
     

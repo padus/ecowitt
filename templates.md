@@ -1,4 +1,4 @@
-### Repository Templates
+### Templates Repository
 
 ***
 
