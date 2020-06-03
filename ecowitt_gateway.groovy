@@ -47,9 +47,10 @@
  *            - Added support for multiple (up to 5) HTML template to each child sensor
  *            - Fixed wind icon as direction is reported as "from" where the wind originates
  * 2020.06.01 - Fixed a cosmetic bug where "pending" status would not be set on non-existing attributes
+ * 2020.06.02 - Added visual confirmation of "resync sensors pending"
 */
 
-public static String version() { return "v1.4.20"; }
+public static String version() { return "v1.4.21"; }
 
 // Metadata -------------------------------------------------------------------------------------------------------------------
 
@@ -632,6 +633,7 @@ void resyncSensors() {
     logDebug("resyncSensors()");
 
     device.updateDataValue("sensorResync", "true");
+    attributeUpdateString("<font style='color:#ff0000'>Resync pending</font>", "time");
   }
   catch (Exception e) {
     logError("Exception in resyncSensors(): ${e}");

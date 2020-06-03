@@ -2,7 +2,7 @@
   "packageName": "Ecowitt WiFi Gateway",
   "minimumHEVersion": "2.1.9",
   "author": "Mirco Caramori",
-  "version": "1.4.20",
+  "version": "1.4.21",
   "dateReleased": "2020-05-26",
   "releaseNotes": "added HTML template repository",
   "documentationLink": "https://github.com/mircolino/ecowitt/blob/master/readme.md",
