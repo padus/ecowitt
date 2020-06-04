@@ -2,7 +2,7 @@
   "packageName": "Ecowitt WiFi Gateway",
   "minimumHEVersion": "2.1.9",
   "author": "Mirco Caramori",
-  "version": "1.5.01",
+  "version": "1.5.11",
   "dateReleased": "2020-06-04",
   "releaseNotes": "added the ability to enter the mac address directly as a dni",
   "documentationLink": "https://github.com/mircolino/ecowitt/blob/master/readme.md",

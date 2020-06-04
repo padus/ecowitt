@@ -56,7 +56,7 @@
  * 2020.06.04 - Added the ability to enter the MAC address directly as a DNI in the parent device creation page
  */
 
-public static String version() { return "v1.5.01"; }
+public static String version() { return "v1.5.11"; }
 
 // Metadata -------------------------------------------------------------------------------------------------------------------
 
