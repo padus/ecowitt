@@ -53,9 +53,10 @@
  *            - Added battery icons (0%, 20%, 40%, 60%, 80%, 100%)
  *            - Reorganized error e/o status reporting, now displayed in a dedicated "status" attribute (with a "z" so
  *              it will always show at the bottom of the list)
+ * 2020.06.04 - Added the ability to enter the MAC address directly as a DNI in the parent device creation page
  */
 
-public static String version() { return "v1.4.78"; }
+public static String version() { return "v1.5.01"; }
 
 // Metadata -------------------------------------------------------------------------------------------------------------------
 
@@ -78,9 +79,7 @@ metadata {
   }
 
   preferences {
-    if (!(macAddress as String)) {
-      input(name: "macAddress", type: "string", title: "<font style='font-size:12px; color:#1a77c9'>MAC Address</font>", description: "<font style='font-size:12px; font-style: italic'>Ecowitt Wi-Fi gateway MAC address</font>", defaultValue: "", required: true);
-    }
+    input(name: "macAddress", type: "string", title: "<font style='font-size:12px; color:#1a77c9'>MAC Address</font>", description: "<font style='font-size:12px; font-style: italic'>Ecowitt Wi-Fi gateway MAC address</font>", defaultValue: "", required: true);
     input(name: "unitSystem", type: "enum", title: "<font style='font-size:12px; color:#1a77c9'>System of Measurement</font>", description: "<font style='font-size:12px; font-style: italic'>Unit system all values are converted to</font>", options: [0:"Imperial", 1:"Metric"], multiple: false, defaultValue: 0, required: true);
     input(name: "logLevel", type: "enum", title: "<font style='font-size:12px; color:#1a77c9'>Log Verbosity</font>", description: "<font style='font-size:12px; font-style: italic'>Default: 'Debug' for 30 min and 'Info' thereafter</font>", options: [0:"Error", 1:"Warning", 2:"Info", 3:"Debug", 4:"Trace"], multiple: false, defaultValue: 3, required: true);
   }
@@ -174,35 +173,71 @@ Boolean versionUpdate() {
 
 // DNI ------------------------------------------------------------------------------------------------------------------------
 
+private Map dniIsMacValid(String str) {
+  //
+  // Return null if not valid 
+  // otherwise return both DNI and canonical version
+  //
+
+  Map mac = null;
+
+  if (str) {
+    // We got a non-empty string
+    String hexMac = str.replaceAll("[^a-fA-F0-9]", "").toUpperCase();
+    if (hexMac.length() == 12) {
+      // We got a valid MAC address: let's properly format it
+      str = "${hexMac[0]}${hexMac[1]}:${hexMac[2]}${hexMac[3]}:${hexMac[4]}${hexMac[5]}:${hexMac[6]}${hexMac[7]}:${hexMac[8]}${hexMac[9]}:${hexMac[10]}${hexMac[11]}".toLowerCase();    
+
+      mac = [:];
+      mac.dni = hexMac;
+      mac.canonical = str;
+    }
+  }
+
+  return (mac);
+}
+
+// ------------------------------------------------------------
+
 private String dniUpdate() {
   //
   // Get the Ecowitt MAC address from the properties and, if valid and not done already, update the driver DNI
+  // Return "error") invalid mac entered by the user
+  //           null) same mac as before
+  //             "") new valid mac
   //
   logDebug("dniUpdate()");
 
   String error = "";
   String attribute = "mac";
+  String setting = settings.macAddress as String;
 
-  if (!(device.currentValue(attribute) as String)) {
-    String mac = settings.macAddress as String;
-    if (mac) {
-      // We got a non-empty MAC string from the preferences
-      String hexMac = mac.replaceAll("[^a-fA-F0-9]", "").toUpperCase();
-      if (hexMac.length() == 12) {
-        // We got a valid MAC address: update the DNI
-        device.setDeviceNetworkId(hexMac);
-      
-        // Properly format the user address and save it as device attribute so that we don't do this again
-        mac = "${hexMac[0]}${hexMac[1]}:${hexMac[2]}${hexMac[3]}:${hexMac[4]}${hexMac[5]}:${hexMac[6]}${hexMac[7]}:${hexMac[8]}${hexMac[9]}:${hexMac[10]}${hexMac[11]}".toLowerCase();
-        attributeUpdateString(mac, attribute);
-      }
-      else {
-        // Clear user input and return error
-        device.clearSetting("macAddress");
+  if (setting == null) {
+    //
+    // *** This is a timing hack ***
+    // When the users sets the DNI/MAC at installation, we update the settings before
+    // calling update() but when we get here the setting is still null!
+    //
+    setting = device.getDeviceNetworkId();
+  }
 
-        error = "${mac} is not a valid address";
-      }
+  Map mac = dniIsMacValid(setting);
+  if (mac) {
+
+    if ((device.currentValue(attribute) as String) == mac.canonical) {
+      // The mac hasn't changed: we do nothing 
+      error = null; 
     }
+    else {
+      // Save the new mac as an attribute for later comparison
+      attributeUpdateString(mac.canonical, attribute);   
+
+      // Update the DNI
+      device.setDeviceNetworkId(mac.dni);
+    }
+  }
+  else {
+    error = "\"${setting}\" is not a valid MAC address";
   }
 
   return (error);
@@ -639,9 +674,12 @@ void resyncSensors() {
   try {
     logDebug("resyncSensors()");
 
-    ztatus("Sensor sync pending", "blue");
+    if (dniIsMacValid(device.getDeviceNetworkId())) {
+      // We have a valid MAC / gateway
+      ztatus("Sensor sync pending", "blue");
 
-    device.updateDataValue("sensorResync", "true");
+      device.updateDataValue("sensorResync", "true");    
+    }
   }
   catch (Exception e) {
     logError("Exception in resyncSensors(): ${e}");
@@ -657,8 +695,12 @@ void installed() {
   try {
     logDebug("installed()");
 
-    // Force the first sensor resync
-    resyncSensors();
+    Map mac = dniIsMacValid(device.getDeviceNetworkId());
+    if (mac) {
+      device.updateSetting("macAddress", [type: "string", value: mac.canonical]);
+      updated();
+    }
+
   }
   catch (Exception e) {
     logError("Exception in installed(): ${e}");
@@ -682,8 +724,13 @@ void updated() {
 
     // Update Device Network ID
     String error = dniUpdate();
-    if (error) ztatus(error, "red");
-    else ztatus("OK", "green");
+    if (error == null) {
+      // The MAC hasn't changed: we set OK only if a resync sensors is not pending
+      if (device.getDataValue("sensorResync")) ztatus("Sensor sync pending", "blue");
+      else ztatus("OK", "green");
+    }
+    else if (error != "") ztatus(error, "red");
+    else resyncSensors();
   
     // Update driver version now and every Sunday @ 2am
     versionUpdate();
