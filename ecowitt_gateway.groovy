@@ -751,6 +751,7 @@ void parse(String msg) {
 
     // Inject a special key (at the end of the data map) to notify all the driver of end-of-data status. Value is local time
     data["endofdata"] = timeUtcToLocal(data["dateutc"]);
+    data.remove("dateutc");
 
     logData(data);
 

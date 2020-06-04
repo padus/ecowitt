@@ -783,20 +783,18 @@ Boolean attributeUpdate(String key, String val) {
   // Internal calculated commands
   //
   case "inferdewpoint":
-    updated = attributeUpdateDewPoint(val, "dewPoint");
+    if (state.status) updated = attributeUpdateDewPoint(val, "dewPoint");
     break;
 
   case "inferheatindex":
-    updated = attributeUpdateHeatIndex(val, "heatIndex", "heatDanger", "heatColor");
+    if (state.status) updated = attributeUpdateHeatIndex(val, "heatIndex", "heatDanger", "heatColor");
     break;
 
   case "inferwindchill":
-    updated = attributeUpdateWindChill(val, "windChill", "windDanger", "windColor");
+    if (state.status) updated = attributeUpdateWindChill(val, "windChill", "windDanger", "windColor");
     break;
 
   case "endofdata":
-    updated = attributeUpdateHtml("htmlTemplate", "html");
-    
     // Last thing we do on the driver: update status
     if (!state.status) {
       // Last round we have not received any data
@@ -805,6 +803,7 @@ Boolean attributeUpdate(String key, String val) {
     }
     else {
       // Receiving data or user error
+      updated = attributeUpdateHtml("htmlTemplate", "html");
       if (attributeUpdateString(val, "time")) updated = true;
 
       if (state.status != -1) {
