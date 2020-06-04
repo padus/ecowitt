@@ -31,7 +31,8 @@
  *            - UI error handling using red-colored state text messages
  * 2020.05.14 - Major refactoring and architectural change
  *            - PWS like the WS2902 are recognized and no longer split into multiple child sensors
- *            - Rain (WH40), Wind and Solar (WH80) and Outdoor Temp/Hum (WH32) if detected, are combined into a single virtual WS2902 PWS to improve HTML Templating
+ *            - Rain (WH40), Wind and Solar (WH80) and Outdoor Temp/Hum (WH32) if detected, are combined into a single
+ *              virtual WS2902 PWS to improve HTML Templating
  *            - Fixed several imperial-metric conversion issues
  *            - Metric pressure is now converted to hPa
  *            - Laid the groundwork for identification and support of sensors WH41, WH55 and WH57
@@ -48,9 +49,13 @@
  *            - Fixed wind icon as direction is reported as "from" where the wind originates
  * 2020.06.01 - Fixed a cosmetic bug where "pending" status would not be set on non-existing attributes
  * 2020.06.02 - Added visual confirmation of "resync sensors pending"
-*/
+ * 2020.06.03 - Added last data received timestamp to the child drivers to easily spot if data is not being received from the sensor
+ *            - Added battery icons (0%, 20%, 40%, 60%, 80%, 100%)
+ *            - Reorganized error e/o status reporting, now displayed in a dedicated "ztatus" attribute (with a "z" so
+ *              it will always show at the bottom of the list)
+ */
 
-public static String version() { return "v1.4.21"; }
+public static String version() { return "v1.4.78"; }
 
 // Metadata -------------------------------------------------------------------------------------------------------------------
 
@@ -66,8 +71,10 @@ metadata {
     attribute "model", "string";                               // Model number
     attribute "firmware", "string";                            // Firmware version
     attribute "rf", "string";                                  // Sensors radio frequency
-    attribute "time", "string";                                // Time last data was posted
     attribute "passkey", "string";                             // PASSKEY
+
+    attribute "time", "string";                                // Time last data was posted
+    attribute "ztatus", "string";                              // Display current driver status
   }
 
   preferences {
@@ -78,13 +85,6 @@ metadata {
     input(name: "logLevel", type: "enum", title: "<font style='font-size:12px; color:#1a77c9'>Log Verbosity</font>", description: "<font style='font-size:12px; font-style: italic'>Default: 'Debug' for 30 min and 'Info' thereafter</font>", options: [0:"Error", 1:"Warning", 2:"Info", 3:"Debug", 4:"Trace"], multiple: false, defaultValue: 3, required: true);
   }
 }
-
-/*
- * State variables used by the driver:
- *
- * "MAC Error"                                                 // MAC address error notification
- * "Sensor Error"                                              // Child Sensor error notification
- */
 
 /*
  * Data variables used by the driver:
@@ -174,17 +174,14 @@ Boolean versionUpdate() {
 
 // DNI ------------------------------------------------------------------------------------------------------------------------
 
-private Boolean dniUpdate() {
+private String dniUpdate() {
   //
   // Get the Ecowitt MAC address from the properties and, if valid and not done already, update the driver DNI
   //
   logDebug("dniUpdate()");
 
-  Boolean ok = false;
+  String error = "";
   String attribute = "mac";
-
-  String error = "MAC Error";
-  state.remove("${error}");
 
   if (!(device.currentValue(attribute) as String)) {
     String mac = settings.macAddress as String;
@@ -197,17 +194,18 @@ private Boolean dniUpdate() {
       
         // Properly format the user address and save it as device attribute so that we don't do this again
         mac = "${hexMac[0]}${hexMac[1]}:${hexMac[2]}${hexMac[3]}:${hexMac[4]}${hexMac[5]}:${hexMac[6]}${hexMac[7]}:${hexMac[8]}${hexMac[9]}:${hexMac[10]}${hexMac[11]}".toLowerCase();
-        ok = attributeUpdateString(mac, attribute);
+        attributeUpdateString(mac, attribute);
       }
       else {
-        // Clear user input and display error
+        // Clear user input and return error
         device.clearSetting("macAddress");
-        state."${error}" = "<font style='color:#ff0000'>\"${mac}\" is not a valid address.</font>";
+
+        error = "${mac} is not a valid address";
       }
     }
   }
 
-  return (ok);
+  return (error);
 }
 
 // Conversion -----------------------------------------------------------------------------------------------------------------
@@ -294,6 +292,15 @@ private void logData(Map data) {
       logTrace("$it.key = $it.value");
     }
   }
+}
+
+// Ztatus ---------------------------------------------------------------------------------------------------------------------
+
+private Boolean ztatus(String str, String color = null) {
+
+  if (color) str = "<font style='color:${color}'>${str}</font>";
+
+  return (attributeUpdateString(str, "ztatus"));
 }
 
 // Sensor handling ------------------------------------------------------------------------------------------------------------
@@ -441,7 +448,7 @@ private Boolean sensorUpdate(String key, String value, Integer id = null, Intege
         //
         sensor = addChildDevice("Ecowitt RF Sensor", dni, [name: sensorName(id, channel), isComponent: true]);
         
-        state.remove("Sensor Error");
+        ztatus("OK", "green");
       }
 
       if (sensor) updated = sensor.attributeUpdate(key, value);
@@ -455,7 +462,7 @@ private Boolean sensorUpdate(String key, String value, Integer id = null, Intege
   catch (Exception e) {
     if (e instanceof com.hubitat.app.exception.UnknownDeviceTypeException) {
       logError("Unable to create child sensor device. Please make sure the \"ecowitt_sensor.groovy\" driver is installed.");
-      state."Sensor Error" = "<font style='color:#ff0000'>Unable to create child sensor device. Please make sure the \"ecowitt_sensor.groovy\" driver is installed.</font>";
+      ztatus("Unable to create child sensor device. Please make sure the \"ecowitt_sensor.groovy\" driver is installed", "red");
     }
     else logError("Exception in sensorUpdate(${id}, ${channel}): ${e}");
   }
@@ -506,11 +513,6 @@ private Boolean attributeUpdate(Map data, Closure sensor) {
     case "freq":
       // Eg: rf = 915M
       updated = attributeUpdateString(it.value, "rf");
-      break;
-
-    case "dateutc":
-      // Eg: time = 2020-04-25+05:03:56
-      updated = attributeUpdateString(timeUtcToLocal(it.value), "time");
       break;
 
     case "PASSKEY":
@@ -611,9 +613,12 @@ private Boolean attributeUpdate(Map data, Closure sensor) {
       updated = sensor(it.key, it.value, 9);
       break;
 
-    case "htmltemplate":
-      // Special key to notify all children to update the HTML template 
+    case "endofdata":
+      // Special key to notify all drivers (parent and children) of end-od-data status 
       updated = sensor(it.key, it.value);
+
+      // Last thing we do on the driver
+      if (attributeUpdateString(it.value, "time")) updated = true;
       break;
 
     default:
@@ -621,6 +626,8 @@ private Boolean attributeUpdate(Map data, Closure sensor) {
       break;
     }
   }
+
+  return (updated);
 }
 
 // Commands -------------------------------------------------------------------------------------------------------------------
@@ -632,8 +639,9 @@ void resyncSensors() {
   try {
     logDebug("resyncSensors()");
 
+    ztatus("Sensor sync pending", "blue");
+
     device.updateDataValue("sensorResync", "true");
-    attributeUpdateString("<font style='color:#3ea72d'>Resync pending</font>", "time");
   }
   catch (Exception e) {
     logError("Exception in resyncSensors(): ${e}");
@@ -673,7 +681,9 @@ void updated() {
     unschedule();
 
     // Update Device Network ID
-    dniUpdate();
+    String error = dniUpdate();
+    if (error) ztatus(error, "red");
+    else ztatus("OK", "green");
   
     // Update driver version now and every Sunday @ 2am
     versionUpdate();
@@ -717,7 +727,6 @@ void parse(String msg) {
   //
   // Called everytime a POST message is received from the Ecowitt WiFi Gateway
   //
-
   try {
     logDebug("parse()");
 
@@ -740,8 +749,8 @@ void parse(String msg) {
     data["inferheatindex"] = null;
     data["inferwindchill"] = null;
 
-    // Inject a special key (at the end of the data map) to notify the children to update the html template (if they have one)
-    data["htmltemplate"] = null;
+    // Inject a special key (at the end of the data map) to notify all the driver of end-of-data status. Value is local time
+    data["endofdata"] = timeUtcToLocal(data["dateutc"]);
 
     logData(data);
 
@@ -762,6 +771,9 @@ void parse(String msg) {
       // Match the new (soon to be created) sensor list with the existing one
       // and delete sensors in the existing list that are not in the new one
       sensorGarbageCollect();
+
+      // Clear pending status and start processing data
+      ztatus("OK", "green");
     }
 
     attributeUpdate(data, this.&sensorUpdate);

@@ -2,9 +2,9 @@
   "packageName": "Ecowitt WiFi Gateway",
   "minimumHEVersion": "2.1.9",
   "author": "Mirco Caramori",
-  "version": "1.4.21",
-  "dateReleased": "2020-05-26",
-  "releaseNotes": "added HTML template repository",
+  "version": "1.4.78",
+  "dateReleased": "2020-06-03",
+  "releaseNotes": "added battery icons",
   "documentationLink": "https://github.com/mircolino/ecowitt/blob/master/readme.md",
   "communityLink": "https://community.hubitat.com/t/release-ecowitt-gw1000-wi-fi-gateway/38983",
   "drivers": [

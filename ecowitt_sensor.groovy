@@ -28,6 +28,7 @@ metadata {
     capability "Illuminance Measurement";
 
  // attribute "battery", "number";                             // 0-100%
+    attribute "batteryIcon", "number";                         // 0, 20, 40, 60, 80, 100 
     attribute "batteryOrg", "number";                          // original/un-translated battery value returned by the sensor 
 
  // attribute "temperature", "number";                         // °F
@@ -84,6 +85,9 @@ metadata {
     attribute "html2", "string";                               // e.g. "<div>Temperature: ${temperature}°F<br>Humidity: ${humidity}%</div>"
     attribute "html3", "string";                               // 
     attribute "html4", "string";                               // 
+
+    attribute "time", "string";                                // Time last data was posted
+    attribute "ztatus", "string";                              // Display current driver status
   }
 
   preferences {
@@ -94,7 +98,9 @@ metadata {
 /*
  * State variables used by the driver:
  *
- * "HTML Template Error"                                       // User error notification
+ * status: -1) driver is in error
+ *          0) driver has not received data
+ *          1) driver is OK and processing data
  */
 
 /*
@@ -114,6 +120,15 @@ private void logWarning(String str) { if (getParent().logGetLevel() > 0) log.war
 private void logInfo(String str) { if (getParent().logGetLevel() > 1) log.info(str); }
 private void logDebug(String str) { if (getParent().logGetLevel() > 2) log.debug(str); }
 private void logTrace(String str) { if (getParent().logGetLevel() > 3) log.trace(str); }
+
+// Ztatus ---------------------------------------------------------------------------------------------------------------------
+
+private Boolean ztatus(String str, String color = null) {
+
+  if (color) str = "<font style='color:${color}'>${str}</font>";
+
+  return (attributeUpdateString(str, "ztatus"));
+}
 
 // Conversions ----------------------------------------------------------------------------------------------------------------
 
@@ -211,6 +226,10 @@ private Boolean attributeUpdateString(String val, String attribute) {
   // Only update "attribute" if different
   // Return true if "attribute" has actually been updated/created
   //
+
+  // If starving, register the sensor as alive and receiving data
+  if (!state.status) state.status = 1
+
   if ((device.currentValue(attribute) as String) != val) {
     sendEvent(name: attribute, value: val);
     return (true);
@@ -226,6 +245,9 @@ private Boolean attributeUpdateNumber(BigDecimal val, String attribute, String m
   // Only update "attribute" if different
   // Return true if "attribute" has actually been updated/created
   //
+
+  // If starving, register the sensor as alive and receiving data
+  if (!state.status) state.status = 1
 
   // If rounding is required we use the Float one because the BigDecimal is not supported/not working on Hubitat
   if (decimals >= 0) val = val.toFloat().round(decimals).toBigDecimal();
@@ -266,7 +288,7 @@ private List<String> attributeEnumerate(Boolean existing = true) {
 
 // ------------------------------------------------------------
 
-private Boolean attributeUpdateBattery(String val, String attribBattery, String attribBatteryOrg, Integer type) {
+private Boolean attributeUpdateBattery(String val, String attribBattery, String attribBatteryIcon, String attribBatteryOrg, Integer type) {
   //
   // Convert all different batteries returned values to a 0-100% range
   // Type: 1) soil moisture sensor - range from 1.40V (empty) to 1.65V (full)
@@ -275,6 +297,7 @@ private Boolean attributeUpdateBattery(String val, String attribBattery, String 
   //
   BigDecimal original = val.toBigDecimal();
   BigDecimal percent;
+  BigDecimal icon;
   String unitOrg;
 
   switch (type) {
@@ -296,7 +319,15 @@ private Boolean attributeUpdateBattery(String val, String attribBattery, String 
     unitOrg = "!bool";
   }
 
+  if (percent < 10) icon = 0;
+  else if (percent < 30) icon = 20;
+  else if (percent < 50) icon = 40;
+  else if (percent < 70) icon = 60;
+  else if (percent < 90) icon = 80;
+  else icon = 100;
+
   Boolean updated = attributeUpdateNumber(percent, attribBattery, "%", 0);
+  if (attributeUpdateNumber(icon, attribBatteryIcon, "%")) updated = true;
   if (attributeUpdateNumber(original, attribBatteryOrg, unitOrg)) updated = true;
 
   return (updated);
@@ -640,11 +671,11 @@ Boolean attributeUpdate(String key, String val) {
   switch (key) {
 
   case ~/soilbatt[1-8]/:
-    updated = attributeUpdateBattery(val, "battery", "batteryOrg", 1);
+    updated = attributeUpdateBattery(val, "battery", "batteryIcon", "batteryOrg", 1);
     break;
   
   case ~/pm25batt[1-4]/:
-    updated = attributeUpdateBattery(val, "battery", "batteryOrg", 2);
+    updated = attributeUpdateBattery(val, "battery", "batteryIcon", "batteryOrg", 2);
     break;
   
   case "wh25batt":
@@ -652,7 +683,7 @@ Boolean attributeUpdate(String key, String val) {
   case ~/batt[1-8]/:
   case "wh40batt": 
   case "wh65batt":
-    updated = attributeUpdateBattery(val, "battery", "batteryOrg", 0);
+    updated = attributeUpdateBattery(val, "battery", "batteryIcon", "batteryOrg", 0);
     break;
   
   case "tempinf":
@@ -763,8 +794,26 @@ Boolean attributeUpdate(String key, String val) {
     updated = attributeUpdateWindChill(val, "windChill", "windDanger", "windColor");
     break;
 
-  case "htmltemplate":
+  case "endofdata":
     updated = attributeUpdateHtml("htmlTemplate", "html");
+    
+    // Last thing we do on the driver: update status
+    if (!state.status) {
+      // Last round we have not received any data
+      ztatus("Starving", "orange");
+      state.status = 0;
+    }
+    else {
+      // Receiving data or user error
+      if (attributeUpdateString(val, "time")) updated = true;
+
+      if (state.status != -1) {
+        // If no user error pending we trigger a starving next cycle if we don't receive data
+        ztatus("OK", "green");
+        state.status = 0;
+      }
+    }
+
     break;
 
   default:
@@ -922,21 +971,22 @@ private List<String> htmlGetUserInput(String input, Integer count) {
 
 // ------------------------------------------------------------
 
-private Boolean htmlUpdateUserInput(String input) {
+private String htmlUpdateUserInput(String input) {
   //
   // Return true if HTML templates have been pre-processed sucesfully
   //
   String htmlTemplate = "htmlTemplate";
   String htmlAttrib = "html";
-  String error = "HTML Template Error";
 
   String template;
 
   // Get the maximum number of supported templates
   Integer count = htmlCountAttributes(htmlAttrib);
 
-  // Return if we do not support HTML templates 
-  if (!count) return (true);
+  if (!count) {
+    // Return if we do not support HTML templates 
+    return ("");
+  }
 
   // Cleanup previous states
   htmlSetAttributes("n/a", htmlAttrib, count, true);
@@ -952,21 +1002,19 @@ private Boolean htmlUpdateUserInput(String input) {
   List<String> templateList = htmlGetUserInput(input, count);
   if (templateList == null) {
     // Templates are disabled/empty
-    return (true);
+    return ("");
   }
 
   if (templateList.size() == 0) {
     // Invalid user input
-    state."${error}" = "<font style='color:#ff0000'>Invalid template(s) id, count or repetition.</font>";
-    return (false);
+    return ("Invalid template(s) id, count or repetition");
   }
 
   for (Integer idx = 0; idx < templateList.size(); idx++) {
     // We have valid templates: let's validate them    
     if (htmlValidateTemplate(templateList[idx], htmlAttrib, count) < 1) {
       // Invalid or no attribute in template
-      state."${error}" = "<font style='color:#ff0000'>Invalid attribute or template for the current sensor.</font>";
-      return (false);    
+      return ("Invalid attribute or template for the current sensor");    
     }
   }
 
@@ -978,7 +1026,8 @@ private Boolean htmlUpdateUserInput(String input) {
   }
 
   htmlSetAttributes("pending", htmlAttrib, templateList.size(), false);
-  return (true);
+
+  return ("");
 }
 
 // Driver lifecycle -----------------------------------------------------------------------------------------------------------
@@ -1000,7 +1049,15 @@ void updated() {
     state.clear();
 
     // Pre-process HTML templates (if any)
-    htmlUpdateUserInput(settings.htmlTemplate as String);
+    String error = htmlUpdateUserInput(settings.htmlTemplate as String);
+    if (error) {
+      ztatus(error, "red");
+      state.status = -1;
+    }
+    else {
+      ztatus("OK", "green");
+      state.status = 0;
+    }
   }
   catch (Exception e) {
     logError("Exception in updated(): ${e}");
@@ -1019,7 +1076,6 @@ void uninstalled() {
   catch (Exception e) {
     logError("Exception in uninstalled(): ${e}");
   }
-
 }
 
 // ------------------------------------------------------------

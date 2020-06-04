@@ -20,6 +20,30 @@
   -moz-osx-font-smoothing: grayscale
 }
 
+.ewi-batt0:before {
+  content:'\0030';
+}
+
+.ewi-batt20:before {
+  content:'\0031';
+}
+
+.ewi-batt40:before {
+  content:'\0032';
+}
+
+.ewi-batt60:before {
+  content:'\0033';
+}
+
+.ewi-batt80:before {
+  content:'\0034';
+}
+
+.ewi-batt100:before {
+  content:'\0035';
+}
+
 .ewi-air:before {
   content: "\0041";
 }
@@ -156,7 +180,7 @@
  */
 
 .ewv {
-  font-size: 120%;
+  font-size: larger;
 }
 
 /*
@@ -164,5 +188,5 @@
  */
 
 .ewu {
-  font-size: 80%;
+  font-size: smaller;
 }

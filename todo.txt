@@ -5,6 +5,7 @@ Common
 ------
 
 - Localization
+- Explore ways to have Google assistant read seansor values
 
 Parent
 ------
@@ -12,5 +13,3 @@ Parent
 
 Child
 -----
-
-- Pass time to children to easily detect if sensors go dead
