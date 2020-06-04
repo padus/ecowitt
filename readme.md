@@ -118,7 +118,7 @@ These icons are in reality text, so of course all the standard CSS font styling,
 
 [This is a complete list](https://mircolino.github.io/ecowitt/ecowitt.html) of all the icons available. Just access the page source html to see all the defined icon classes, and how to use them.
 
-<img src="https://github.com/mircolino/ecowitt/raw/master/images/D12.png" width="710" height="625">
+<img src="https://github.com/mircolino/ecowitt/raw/master/images/D12.png">
 
 #### <a name="repository"></a> HTML Template Repository
 

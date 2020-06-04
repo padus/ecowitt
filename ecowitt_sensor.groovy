@@ -798,7 +798,7 @@ Boolean attributeUpdate(String key, String val) {
     // Last thing we do on the driver: update status
     if (!state.status) {
       // Last round we have not received any data
-      ztatus("Starving", "orange");
+      ztatus("Orphaned", "orange");
       state.status = 0;
     }
     else {
