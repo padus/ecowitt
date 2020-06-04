@@ -51,7 +51,7 @@
  * 2020.06.02 - Added visual confirmation of "resync sensors pending"
  * 2020.06.03 - Added last data received timestamp to the child drivers to easily spot if data is not being received from the sensor
  *            - Added battery icons (0%, 20%, 40%, 60%, 80%, 100%)
- *            - Reorganized error e/o status reporting, now displayed in a dedicated "ztatus" attribute (with a "z" so
+ *            - Reorganized error e/o status reporting, now displayed in a dedicated "status" attribute (with a "z" so
  *              it will always show at the bottom of the list)
  */
 
@@ -74,7 +74,7 @@ metadata {
     attribute "passkey", "string";                             // PASSKEY
 
     attribute "time", "string";                                // Time last data was posted
-    attribute "ztatus", "string";                              // Display current driver status
+    attribute "status", "string";                              // Display current driver status
   }
 
   preferences {
@@ -300,7 +300,7 @@ private Boolean ztatus(String str, String color = null) {
 
   if (color) str = "<font style='color:${color}'>${str}</font>";
 
-  return (attributeUpdateString(str, "ztatus"));
+  return (attributeUpdateString(str, "status"));
 }
 
 // Sensor handling ------------------------------------------------------------------------------------------------------------

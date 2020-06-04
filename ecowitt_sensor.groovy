@@ -87,7 +87,7 @@ metadata {
     attribute "html4", "string";                               // 
 
     attribute "time", "string";                                // Time last data was posted
-    attribute "ztatus", "string";                              // Display current driver status
+    attribute "status", "string";                              // Display current driver status
   }
 
   preferences {
@@ -127,7 +127,7 @@ private Boolean ztatus(String str, String color = null) {
 
   if (color) str = "<font style='color:${color}'>${str}</font>";
 
-  return (attributeUpdateString(str, "ztatus"));
+  return (attributeUpdateString(str, "status"));
 }
 
 // Conversions ----------------------------------------------------------------------------------------------------------------
