@@ -36,7 +36,7 @@
 
     <img src="https://github.com/mircolino/ecowitt/raw/master/images/D05.png">
 
-4.  Enter the Gateway MAC address (in any legal form) and click "Save Preferences":
+4.  Enter the Gateway MAC or IP address (in any legal form) and click "Save Preferences":
 
     <img src="https://github.com/mircolino/ecowitt/raw/master/images/D06.png">
 

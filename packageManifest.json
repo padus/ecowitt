@@ -2,9 +2,9 @@
   "packageName": "Ecowitt WiFi Gateway",
   "minimumHEVersion": "2.1.9",
   "author": "Mirco Caramori",
-  "version": "1.5.11",
-  "dateReleased": "2020-06-04",
-  "releaseNotes": "added the ability to enter the mac address directly as a dni",
+  "version": "1.6.23",
+  "dateReleased": "2020-06-05",
+  "releaseNotes": "added support for both MAC and IP addresses",
   "documentationLink": "https://github.com/mircolino/ecowitt/blob/master/readme.md",
   "communityLink": "https://community.hubitat.com/t/release-ecowitt-gw1000-wi-fi-gateway/38983",
   "drivers": [

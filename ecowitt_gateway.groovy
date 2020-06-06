@@ -54,9 +54,10 @@
  *            - Reorganized error e/o status reporting, now displayed in a dedicated "status" attribute (with a "z" so
  *              it will always show at the bottom of the list)
  * 2020.06.04 - Added the ability to enter the MAC address directly as a DNI in the parent device creation page
+ * 2020.06.05 - Added support for both MAC and IP addresses (MACs don't work across VLANs)
  */
 
-public static String version() { return "v1.5.11"; }
+public static String version() { return "v1.6.23"; }
 
 // Metadata -------------------------------------------------------------------------------------------------------------------
 
@@ -68,7 +69,7 @@ metadata {
 
     // Gateway info
     attribute "driver", "string";                              // Driver version (new version notification)
-    attribute "mac", "string";                                 // MAC address 
+    attribute "mac", "string";                                 // Address (either MAC or IP) 
     attribute "model", "string";                               // Model number
     attribute "firmware", "string";                            // Firmware version
     attribute "rf", "string";                                  // Sensors radio frequency
@@ -79,7 +80,7 @@ metadata {
   }
 
   preferences {
-    input(name: "macAddress", type: "string", title: "<font style='font-size:12px; color:#1a77c9'>MAC Address</font>", description: "<font style='font-size:12px; font-style: italic'>Ecowitt Wi-Fi gateway MAC address</font>", defaultValue: "", required: true);
+    input(name: "macAddress", type: "string", title: "<font style='font-size:12px; color:#1a77c9'>MAC / IP Address</font>", description: "<font style='font-size:12px; font-style: italic'>Ecowitt Wi-Fi gateway MAC or IP address</font>", defaultValue: "", required: true);
     input(name: "unitSystem", type: "enum", title: "<font style='font-size:12px; color:#1a77c9'>System of Measurement</font>", description: "<font style='font-size:12px; font-style: italic'>Unit system all values are converted to</font>", options: [0:"Imperial", 1:"Metric"], multiple: false, defaultValue: 0, required: true);
     input(name: "logLevel", type: "enum", title: "<font style='font-size:12px; color:#1a77c9'>Log Verbosity</font>", description: "<font style='font-size:12px; font-style: italic'>Default: 'Debug' for 30 min and 'Info' thereafter</font>", options: [0:"Error", 1:"Warning", 2:"Info", 3:"Debug", 4:"Trace"], multiple: false, defaultValue: 3, required: true);
   }
@@ -107,7 +108,7 @@ private Map versionExtract(String ver) {
   Map val = null;
 
   if (ver) {
-    String pattern = /.*?(\d+)\.(\d+)\.(\d+).*/
+    String pattern = /.*?(\d+)\.(\d+)\.(\d+).*/;
     java.util.regex.Matcher matcher = ver =~ pattern;
 
     if (matcher.groupCount() == 3) {
@@ -173,38 +174,67 @@ Boolean versionUpdate() {
 
 // DNI ------------------------------------------------------------------------------------------------------------------------
 
-private Map dniIsMacValid(String str) {
+private Map dniIsValid(String str) {
   //
-  // Return null if not valid 
-  // otherwise return both DNI and canonical version
+  // Return null if not valid
+  // otherwise return both hex and canonical version
   //
+  List<Integer> val = [];
 
-  Map mac = null;
-
-  if (str) {
-    // We got a non-empty string
-    String hexMac = str.replaceAll("[^a-fA-F0-9]", "").toUpperCase();
-    if (hexMac.length() == 12) {
-      // We got a valid MAC address: let's properly format it
-      str = "${hexMac[0]}${hexMac[1]}:${hexMac[2]}${hexMac[3]}:${hexMac[4]}${hexMac[5]}:${hexMac[6]}${hexMac[7]}:${hexMac[8]}${hexMac[9]}:${hexMac[10]}${hexMac[11]}".toLowerCase();    
-
-      mac = [:];
-      mac.dni = hexMac;
-      mac.canonical = str;
+  try {
+    List<String> token = str.replaceAll(" ", "").tokenize(".:");
+    if (token.size() == 4) {
+      // Regular IPv4
+      token.each {
+        Integer num = Integer.parseInt(it, 10);
+        if (num < 0 || num > 255) throw new Exception();
+        val.add(num);
+      }
+    }
+    else if (token.size() == 6) {
+      // Regular MAC
+      token.each {
+        Integer num = Integer.parseInt(it, 16);
+        if (num < 0 || num > 255) throw new Exception();
+        val.add(num);
+      }
+    }
+    else if (token.size() == 1) {
+      // Hexadecimal IPv4 or MAC
+      str = token[0];
+      if ((str.length() != 8 && str.length() != 12) || str.replaceAll("[a-fA-F0-9]", "").length()) throw new Exception();
+      for (Integer idx = 0; idx < str.length(); idx += 2) val.add(Integer.parseInt(str.substring(idx, idx + 2), 16));
     }
   }
+  catch (Exception ignored) {
+    val.clear();
+  }
 
-  return (mac);
+  Map dni = null;
+
+  if (val.size() == 4) {
+    dni = [:];
+    dni.hex = sprintf("%02X%02X%02X%02X", val[0], val[1], val[2], val[3]);
+    dni.canonical = sprintf("%d.%d.%d.%d", val[0], val[1], val[2], val[3]);
+  }
+
+  if (val.size() == 6) {
+    dni = [:];
+    dni.hex = sprintf("%02X%02X%02X%02X%02X%02X", val[0], val[1], val[2], val[3], val[4], val[5]);
+    dni.canonical = sprintf("%02x:%02x:%02x:%02x:%02x:%02x", val[0], val[1], val[2], val[3], val[4], val[5]);
+  }
+
+  return (dni);
 }
 
 // ------------------------------------------------------------
 
 private String dniUpdate() {
   //
-  // Get the Ecowitt MAC address from the properties and, if valid and not done already, update the driver DNI
-  // Return "error") invalid mac entered by the user
-  //           null) same mac as before
-  //             "") new valid mac
+  // Get the Ecowitt address (either MAC or IP) from the properties and, if valid and not done already, update the driver DNI
+  // Return "error") invalid address entered by the user
+  //           null) same address as before
+  //             "") new valid address
   //
   logDebug("dniUpdate()");
 
@@ -215,29 +245,29 @@ private String dniUpdate() {
   if (setting == null) {
     //
     // *** This is a timing hack ***
-    // When the users sets the DNI/MAC at installation, we update the settings before
+    // When the users sets the DNI at installation, we update the settings before
     // calling update() but when we get here the setting is still null!
     //
     setting = device.getDeviceNetworkId();
   }
 
-  Map mac = dniIsMacValid(setting);
-  if (mac) {
+  Map dni = dniIsValid(setting);
+  if (dni) {
 
-    if ((device.currentValue(attribute) as String) == mac.canonical) {
-      // The mac hasn't changed: we do nothing 
+    if ((device.currentValue(attribute) as String) == dni.canonical) {
+      // The address hasn't changed: we do nothing 
       error = null; 
     }
     else {
-      // Save the new mac as an attribute for later comparison
-      attributeUpdateString(mac.canonical, attribute);   
+      // Save the new address as an attribute for later comparison
+      attributeUpdateString(dni.canonical, attribute);   
 
       // Update the DNI
-      device.setDeviceNetworkId(mac.dni);
+      device.setDeviceNetworkId(dni.hex);
     }
   }
   else {
-    error = "\"${setting}\" is not a valid MAC address";
+    error = "\"${setting}\" is not a valid MAC or IP address";
   }
 
   return (error);
@@ -674,8 +704,8 @@ void resyncSensors() {
   try {
     logDebug("resyncSensors()");
 
-    if (dniIsMacValid(device.getDeviceNetworkId())) {
-      // We have a valid MAC / gateway
+    if (dniIsValid(device.getDeviceNetworkId())) {
+      // We have a valid gateway dni
       ztatus("Sensor sync pending", "blue");
 
       device.updateDataValue("sensorResync", "true");    
@@ -695,9 +725,9 @@ void installed() {
   try {
     logDebug("installed()");
 
-    Map mac = dniIsMacValid(device.getDeviceNetworkId());
-    if (mac) {
-      device.updateSetting("macAddress", [type: "string", value: mac.canonical]);
+    Map dni = dniIsValid(device.getDeviceNetworkId());
+    if (dni) {
+      device.updateSetting("macAddress", [type: "string", value: dni.canonical]);
       updated();
     }
 
@@ -725,7 +755,7 @@ void updated() {
     // Update Device Network ID
     String error = dniUpdate();
     if (error == null) {
-      // The MAC hasn't changed: we set OK only if a resync sensors is not pending
+      // The gateway dni hasn't changed: we set OK only if a resync sensors is not pending
       if (device.getDataValue("sensorResync")) ztatus("Sensor sync pending", "blue");
       else ztatus("OK", "green");
     }
