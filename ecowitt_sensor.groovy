@@ -17,7 +17,7 @@
 */
 
 metadata {
-  definition(name: "Ecowitt RF Sensor", namespace: "mircolino", author: "Mirco Caramori") {
+  definition(name: "Ecowitt RF Sensor", namespace: "mircolino", author: "Mirco Caramori", importUrl: "https://raw.githubusercontent.com/mircolino/ecowitt/master/ecowitt_sensor.groovy") {
     capability "Sensor";
 
     capability "Battery"; 
