@@ -64,7 +64,7 @@ public static String version() { return "v1.6.24"; }
 
 metadata {
   definition(name: "Ecowitt WiFi Gateway", namespace: "mircolino", author: "Mirco Caramori", importUrl: "https://raw.githubusercontent.com/mircolino/ecowitt/master/ecowitt_gateway.groovy") {
-    capability "Sensor";) {
+    capability "Sensor";
     capability "Sensor";
 
     command "resyncSensors";
