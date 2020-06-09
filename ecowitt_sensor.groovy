@@ -769,8 +769,8 @@ Boolean attributeUpdate(String key, String val) {
     updated = attributeUpdateBattery(val, "battery", "batteryIcon", "batteryOrg", 1);
     break;
 
-  case ~/leakbatt([1-4])/:  
   case ~/pm25batt[1-4]/:
+  case ~/leakbatt([1-4])/:
   case "wh57batt":
     updated = attributeUpdateBattery(val, "battery", "batteryIcon", "batteryOrg", 2);
     break;
