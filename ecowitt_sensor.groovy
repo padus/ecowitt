@@ -26,6 +26,7 @@ metadata {
     capability "Pressure Measurement";
     capability "Ultraviolet Index";
     capability "Illuminance Measurement";
+    capability "Water Sensor";
 
  // attribute "battery", "number";                             // 0-100%
     attribute "batteryIcon", "number";                         // 0, 20, 40, 60, 80, 100 
@@ -60,6 +61,11 @@ metadata {
     attribute "aqi_avg_24h", "number";                         // AQI (0-500) 
     attribute "aqiDanger_avg_24h", "string";                   // AQI danger level
     attribute "aqiColor_avg_24h", "string";                    // AQI HTML color  
+
+ // attribute "water", "enum";                                 // "dry" or "wet"
+    attribute "leak", "number";                                // dry) 0, wet) 1
+    attribute "leakMsg", "string";                             // dry) "Dry", wet) "Leak detected!"
+    attribute "leakColor", "string";                           // dry) "ffffff", wet) "ff0000" to colorize the icon
     
     attribute "lightningDistance", "number";                   // Strike distance - km
     attribute "lightningCount", "number";                      // Strike count
@@ -473,7 +479,35 @@ private Boolean attributeUpdatePM25(String val, String attribPm25, String attrib
 
 // ------------------------------------------------------------
 
-private Boolean attributeLightningDistance(String val, String attrib) {
+private Boolean attributeUpdateLeak(String val, String attribWater, String attribLeak, String attribLeakMsg, String attribLeakColor) {
+
+  BigDecimal leak = (val.toBigDecimal())? 1: 0;
+  String water, message, color;
+
+  if (leak) {
+    water = "wet";
+    leak = 1;
+    message = "Leak detected!";
+    color = "ff0000";
+  }
+  else {
+    water = "dry";
+    leak = 0;
+    message = "Dry";
+    color = "ffffff";
+  }
+
+  Boolean updated = attributeUpdateString(water, attribWater);
+  if (attributeUpdateNumber(leak, attribLeak)) updated = true;
+  if (attributeUpdateString(message, attribLeakMsg)) updated = true;
+  if (attributeUpdateString(color, attribLeakColor)) updated = true;
+
+  return (updated);
+}
+
+// ------------------------------------------------------------
+
+private Boolean attributeUpdateLightningDistance(String val, String attrib) {
 
   if (!val) return (attributeUpdateString("n/a", attrib));
 
@@ -491,7 +525,7 @@ private Boolean attributeLightningDistance(String val, String attrib) {
 
 // ------------------------------------------------------------
 
-private Boolean attributeLightningCount(String val, String attrib) {
+private Boolean attributeUpdateLightningCount(String val, String attrib) {
 
   if (!val) return (attributeUpdateString("n/a", attrib));
 
@@ -500,7 +534,7 @@ private Boolean attributeLightningCount(String val, String attrib) {
 
 // ------------------------------------------------------------
 
-private Boolean attributeLightningTime(String val, String attrib) {
+private Boolean attributeUpdateLightningTime(String val, String attrib) {
 
   if (!val) return (attributeUpdateString("n/a", attrib));
 
@@ -734,7 +768,8 @@ Boolean attributeUpdate(String key, String val) {
   case ~/soilbatt[1-8]/:
     updated = attributeUpdateBattery(val, "battery", "batteryIcon", "batteryOrg", 1);
     break;
-  
+
+  case ~/leakbatt([1-4])/:  
   case ~/pm25batt[1-4]/:
   case "wh57batt":
     updated = attributeUpdateBattery(val, "battery", "batteryIcon", "batteryOrg", 2);
@@ -809,16 +844,20 @@ Boolean attributeUpdate(String key, String val) {
     updated = attributeUpdatePM25(val, "pm25_avg_24h", "aqi_avg_24h", "aqiDanger_avg_24h", "aqiColor_avg_24h");
     break;
 
+  case ~/leak_ch([1-4])/:
+    updated = attributeUpdateLeak(val, "water", "leak", "leakMsg", "leakColor");
+    break;
+
   case "lightning":
-    updated = attributeLightningDistance(val, "lightningDistance");
+    updated = attributeUpdateLightningDistance(val, "lightningDistance");
     break;
 
   case "lightning_num":
-    updated = attributeLightningCount(val, "lightningCount");
+    updated = attributeUpdateLightningCount(val, "lightningCount");
     break;
 
   case "lightning_time":
-    updated = attributeLightningTime(val, "lightningTime");
+    updated = attributeUpdateLightningTime(val, "lightningTime");
     break;
 
   case "uv":

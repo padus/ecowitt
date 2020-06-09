@@ -57,9 +57,10 @@
  * 2020.06.05 - Added support for both MAC and IP addresses (MACs don't work across VLANs)
  * 2020.06.06 - Add importURL for easier updating
  * 2020.06.08 - Added support for Lightning Detection Sensor (WH57)
+ * 2020.06.08 - Added support for Multi-channel Water Leak Sensor (WH55)
  */
 
-public static String version() { return "v1.6.30"; }
+public static String version() { return "v1.7.45"; }
 
 // Metadata -------------------------------------------------------------------------------------------------------------------
 
@@ -653,7 +654,8 @@ private Boolean attributeUpdate(Map data, Closure sensor) {
     //
     // Multi-channel Water Leak Sensor (WH55)
     //
-    case ~/whatdoiknow([1-4])/:
+    case ~/leakbatt([1-4])/:
+    case ~/leak_ch([1-4])/:
       updated = sensor(it.key, it.value, 7, java.util.regex.Matcher.lastMatcher.group(1).toInteger());
       break;
 
