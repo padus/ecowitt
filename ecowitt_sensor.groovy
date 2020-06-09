@@ -794,7 +794,7 @@ Boolean attributeUpdate(String key, String val) {
     break;
 
   case "lightning_num":
-    updated = attributeUpdateNumber(val, "lightningCount");
+    updated = attributeUpdateNumber(val.toBigDecimal(), "lightningCount");
     break;
 
   case "lightning_time":

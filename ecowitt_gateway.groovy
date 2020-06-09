@@ -59,7 +59,7 @@
  * 2020.06.08 - Added support for Lightning Detection Sensor (WH57)
  */
 
-public static String version() { return "v1.6.28"; }
+public static String version() { return "v1.6.29"; }
 
 // Metadata -------------------------------------------------------------------------------------------------------------------
 
