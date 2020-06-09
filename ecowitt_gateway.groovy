@@ -56,9 +56,10 @@
  * 2020.06.04 - Added the ability to enter the MAC address directly as a DNI in the parent device creation page
  * 2020.06.05 - Added support for both MAC and IP addresses (MACs don't work across VLANs)
  * 2020.06.06 - Add importURL for easier updating
+ * 2020.06.08 - Added support for Lightning Detection Sensor (WH57)
  */
 
-public static String version() { return "v1.6.24"; }
+public static String version() { return "v1.6.28"; }
 
 // Metadata -------------------------------------------------------------------------------------------------------------------
 
@@ -659,7 +660,10 @@ private Boolean attributeUpdate(Map data, Closure sensor) {
     //
     // Lightning Detection Sensor (WH57)
     //
-    case "whatdoiknow":
+    case "wh57batt":
+    case "lightning":
+    case "lightning_num":
+    case "lightning_time":
       updated = sensor(it.key, it.value, 8);
       break;
 

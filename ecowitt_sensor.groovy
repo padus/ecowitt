@@ -61,6 +61,10 @@ metadata {
     attribute "aqiDanger_avg_24h", "string";                   // AQI danger level
     attribute "aqiColor_avg_24h", "string";                    // AQI HTML color  
     
+    attribute "lightningDistance", "number";                   // Strike distance - km
+    attribute "lightningCount", "number";                      // Strike count
+    attribute "lightningTime", "string";                       // Strike time - local time
+
  // attribute "ultravioletIndex", "number";                    // UV index (0-11+) 
     attribute "ultravioletDanger", "string";                   // UV danger (0-2.9) Low, (3-5.9) Medium, (6-7.9) High, (8-10.9) Very High, (11+) Extreme
     attribute "ultravioletColor", "string";                    // UV HTML color
@@ -137,6 +141,27 @@ private Boolean unitSystemIsMetric() {
   // Return true if the selected unit system is metric
   //
   return (getParent().unitSystemIsMetric());
+}
+
+// ------------------------------------------------------------
+
+private String timeEpochToLocal(String time) {
+  //
+  // Convert Unix Epoch time (seconds) to local time with locale format 
+  //
+  try {
+    Long epoch = time.toLong() * 1000L;
+
+    Date date = new Date(epoch);
+
+    java.text.SimpleDateFormat format = new java.text.SimpleDateFormat();
+    time = format.format(date);
+  }
+  catch (Exception e) {
+    logError("Exception in timeEpochToLocal(): ${e}");
+  }
+
+  return (time);
 }
 
 // ------------------------------------------------------------
@@ -448,6 +473,22 @@ private Boolean attributeUpdatePM25(String val, String attribPm25, String attrib
 
 // ------------------------------------------------------------
 
+private Boolean attributeLightningDistance(String val, String attrib) {
+
+  BigDecimal distance = val.toBigDecimal();
+  String measure = "km";
+
+  // Convert to imperial if requested
+  if (unitSystemIsMetric() == false) {
+    distance = convert_km_to_mi(distance);
+    measure = "mi";
+  }
+
+  return (attributeUpdateNumber(distance, attrib, measure, 1));
+}
+
+// ------------------------------------------------------------
+
 private Boolean attributeUpdateUV(String val, String attribUvIndex, String attribUvDanger, String attribUvColor) {
   //
   // Conversions based on https://en.wikipedia.org/wiki/Ultraviolet_index
@@ -675,6 +716,7 @@ Boolean attributeUpdate(String key, String val) {
     break;
   
   case ~/pm25batt[1-4]/:
+  case "wh57batt":
     updated = attributeUpdateBattery(val, "battery", "batteryIcon", "batteryOrg", 2);
     break;
   
@@ -745,6 +787,18 @@ Boolean attributeUpdate(String key, String val) {
 
   case ~/pm25_avg_24h_ch[1-4]/:
     updated = attributeUpdatePM25(val, "pm25_avg_24h", "aqi_avg_24h", "aqiDanger_avg_24h", "aqiColor_avg_24h");
+    break;
+
+  case "lightning":
+    updated = attributeLightningDistance(val, "lightningDistance");
+    break;
+
+  case "lightning_num":
+    updated = attributeUpdateNumber(val, "lightningCount");
+    break;
+
+  case "lightning_time":
+    updated = attributeUpdateString(timeEpochToLocal(val), "lightningTime");
     break;
 
   case "uv":
