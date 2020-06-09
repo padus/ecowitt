@@ -475,6 +475,8 @@ private Boolean attributeUpdatePM25(String val, String attribPm25, String attrib
 
 private Boolean attributeLightningDistance(String val, String attrib) {
 
+  if (!val) return (attributeUpdateString("n/a", attrib));
+
   BigDecimal distance = val.toBigDecimal();
   String measure = "km";
 
@@ -485,6 +487,24 @@ private Boolean attributeLightningDistance(String val, String attrib) {
   }
 
   return (attributeUpdateNumber(distance, attrib, measure, 1));
+}
+
+// ------------------------------------------------------------
+
+private Boolean attributeLightningCount(String val, String attrib) {
+
+  if (!val) return (attributeUpdateString("n/a", attrib));
+
+  return (attributeUpdateNumber(val.toBigDecimal(), attrib));
+}
+
+// ------------------------------------------------------------
+
+private Boolean attributeLightningTime(String val, String attrib) {
+
+  if (!val) return (attributeUpdateString("n/a", attrib));
+
+  return (attributeUpdateString(timeEpochToLocal(val), attrib));
 }
 
 // ------------------------------------------------------------
@@ -794,11 +814,11 @@ Boolean attributeUpdate(String key, String val) {
     break;
 
   case "lightning_num":
-    updated = attributeUpdateNumber(val.toBigDecimal(), "lightningCount");
+    updated = attributeLightningCount(val, "lightningCount");
     break;
 
   case "lightning_time":
-    updated = attributeUpdateString(timeEpochToLocal(val), "lightningTime");
+    updated = attributeLightningTime(val, "lightningTime");
     break;
 
   case "uv":

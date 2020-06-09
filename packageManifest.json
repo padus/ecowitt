@@ -2,7 +2,7 @@
   "packageName": "Ecowitt WiFi Gateway",
   "minimumHEVersion": "2.1.9",
   "author": "Mirco Caramori",
-  "version": "1.6.29",
+  "version": "1.6.30",
   "dateReleased": "2020-06-08",
   "releaseNotes": "added support for lightning detection sensor",
   "documentationLink": "https://github.com/mircolino/ecowitt/blob/master/readme.md",

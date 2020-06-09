@@ -59,7 +59,7 @@
  * 2020.06.08 - Added support for Lightning Detection Sensor (WH57)
  */
 
-public static String version() { return "v1.6.29"; }
+public static String version() { return "v1.6.30"; }
 
 // Metadata -------------------------------------------------------------------------------------------------------------------
 
@@ -822,7 +822,7 @@ void parse(String msg) {
     data = [:];
     body.split("&").each {
       String[] keyValue = it.split("=");
-      data[keyValue[0]] = keyValue[1];
+      data[keyValue[0]] = (keyValue.size() > 1)? keyValue[1]: "";
     }
 
     // Inject special keys to notify the children to update calculated values such as: dewpoint, heatindex, windchill etc.)
