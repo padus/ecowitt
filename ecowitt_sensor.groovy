@@ -1,5 +1,5 @@
 /**
- * Driver:     Ecowitt Weather Sensor 
+ * Driver:     Ecowitt RF Sensor 
  * Author:     Mirco Caramori
  * Repository: https://github.com/mircolino/ecowitt
  * Import URL: https://raw.githubusercontent.com/mircolino/ecowitt/master/ecowitt_sensor.groovy

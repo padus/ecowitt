@@ -399,7 +399,7 @@ private void sensorMapping(Map data) {
   logDebug("sensorMapping()");
 
   //
-  // Outdoor Weather Sensor (WH26 -> WH80 -> WH69)
+  // Outdoor Ambient Sensor (WH26 -> WH80 -> WH69)
   //
   if (data.containsKey("winddir")) { 
     sensorMap[2] = sensorMap[9];
@@ -425,9 +425,9 @@ private void sensorMapping(Map data) {
 private String sensorName(Integer id, Integer channel) {
 
   Map sensorId = ["WH69": "PWS Sensor",
-                  "WH25": "Indoor Weather Sensor",
-                  "WH26": "Outdoor Weather Sensor",
-                  "WH31": "Weather Sensor",
+                  "WH25": "Indoor Ambient Sensor",
+                  "WH26": "Outdoor Ambient Sensor",
+                  "WH31": "Ambient Sensor",
                   "WH40": "Rain Gauge Sensor",
                   "WH41": "Air Quality Sensor",
                   "WH51": "Soil Moisture Sensor",
@@ -589,7 +589,7 @@ private Boolean attributeUpdate(Map data, Closure sensor) {
       break;
 
     //
-    // Integrated/Indoor Weather Sensor (WH25)
+    // Integrated/Indoor Ambient Sensor (WH25)
     //
     case "wh25batt":
     case "tempinf":
@@ -600,7 +600,7 @@ private Boolean attributeUpdate(Map data, Closure sensor) {
       break;
 
     //
-    // Outdoor Weather Sensor (WH26 -> WH80 -> WH69)
+    // Outdoor Ambient Sensor (WH26 -> WH80 -> WH69)
     //
     case "wh26batt":
     case "tempf":
@@ -611,7 +611,7 @@ private Boolean attributeUpdate(Map data, Closure sensor) {
       break;
 
     //
-    // Multi-channel Weather Sensor (WH31)
+    // Multi-channel Ambient Sensor (WH31)
     //
     case ~/batt([1-8])/:
     case ~/temp([1-8])f/:
