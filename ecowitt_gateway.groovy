@@ -58,9 +58,11 @@
  * 2020.06.06 - Add importURL for easier updating
  * 2020.06.08 - Added support for Lightning Detection Sensor (WH57)
  * 2020.06.08 - Added support for Multi-channel Water Leak Sensor (WH55)
+ * 2020.06.21 - Added support for pressure correction to sea level based on altitude and temperature
+ *
  */
 
-public static String version() { return "v1.7.45"; }
+public static String version() { return "v1.8.61"; }
 
 // Metadata -------------------------------------------------------------------------------------------------------------------
 
@@ -474,7 +476,7 @@ private Boolean sensorEnumerate(String key, String value, Integer id = null, Int
   //
   // Enumerate sensors needed for the current data
   //
-  if (id && value) {
+  if (id && value != null) {
     String dni = sensorDni(id, channel);
 
     ArrayList<String> sensorList = [];
@@ -509,7 +511,7 @@ private Boolean sensorUpdate(String key, String value, Integer id = null, Intege
       String dni = sensorDni(id, channel);
 
       com.hubitat.app.ChildDeviceWrapper sensor = getChildDevice(dni);
-      if (sensor == null && value) {
+      if (sensor == null && value != null) {
         //
         // Sensor doesn't exist: we need to create it
         // val != null ensures that it's not an injected (fake) key which will create a ghost child sensor
@@ -673,6 +675,8 @@ private Boolean attributeUpdate(Map data, Closure sensor) {
     // Wind & Solar Sensor (WH80 -> WH69)
     //
     case "wh65batt":
+    case "wh68batt":
+    case "wh80batt":
     case "winddir":
     case "winddir_avg10m":
     case "windspeedmph":

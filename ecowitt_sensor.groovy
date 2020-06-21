@@ -101,7 +101,10 @@ metadata {
   }
 
   preferences {
-    input(name: "htmlTemplate", type: "string", title: "<font style='font-size:12px; color:#1a77c9'>Tile HTML Template(s)</font>", description: "<font style='font-size:12px; font-style: italic'>See <a href='https://github.com/mircolino/ecowitt/blob/master/readme.md#templates' target='_blank'>documentation</a> for input formats</font>", defaultValue: "");
+    input(name: "htmlTemplate", type: "string", title: "<font style='font-size:12px; color:#1a77c9'>Tile HTML Template(s)</font>", description: "<font style='font-size:12px; font-style: italic'>See <u><a href='https://github.com/mircolino/ecowitt/blob/master/readme.md#templates' target='_blank'>documentation</a></u> for input formats</font>", defaultValue: "");
+    if (localAltitude != null) {
+      input(name: "localAltitude", type: "string", title: "<font style='font-size:12px; color:#1a77c9'><u><a href='https://www.advancedconverter.com/map-tools/altitude-on-google-maps' target='_blank'>Altitude</a></u> to Correct Sea Level Pressure</font>", description: "<font style='font-size:12px; font-style: italic'>Examples: \"378 ft\" or \"115 m\"</font>", defaultValue: "", required: true);
+    }
   }
 }
 
@@ -211,7 +214,7 @@ private BigDecimal convert_inHg_to_hPa(BigDecimal val) {
 // ------------------------------------------------------------
 
 private BigDecimal convert_hPa_to_inHg(BigDecimal val) {
-  return (val * 0.00029529983071445);
+  return (val / 33.863886666667);
 }
 
 // ------------------------------------------------------------
@@ -224,6 +227,18 @@ private BigDecimal convert_in_to_mm(BigDecimal val) {
 
 private BigDecimal convert_mm_to_in(BigDecimal val) {
   return (val / 25.4);
+}
+
+// ------------------------------------------------------------
+
+private BigDecimal convert_ft_to_m(BigDecimal val) {
+  return (val / 3.28084);
+}
+
+// ------------------------------------------------------------
+
+private BigDecimal convert_m_to_ft(BigDecimal val) {
+  return (val * 3.28084);
 }
 
 // ------------------------------------------------------------
@@ -391,18 +406,59 @@ private Boolean attributeUpdateHumidity(String val, String attribHumidity) {
 
 // ------------------------------------------------------------
 
-private Boolean attributeUpdatePressure(String val, String attribPressure) {
+private Boolean attributeUpdatePressure(String val, String attribPressure, String attribPressureAbs) {
   
-  BigDecimal length = val.toBigDecimal();
-  String measure = "inHg";
+  // Get unit system
+  Boolean metric = unitSystemIsMetric();
 
-  // Convert to metric if requested
-  if (unitSystemIsMetric()) {
-    length = convert_inHg_to_hPa(length);
-    measure = "hPa";
+  // Get pressure in hectopascal
+  BigDecimal absolute = convert_inHg_to_hPa(val.toBigDecimal());
+
+  // Get altitude in meters
+  val = settings.localAltitude;
+  if (!val) {
+    // First time: initialize and show the preference
+    val = metric? "0 m": "0 ft";
+    device.updateSetting("localAltitude", [value: val, type: "string"]);
   }
 
-  return (attributeUpdateNumber(length, attribPressure, measure, 2));
+  BigDecimal altitude;
+  try {
+    String[] field = val.split();
+    altitude = field[0].toBigDecimal();
+    if (field.size() == 1) {
+      // No unit found: let's use the parent setting
+      if (!metric) altitude = convert_ft_to_m(altitude);
+    }
+    else {
+      // Found a unit: convert accordingly
+      if (field[1][0] == "f" || field[1][0] == "F") altitude = convert_ft_to_m(altitude);
+    }
+  }
+  catch(Exception ignored) {
+    altitude = 0;
+  }
+
+  // Get temperature in celsious
+  BigDecimal temperature = (device.currentValue("temperature") as BigDecimal);
+  if (temperature == null) temperature = 18;
+  else if (!metric) temperature = convert_F_to_C(temperature);
+
+  // Correct pressure to sea level using this conversion formula: https://keisan.casio.com/exec/system/1224575267
+  BigDecimal relative = absolute * Math.pow(1 - ((altitude * 0.0065) / (temperature + (altitude * 0.0065) + 273.15)), -5.257);
+
+  // Convert to imperial if requested
+  if (metric) val = "hPa";
+  else {
+    absolute = convert_hPa_to_inHg(absolute);
+    relative = convert_hPa_to_inHg(relative);
+    val = "inHg";
+  }
+
+  Boolean updated = attributeUpdateNumber(relative, attribPressure, val, 2);
+  if (attributeUpdateNumber(absolute, attribPressureAbs, val, 2)) updated = true;
+
+  return (updated);
 }
 
 // ------------------------------------------------------------
@@ -766,6 +822,8 @@ Boolean attributeUpdate(String key, String val) {
   switch (key) {
 
   case ~/soilbatt[1-8]/:
+  case "wh68batt":
+  case "wh80batt":
     updated = attributeUpdateBattery(val, "battery", "batteryIcon", "batteryOrg", 1);
     break;
 
@@ -797,11 +855,11 @@ Boolean attributeUpdate(String key, String val) {
     break;
 
   case "baromrelin":
-    updated = attributeUpdatePressure(val, "pressure");
+    // we ignore this value as we do our own correction
     break;
 
   case "baromabsin":
-    updated = attributeUpdatePressure(val, "pressureAbs");
+    updated = attributeUpdatePressure(val, "pressure", "pressureAbs");
     break;
 
   case "rainratein":
