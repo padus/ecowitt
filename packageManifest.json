@@ -2,9 +2,9 @@
   "packageName": "Ecowitt WiFi Gateway",
   "minimumHEVersion": "2.1.9",
   "author": "Mirco Caramori",
-  "version": "1.8.61",
-  "dateReleased": "2020-06-21",
-  "releaseNotes": "added support for pressure correction to sea level based on altitude and temperature",
+  "version": "1.9.74",
+  "dateReleased": "2020-06-22",
+  "releaseNotes": "added preference to let the end-user decide whether to compound or not outdoor sensors",
   "documentationLink": "https://github.com/mircolino/ecowitt/blob/master/readme.md",
   "communityLink": "https://community.hubitat.com/t/release-ecowitt-gw1000-wi-fi-gateway/38983",
   "drivers": [

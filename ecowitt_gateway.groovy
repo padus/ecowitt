@@ -51,18 +51,18 @@
  * 2020.06.02 - Added visual confirmation of "resync sensors pending"
  * 2020.06.03 - Added last data received timestamp to the child drivers to easily spot if data is not being received from the sensor
  *            - Added battery icons (0%, 20%, 40%, 60%, 80%, 100%)
- *            - Reorganized error e/o status reporting, now displayed in a dedicated "status" attribute (with a "z" so
- *              it will always show at the bottom of the list)
+ *            - Reorganized error e/o status reporting, now displayed in a dedicated "status" attribute
  * 2020.06.04 - Added the ability to enter the MAC address directly as a DNI in the parent device creation page
- * 2020.06.05 - Added support for both MAC and IP addresses (MACs don't work across VLANs)
+ * 2020.06.05 - Added support for both MAC and IP addresses (since MACs don't work across VLANs)
  * 2020.06.06 - Add importURL for easier updating
  * 2020.06.08 - Added support for Lightning Detection Sensor (WH57)
  * 2020.06.08 - Added support for Multi-channel Water Leak Sensor (WH55)
  * 2020.06.21 - Added support for pressure correction to sea level based on altitude and temperature
+ * 2020.06.22 - Added preference to let the end-user decide whether to compound or not outdoor sensors
  *
  */
 
-public static String version() { return "v1.8.61"; }
+public static String version() { return "v1.9.74"; }
 
 // Metadata -------------------------------------------------------------------------------------------------------------------
 
@@ -86,6 +86,7 @@ metadata {
 
   preferences {
     input(name: "macAddress", type: "string", title: "<font style='font-size:12px; color:#1a77c9'>MAC / IP Address</font>", description: "<font style='font-size:12px; font-style: italic'>Ecowitt Wi-Fi gateway MAC or IP address</font>", defaultValue: "", required: true);
+    input(name: "bundleSensors", type: "bool", title: "<font style='font-size:12px; color:#1a77c9'>Compound Outdoor Sensors</font>", description: "<font style='font-size:12px; font-style: italic'>Combine sensors in a single PWS array</font>", defaultValue: true);
     input(name: "unitSystem", type: "enum", title: "<font style='font-size:12px; color:#1a77c9'>System of Measurement</font>", description: "<font style='font-size:12px; font-style: italic'>Unit system all values are converted to</font>", options: [0:"Imperial", 1:"Metric"], multiple: false, defaultValue: 0, required: true);
     input(name: "logLevel", type: "enum", title: "<font style='font-size:12px; color:#1a77c9'>Log Verbosity</font>", description: "<font style='font-size:12px; font-style: italic'>Default: 'Debug' for 30 min and 'Info' thereafter</font>", options: [0:"Error", 1:"Warning", 2:"Info", 3:"Debug", 4:"Trace"], multiple: false, defaultValue: 3, required: true);
   }
@@ -99,7 +100,67 @@ metadata {
  * "sensorList"                                                // List of children DNIs
  */
  
- // Versioning -----------------------------------------------------------------------------------------------------------------
+// Preferences ----------------------------------------------------------------------------------------------------------------
+
+private String gatewayMacAddress() {
+  //
+  // Return the MAC or IP address as entered by the user, or the current DNI if one hasn't been entered yet
+  //
+  String address = settings.macAddress as String;
+
+  if (address == null) {
+    //
+    // *** This is a timing hack ***
+    // When the users sets the DNI at installation, we update the settings before
+    // calling update() but when we get here the setting is still null!
+    //
+    address = device.getDeviceNetworkId();
+  }
+
+  return (address);
+}
+
+// ------------------------------------------------------------
+
+private Boolean bundleOutdoorSensors() {
+  //
+  // Return true if outdoor sensors are to be bundled together
+  //
+  if (settings.bundleSensors != null) return (settings.bundleSensors);
+  return (true);
+}
+
+// ------------------------------------------------------------
+
+ Boolean unitSystemIsMetric() {
+  //
+  // Return true if the selected unit system is metric
+  // Declared public because it's being used by the child-devices
+  //
+  if (settings.unitSystem != null) return (settings.unitSystem.toInteger() != 0);
+  return (false);
+}
+
+// ------------------------------------------------------------
+
+Integer logGetLevel() {
+  //
+  // Get the log level as an Integer:
+  //
+  //   0) log only Errors
+  //   1) log Errors and Warnings
+  //   2) log Errors, Warnings and Info
+  //   3) log Errors, Warnings, Info and Debug
+  //   4) log Errors, Warnings, Info, Debug and Trace/diagnostic (everything)
+  //
+  // If the level is not yet set in the driver preferences, return a default of 2 (Info)
+  // Declared public because it's being used by the child-devices as well
+  //
+  if (settings.logLevel != null) return (settings.logLevel.toInteger());
+  return (2);
+}
+
+// Versioning -----------------------------------------------------------------------------------------------------------------
 
 private Map versionExtract(String ver) {
   //
@@ -245,16 +306,7 @@ private String dniUpdate() {
 
   String error = "";
   String attribute = "mac";
-  String setting = settings.macAddress as String;
-
-  if (setting == null) {
-    //
-    // *** This is a timing hack ***
-    // When the users sets the DNI at installation, we update the settings before
-    // calling update() but when we get here the setting is still null!
-    //
-    setting = device.getDeviceNetworkId();
-  }
+  String setting = gatewayMacAddress();
 
   Map dni = dniIsValid(setting);
   if (dni) {
@@ -280,17 +332,6 @@ private String dniUpdate() {
 
 // Conversion -----------------------------------------------------------------------------------------------------------------
 
-Boolean unitSystemIsMetric() {
-  //
-  // Return true if the selected unit system is metric
-  // Declared public because it's being used by the child-devices
-  //
-  if (settings.unitSystem != null && settings.unitSystem.toInteger() != 0) return (true);
-  return (false);
-}
-
-// ------------------------------------------------------------
-
 private String timeUtcToLocal(String time) {
   //
   // Convert a UTC date and time in the format "yyyy-MM-dd+HH:mm:ss" to a local time with locale format 
@@ -314,25 +355,6 @@ private String timeUtcToLocal(String time) {
 }
 
 // Logging --------------------------------------------------------------------------------------------------------------------
-
-Integer logGetLevel() {
-  //
-  // Get the log level as an Integer:
-  //
-  //   0) log only Errors
-  //   1) log Errors and Warnings
-  //   2) log Errors, Warnings and Info
-  //   3) log Errors, Warnings, Info and Debug
-  //   4) log Errors, Warnings, Info, Debug and Trace/diagnostic (everything)
-  //
-  // If the level is not yet set in the driver preferences, return a default of 2 (Info)
-  // Declared public because it's being used by the child-devices as well
-  //
-  if (settings.logLevel != null) return (settings.logLevel.toInteger());
-  return (2);
-}
-
-// ------------------------------------------------------------
 
 void logDebugOff() {
   //
@@ -400,23 +422,29 @@ private void sensorMapping(Map data) {
 
   logDebug("sensorMapping()");
 
-  //
-  // Outdoor Ambient Sensor (WH26 -> WH80 -> WH69)
-  //
-  if (data.containsKey("winddir")) { 
-    sensorMap[2] = sensorMap[9];
-    if (data.containsKey("rainratein")) sensorMap[2] = sensorMap[0];
+  if (bundleOutdoorSensors()) {
+    //
+    // If enabled we bundle temp/humidity, wind/solar and rain sensors in a single PWS station
+    //
+
+    //
+    // Outdoor Ambient Sensor (WH26 -> WH80 -> WH69)
+    //
+    if (data.containsKey("winddir")) { 
+      sensorMap[2] = sensorMap[9];
+      if (data.containsKey("rainratein")) sensorMap[2] = sensorMap[0];
+    }
+
+    //
+    // Rain Gauge Sensor (WH40 -> WH69)
+    //
+    if (data.containsKey("winddir")) sensorMap[4] = sensorMap[0];
+
+    //
+    // Wind & Solar Sensor (WH80 -> WH69)
+    //
+    if (data.containsKey("rainratein")) sensorMap[9] = sensorMap[0];
   }
-
-  //
-  // Rain Gauge Sensor (WH40 -> WH69)
-  //
-  if (data.containsKey("winddir")) sensorMap[4] = sensorMap[0];
-
-  //
-  // Wind & Solar Sensor (WH80 -> WH69)
-  //
-  if (data.containsKey("rainratein")) sensorMap[9] = sensorMap[0];
 
   // Save the mapping in the state variables
   device.updateDataValue("sensorMap", sensorMap.toString());
