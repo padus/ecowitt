@@ -87,7 +87,7 @@ metadata {
 
   preferences {
     input(name: "macAddress", type: "string", title: "<font style='font-size:12px; color:#1a77c9'>MAC / IP Address</font>", description: "<font style='font-size:12px; font-style: italic'>Ecowitt Wi-Fi gateway MAC or IP address</font>", defaultValue: "", required: true);
-    input(name: "bundleSensors", type: "bool", title: "<font style='font-size:12px; color:#1a77c9'>Compound Outdoor Sensors</font>", description: "<font style='font-size:12px; font-style: italic'>Combine sensors in a single PWS array</font>", defaultValue: true);
+    input(name: "bundleSensors", type: "bool", title: "<font style='font-size:12px; color:#1a77c9'>Compound Outdoor Sensors</font>", description: "<font style='font-size:12px; font-style: italic'>Combine sensors in a virtual PWS array</font>", defaultValue: true);
     input(name: "unitSystem", type: "enum", title: "<font style='font-size:12px; color:#1a77c9'>System of Measurement</font>", description: "<font style='font-size:12px; font-style: italic'>Unit system all values are converted to</font>", options: [0:"Imperial", 1:"Metric"], multiple: false, defaultValue: 0, required: true);
     input(name: "logLevel", type: "enum", title: "<font style='font-size:12px; color:#1a77c9'>Log Verbosity</font>", description: "<font style='font-size:12px; font-style: italic'>Default: 'Debug' for 30 min and 'Info' thereafter</font>", options: [0:"Error", 1:"Warning", 2:"Info", 3:"Debug", 4:"Trace"], multiple: false, defaultValue: 3, required: true);
   }
