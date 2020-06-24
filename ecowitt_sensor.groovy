@@ -32,6 +32,18 @@ metadata {
     attribute "batteryIcon", "number";                         // 0, 20, 40, 60, 80, 100 
     attribute "batteryOrg", "number";                          // original/un-translated battery value returned by the sensor 
 
+    attribute "batteryTemp", "number";                         // 
+    attribute "batteryTempIcon", "number";                     // Only created/used when a WH32 is compounded in a PWS
+    attribute "batteryTempOrg", "number";                      // 
+
+    attribute "batteryRain", "number";                         // 
+    attribute "batteryRainIcon", "number";                     // Only created/used when a WH40 is compounded in a PWS
+    attribute "batteryRainOrg", "number";                      // 
+
+    attribute "batteryWind", "number";                         // 
+    attribute "batteryWindIcon", "number";                     // Only created/used when a WH68/WH80 is compounded in a PWS 
+    attribute "batteryWindOrg", "number";                      // 
+
  // attribute "temperature", "number";                         // °F
 
  // attribute "humidity", "number";                            // 0-100%
@@ -112,8 +124,10 @@ metadata {
  * State variables used by the driver:
  *
  * status: -1) driver is in error
- *          0) driver has not received data
+ *          0) driver is waiting to receive data
  *          1) driver is OK and processing data
+ *
+ * compounded: true) child sensor bundles more than one physical sensor
  */
 
 /*
@@ -274,7 +288,7 @@ private Boolean attributeUpdateString(String val, String attribute) {
   //
 
   // If starving, register the sensor as alive and receiving data
-  if (!state.status) state.status = 1
+  if (!state.status) state.status = 1;
 
   if ((device.currentValue(attribute) as String) != val) {
     sendEvent(name: attribute, value: val);
@@ -293,7 +307,7 @@ private Boolean attributeUpdateNumber(BigDecimal val, String attribute, String m
   //
 
   // If starving, register the sensor as alive and receiving data
-  if (!state.status) state.status = 1
+  if (!state.status) state.status = 1;
 
   // If rounding is required we use the Float one because the BigDecimal is not supported/not working on Hubitat
   if (decimals >= 0) val = val.toFloat().round(decimals).toBigDecimal();
@@ -377,6 +391,38 @@ private Boolean attributeUpdateBattery(String val, String attribBattery, String 
   if (attributeUpdateNumber(original, attribBatteryOrg, unitOrg)) updated = true;
 
   return (updated);
+}
+
+// ----------------------------
+
+private Boolean attributeUpdateLowestBattery() {
+  BigDecimal percent = 100;
+  String org = "0";
+  Integer type = 0;
+
+  BigDecimal temp = device.currentValue("batteryTemp") as BigDecimal;
+  BigDecimal rain = device.currentValue("batteryRain") as BigDecimal;
+  BigDecimal wind = device.currentValue("batteryWind") as BigDecimal;
+
+  if (temp != null) {
+    percent = temp;
+    org = device.currentValue("batteryTempOrg") as String;
+    type = 0; 
+  }
+  
+  if (rain != null && rain < percent) {
+    percent = rain;
+    org = device.currentValue("batteryRainOrg") as String;
+    type = 1; 
+  }
+
+  if (wind != null && wind < percent) {
+    percent = wind;
+    org = device.currentValue("batteryWindOrg") as String;
+    type = 1; 
+  }
+
+  return (attributeUpdateBattery(org, "battery", "batteryIcon", "batteryOrg", type));
 }
 
 // ------------------------------------------------------------
@@ -821,24 +867,45 @@ Boolean attributeUpdate(String key, String val) {
 
   switch (key) {
 
-  case ~/soilbatt[1-8]/:
+  case "wh26batt":
+    if (device.getDeviceNetworkId() != "WH26") {
+      state.compounded = true;
+      updated = attributeUpdateBattery(val, "batteryTemp", "batteryTempIcon", "batteryTempOrg", 0);  // !boolean
+    }
+    else updated = attributeUpdateBattery(val, "battery", "batteryIcon", "batteryOrg", 0);
+    break;
+
+  case "wh40batt":
+    if (device.getDeviceNetworkId() != "WH40") {
+      state.compounded = true;
+      updated = attributeUpdateBattery(val, "batteryRain", "batteryRainIcon", "batteryRainOrg", 1);  // voltage
+    }
+    else updated = attributeUpdateBattery(val, "battery", "batteryIcon", "batteryOrg", 1);
+    break;
+
   case "wh68batt":
   case "wh80batt":
-    updated = attributeUpdateBattery(val, "battery", "batteryIcon", "batteryOrg", 1);
+    if (device.getDeviceNetworkId() != "WH80") {
+      state.compounded = true;
+      updated = attributeUpdateBattery(val, "batteryWind", "batteryWindIcon", "batteryWindOrg", 1);  // voltage
+    }
+    else updated = attributeUpdateBattery(val, "battery", "batteryIcon", "batteryOrg", 1);
+    break;
+
+  case ~/batt[1-8]/:
+  case "wh25batt":
+  case "wh65batt":
+    updated = attributeUpdateBattery(val, "battery", "batteryIcon", "batteryOrg", 0);  // !boolean
+    break;
+
+  case ~/soilbatt[1-8]/:
+    updated = attributeUpdateBattery(val, "battery", "batteryIcon", "batteryOrg", 1);  // voltage
     break;
 
   case ~/pm25batt[1-4]/:
   case ~/leakbatt([1-4])/:
   case "wh57batt":
-    updated = attributeUpdateBattery(val, "battery", "batteryIcon", "batteryOrg", 2);
-    break;
-  
-  case "wh25batt":
-  case "wh26batt":
-  case ~/batt[1-8]/:
-  case "wh40batt": 
-  case "wh65batt":
-    updated = attributeUpdateBattery(val, "battery", "batteryIcon", "batteryOrg", 0);
+    updated = attributeUpdateBattery(val, "battery", "batteryIcon", "batteryOrg", 2);  // 0 - 5
     break;
   
   case "tempinf":
@@ -966,6 +1033,9 @@ Boolean attributeUpdate(String key, String val) {
     break;
 
   case "endofdata":
+    // If we are a compounded sensor, at the endofdata we update the "virtual" battery with the lowest of all the "physical" batteries
+    if (state.compounded) attributeUpdateLowestBattery();
+
     // Last thing we do on the driver: update status
     if (!state.status) {
       // Last round we have not received any data

@@ -2,9 +2,9 @@
   "packageName": "Ecowitt WiFi Gateway",
   "minimumHEVersion": "2.1.9",
   "author": "Mirco Caramori",
-  "version": "1.9.74",
+  "version": "1.9.76",
   "dateReleased": "2020-06-22",
-  "releaseNotes": "added preference to let the end-user decide whether to compound or not outdoor sensors",
+  "releaseNotes": "added custom battery attributes in compounded sensors",
   "documentationLink": "https://github.com/mircolino/ecowitt/blob/master/readme.md",
   "communityLink": "https://community.hubitat.com/t/release-ecowitt-gw1000-wi-fi-gateway/38983",
   "drivers": [

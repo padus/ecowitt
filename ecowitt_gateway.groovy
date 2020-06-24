@@ -59,10 +59,11 @@
  * 2020.06.08 - Added support for Multi-channel Water Leak Sensor (WH55)
  * 2020.06.21 - Added support for pressure correction to sea level based on altitude and temperature
  * 2020.06.22 - Added preference to let the end-user decide whether to compound or not outdoor sensors
+ *              Added custom battery attributes in compounded sensors
  *
  */
 
-public static String version() { return "v1.9.74"; }
+public static String version() { return "v1.9.76"; }
 
 // Metadata -------------------------------------------------------------------------------------------------------------------
 
@@ -413,6 +414,19 @@ String sensorUnmap(Integer id) {
 
 // ------------------------------------------------------------
 
+/*     
+ *            Outdoor
+ *            Temperature                 Wind
+ *            & Humidity    Rain          & Solar
+ *            ------------- ------------- --------------
+ *      WH26  X
+ *      WH40                X        
+ *      WH68                              X
+ *      WH80  X                           X 
+ * WH65/WH69  X             X             X
+ *
+ */
+
 private void sensorMapping(Map data) {
   //
   // Remap sensors, boundling or decoupling devices, depending on what's present
@@ -422,28 +436,38 @@ private void sensorMapping(Map data) {
 
   logDebug("sensorMapping()");
 
-  if (bundleOutdoorSensors()) {
-    //
-    // If enabled we bundle temp/humidity, wind/solar and rain sensors in a single PWS station
-    //
+  // Detect outdoor sensors by their battery signature
+  Boolean wh26 = data.containsKey("wh26batt");
+  Boolean wh40 = data.containsKey("wh40batt");
+  Boolean wh68 = data.containsKey("wh68batt");
+  Boolean wh80 = data.containsKey("wh80batt");
+  Boolean wh69 = data.containsKey("wh65batt");
 
-    //
-    // Outdoor Ambient Sensor (WH26 -> WH80 -> WH69)
-    //
-    if (data.containsKey("winddir")) { 
-      sensorMap[2] = sensorMap[9];
-      if (data.containsKey("rainratein")) sensorMap[2] = sensorMap[0];
-    }
+  // Count outdoor sensor
+  Integer outdoorSensors = 0;
+  if (wh26) outdoorSensors += 1; 
+  if (wh40) outdoorSensors += 1; 
+  if (wh68) outdoorSensors += 1; 
+  if (wh80) outdoorSensors += 1; 
 
-    //
-    // Rain Gauge Sensor (WH40 -> WH69)
-    //
-    if (data.containsKey("winddir")) sensorMap[4] = sensorMap[0];
+  // A bit of sanity check
+  if (wh69 && outdoorSensors) logWarning("The PWS should be the only outdoor sensor");
+  if (wh80 && wh26) logWarning("Both WH80 and WH26 are present with overlapping sensors");
 
+  if (wh80) { 
     //
-    // Wind & Solar Sensor (WH80 -> WH69)
+    // WH80 (includes temp & humidity)
     //
-    if (data.containsKey("rainratein")) sensorMap[9] = sensorMap[0];
+    sensorMap[2] = sensorMap[9];
+  }
+
+  if (wh69 || (bundleOutdoorSensors() && outdoorSensors > 1)) {
+    //
+    // Either (1) we have a WH65/WH69 or (2) we are requested to bundle outdoor sensors and we have more than 1
+    //
+    sensorMap[2] = sensorMap[0];
+    sensorMap[4] = sensorMap[0];
+    sensorMap[9] = sensorMap[0];
   }
 
   // Save the mapping in the state variables
