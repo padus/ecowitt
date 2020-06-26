@@ -5,7 +5,11 @@
 
 - LAN comunication only, no cloud/weather service needed.
 - One Hubitat device for each Ecowitt sensor for easy dashboard tiles and RM rules handling.
+- Ability to combine outdoor sensors such as the WH32, WH40 and WH68 into a virtual PWS (Personal Weather Station) for rich weather tiles.
+- Ability to resynchronize and delete orphaned children at runtime when sensors un unregistered fro the station.
 - On-the-fly Imperial <-> Metric conversion.
+- Accurate sea level pressure correction using altitude and temperature.
+- Accurate AQI (Air Quality Index) calculation from PM2.5 density.
 - Tile [HTML templates](#templates), which allows endless tiles customization, including displaying multiple attributes in a single tile. 
 
 ### Installation Instructions
@@ -36,7 +40,8 @@
 
     <img src="https://github.com/mircolino/ecowitt/raw/master/images/D05.png">
 
-4.  Enter the Gateway MAC or IP address (in any legal form) and click "Save Preferences":
+4.  Enter the Gateway MAC or IP address, in any legal form (MAC addresses are safer because they never change, but they don't work across VLANs) and wheather you want to combine outdoor sensors into a PWS (which will allow you to create HTML weather tiles combining attributes from all sensor members).
+    Finally "Save Preferences":
 
     <img src="https://github.com/mircolino/ecowitt/raw/master/images/D06.png">
 
