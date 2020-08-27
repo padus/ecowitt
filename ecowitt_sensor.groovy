@@ -117,6 +117,10 @@ metadata {
     if (localAltitude != null) {
       input(name: "localAltitude", type: "string", title: "<font style='font-size:12px; color:#1a77c9'><u><a href='https://www.advancedconverter.com/map-tools/altitude-on-google-maps' target='_blank'>Altitude</a></u> to Correct Sea Level Pressure</font>", description: "<font style='font-size:12px; font-style: italic'>Examples: \"378 ft\" or \"115 m\"</font>", defaultValue: "", required: true);
     }
+    if (voltageMin != null) {
+      input(name: "voltageMin", type: "string", title: "<font style='font-size:12px; color:#1a77c9'>Empty Battery Voltage</font>", description: "<font style='font-size:12px; font-style: italic'>Sensor value when battery is empty</font>", defaultValue: "", required: true);
+      input(name: "voltageMax", type: "string", title: "<font style='font-size:12px; color:#1a77c9'>Full Battery Voltage</font>", description: "<font style='font-size:12px; font-style: italic'>Sensor value when battery is full</font>", defaultValue: "", required: true);
+    }
   }
 }
 
@@ -351,9 +355,9 @@ private List<String> attributeEnumerate(Boolean existing = true) {
 private Boolean attributeUpdateBattery(String val, String attribBattery, String attribBatteryIcon, String attribBatteryOrg, Integer type) {
   //
   // Convert all different batteries returned values to a 0-100% range
-  // Type: 1) soil moisture sensor - range from 1.40V (empty) to 1.65V (full)
-  //       2) air quality sensor - range from 0 (empty) to 5 (full)
-  //       0) other sensors - 0 (full) or 1 (empty)
+  // Type: 1) voltage: range from 1.30V (empty) to 1.65V (full)
+  //       2) pentastep: range from 0 (empty) to 5 (full)
+  //       0) binary: 0 (full) or 1 (empty)
   //
   BigDecimal original = val.toBigDecimal();
   BigDecimal percent;
@@ -362,8 +366,16 @@ private Boolean attributeUpdateBattery(String val, String attribBattery, String 
 
   switch (type) {
   case 1:
-    // Change range from (1.40V - 1.65V) to (0% - 100%)
-    percent = convertRange(original, 1.40, 1.65, 0, 100);
+    // Change range from voltage to (0% - 100%)
+    if (!(settings.voltageMin) || !(settings.voltageMax)) {
+      // First time: initialize and show the preference
+      BigDecimal volt = 1.3; 
+      device.updateSetting("voltageMin", [value: volt, type: "string"]);
+      volt = 1.65;
+      device.updateSetting("voltageMax", [value: volt, type: "string"]);
+    }
+
+    percent = convertRange(original, (settings.voltageMin).toBigDecimal(), (settings.voltageMax).toBigDecimal(), 0, 100);
     unitOrg = "V";
     break;
 

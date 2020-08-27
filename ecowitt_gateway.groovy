@@ -60,10 +60,12 @@
  * 2020.06.21 - Added support for pressure correction to sea level based on altitude and temperature
  * 2020.06.22 - Added preference to let the end-user decide whether to compound or not outdoor sensors
  *              Added custom battery attributes in compounded sensors
+ * 2020.08.27 - Added user defined min/max voltage values to fine-tune battery status in sensors reporting it as voltage range
+ *              Added Hubitat Package Manager repository tags
  *
  */
 
-public static String version() { return "v1.9.76"; }
+public static String version() { return "v1.9.82"; }
 
 // Metadata -------------------------------------------------------------------------------------------------------------------
 

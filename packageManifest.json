@@ -2,9 +2,9 @@
   "packageName": "Ecowitt WiFi Gateway",
   "minimumHEVersion": "2.1.9",
   "author": "Mirco Caramori",
-  "version": "1.9.76",
-  "dateReleased": "2020-06-22",
-  "releaseNotes": "added custom battery attributes in compounded sensors",
+  "version": "1.9.82",
+  "dateReleased": "2020-08-27",
+  "releaseNotes": "added user defined min/max values to fine-tune battery status in sensors reporting it as voltage range",
   "documentationLink": "https://github.com/mircolino/ecowitt/blob/master/readme.md",
   "communityLink": "https://community.hubitat.com/t/release-ecowitt-gw1000-wi-fi-gateway/38983",
   "drivers": [
