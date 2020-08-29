@@ -62,10 +62,12 @@
  *              Added custom battery attributes in compounded sensors
  * 2020.08.27 - Added user defined min/max voltage values to fine-tune battery status in sensors reporting it as voltage range
  *              Added Hubitat Package Manager repository tags
+ * 2020.08.27 - Fixed null exception caused by preferences being set asynchronously
+ *            - Removed sensor "time" attribute which could cause excessive sendEvent activity
  *
  */
 
-public static String version() { return "v1.9.82"; }
+public static String version() { return "v1.9.83"; }
 
 // Metadata -------------------------------------------------------------------------------------------------------------------
 

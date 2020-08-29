@@ -108,7 +108,6 @@ metadata {
     attribute "html3", "string";                               // 
     attribute "html4", "string";                               // 
 
-    attribute "time", "string";                                // Time last data was posted
     attribute "status", "string";                              // Display current driver status
   }
 
@@ -367,15 +366,22 @@ private Boolean attributeUpdateBattery(String val, String attribBattery, String 
   switch (type) {
   case 1:
     // Change range from voltage to (0% - 100%)
+    BigDecimal vMin, vMax; 
+
     if (!(settings.voltageMin) || !(settings.voltageMax)) {
       // First time: initialize and show the preference
-      BigDecimal volt = 1.3; 
-      device.updateSetting("voltageMin", [value: volt, type: "string"]);
-      volt = 1.65;
-      device.updateSetting("voltageMax", [value: volt, type: "string"]);
+      vMin = 1.3;
+      vMax = 1.65;
+
+      device.updateSetting("voltageMin", [value: vMin, type: "string"]);
+      device.updateSetting("voltageMax", [value: vMax, type: "string"]);
+    }
+    else {
+      vMin = (settings.voltageMin).toBigDecimal();
+      vMax = (settings.voltageMax).toBigDecimal();
     }
 
-    percent = convertRange(original, (settings.voltageMin).toBigDecimal(), (settings.voltageMax).toBigDecimal(), 0, 100);
+    percent = convertRange(original, vMin, vMax, 0, 100);
     unitOrg = "V";
     break;
 
@@ -1057,7 +1063,6 @@ Boolean attributeUpdate(String key, String val) {
     else {
       // Receiving data or user error
       updated = attributeUpdateHtml("htmlTemplate", "html");
-      if (attributeUpdateString(val, "time")) updated = true;
 
       if (state.status != -1) {
         // If no user error pending we trigger a starving next cycle if we don't receive data
