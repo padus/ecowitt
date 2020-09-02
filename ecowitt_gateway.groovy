@@ -64,10 +64,12 @@
  *              Added Hubitat Package Manager repository tags
  * 2020.08.27 - Fixed null exception caused by preferences being set asynchronously
  *            - Removed sensor "time" attribute which could cause excessive sendEvent activity
+ * 2020.08.31 - Added support for new Air Quality Sensor (WH45)
+ *            - Optimized calculation of inferred values: dewPoint, heatIndex, windChill and AQI
  *
  */
 
-public static String version() { return "v1.9.83"; }
+public static String version() { return "v1.10.89"; }
 
 // Metadata -------------------------------------------------------------------------------------------------------------------
 
@@ -663,8 +665,6 @@ private Boolean attributeUpdate(Map data, Closure sensor) {
     case "wh26batt":
     case "tempf":
     case "humidity":
-    case "inferdewpoint":
-    case "inferheatindex":
       updated = sensor(it.key, it.value, 2);
       break;
 
@@ -699,6 +699,21 @@ private Boolean attributeUpdate(Map data, Closure sensor) {
     case ~/pm25_ch([1-4])/:
     case ~/pm25_avg_24h_ch([1-4])/:
       updated = sensor(it.key, it.value, 5, java.util.regex.Matcher.lastMatcher.group(1).toInteger());
+      break;
+
+    //
+    // Air Quality Monitor (WH45)
+    // 
+    case "tempf_co2":
+    case "humidity_co2":
+    case "pm25_co2":
+    case "pm25_24h_co2":
+    case "pm10_co2":
+    case "pm10_24h_co2":
+    case "co2":
+    case "co2_24h":
+    case "co2_batt":
+      updated = sensor(it.key, it.value, 5);
       break;
 
     //
@@ -739,7 +754,6 @@ private Boolean attributeUpdate(Map data, Closure sensor) {
     case "windspdmph_avg10m":
     case "windgustmph":
     case "maxdailygust":
-    case "inferwindchill":
     case "uv":
     case "solarradiation":
       updated = sensor(it.key, it.value, 9);
@@ -887,11 +901,14 @@ void parse(String msg) {
       data[keyValue[0]] = (keyValue.size() > 1)? keyValue[1]: "";
     }
 
-    // Inject special keys to notify the children to update calculated values such as: dewpoint, heatindex, windchill etc.)
-    // value needs to be null to ensures that it's not detected as real sensor data for which a (ghost) child will be created
-    data["inferdewpoint"] = null;
-    data["inferheatindex"] = null;
-    data["inferwindchill"] = null;
+    // "dewPoint" and "heatIndex" are based on "tempf" and "humidity"
+    // for them to be calculated properly, in "data", "humidity", if present, must come after "tempf" 
+
+    // "windchill" is based on "tempf" and "windspeedmph"
+    // for it to be calculated properly, in "data", "windspeedmph", if present, must come after "tempf" 
+
+    // "aqi" is based on "pm25_24h_co2" and "pm10_24h_co2"
+    // for it to be calculated properly, in "data", "pm10_24h_co2", if present, must come after "pm25_24h_co2" 
 
     // Inject a special key (at the end of the data map) to notify all the driver of end-of-data status. Value is local time
     data["endofdata"] = timeUtcToLocal(data["dateutc"]);

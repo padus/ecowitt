@@ -2,9 +2,9 @@
   "packageName": "Ecowitt WiFi Gateway",
   "minimumHEVersion": "2.1.9",
   "author": "Mirco Caramori",
-  "version": "1.9.83",
-  "dateReleased": "2020-08-28",
-  "releaseNotes": "added user defined min/max values to fine-tune battery status in sensors reporting it as voltage range",
+  "version": "1.10.89",
+  "dateReleased": "2020-08-31",
+  "releaseNotes": "added support for new Air Quality Sensor (WH45)",
   "documentationLink": "https://github.com/mircolino/ecowitt/blob/master/readme.md",
   "communityLink": "https://community.hubitat.com/t/release-ecowitt-gw1000-wi-fi-gateway/38983",
   "drivers": [

@@ -65,14 +65,15 @@ metadata {
     attribute "rainTotal", "number";                           // in - rainfall total since sensor installation
 
     attribute "pm25", "number";                                // µg/m³ - PM2.5 particle reading - current
+    attribute "pm25_avg_24h", "number";                        // µg/m³ - PM2.5 particle reading - average over the last 24 hours
+    attribute "pm10", "number";                                // µg/m³ - PM10 particle reading - current
+    attribute "pm10_avg_24h", "number";                        // µg/m³ - PM10 particle reading - average over the last 24 hours
+    attribute "co2", "number";                                 // ppm - CO2 concetration - current
+    attribute "co2_avg_24h", "number";                         // ppm - CO2 concetration - average over the last 24 hours 
+
     attribute "aqi", "number";                                 // AQI (0-500)
     attribute "aqiDanger", "string";                           // AQI danger level  
     attribute "aqiColor", "string";                            // AQI HTML color  
-
-    attribute "pm25_avg_24h", "number";                        // µg/m³ - PM2.5 particle reading - average over the last 24 hours
-    attribute "aqi_avg_24h", "number";                         // AQI (0-500) 
-    attribute "aqiDanger_avg_24h", "string";                   // AQI danger level
-    attribute "aqiColor_avg_24h", "string";                    // AQI HTML color  
 
  // attribute "water", "enum";                                 // "dry" or "wet"
     attribute "leak", "number";                                // dry) 0, wet) 1
@@ -543,58 +544,73 @@ private Boolean attributeUpdateRain(String val, String attribRain, Boolean hour 
 
 // ------------------------------------------------------------
 
-private Boolean attributeUpdatePM25(String val, String attribPm25, String attribAqi, String attribAqiDanger, String attribAqiColor) {
+private Boolean attributeUpdateAQI(String val, Boolean pm25, String attribAqi, String attribAqiDanger, String attribAqiColor) {
   //
   // Conversions based on https://en.wikipedia.org/wiki/Air_quality_index
   //
-  BigDecimal pm25 = val.toBigDecimal();
+  BigDecimal pm = val.toBigDecimal();
 
   BigDecimal aqi;
+
+  if (pm25) {
+    // PM2.5
+    if      (pm <  12.1) aqi = convertRange(pm,   0.0,  12.0,   0,  50);
+    else if (pm <  35.5) aqi = convertRange(pm,  12.1,  35.4,  51, 100);
+    else if (pm <  55.5) aqi = convertRange(pm,  35.5,  55.4, 101, 150);
+    else if (pm < 150.5) aqi = convertRange(pm,  55.5, 150.4, 151, 200);
+    else if (pm < 250.5) aqi = convertRange(pm, 150.5, 250.4, 201, 300);
+    else if (pm < 350.5) aqi = convertRange(pm, 250.5, 350.4, 301, 400);
+    else                 aqi = convertRange(pm, 350.5, 500.4, 401, 500);
+  }
+  else {
+    // PM10
+    if      (pm <  55)   aqi = convertRange(pm,   0,    54,     0,  50);
+    else if (pm < 155)   aqi = convertRange(pm,  55,   154,    51, 100);
+    else if (pm < 255)   aqi = convertRange(pm, 155,   254,   101, 150);
+    else if (pm < 355)   aqi = convertRange(pm, 255,   354,   151, 200);
+    else if (pm < 425)   aqi = convertRange(pm, 355,   424,   201, 300);
+    else if (pm < 505)   aqi = convertRange(pm, 425,   504,   301, 400);
+    else                 aqi = convertRange(pm, 505,   604,   401, 500);
+
+    // Choose the highest AQI between PM2.5 and PM10 
+    BigDecimal aqi25 = (device.currentValue("aqi") as BigDecimal);
+    if (aqi < aqi25) aqi = aqi25;
+  }
+
   String danger;
   String color;
 
-  if (pm25 < 12.1) {
-    aqi = convertRange(pm25, 0, 12, 0, 50);
-    danger = "Good";
-    color = "3ea72d";
-  }
-  else if (pm25 < 35.5) {
-    aqi = convertRange(pm25, 12.1, 35.4, 51, 100);
-    danger = "Moderate";
-    color = "fff300";
-  }
-  else if (pm25 < 55.5) {
-    aqi = convertRange(pm25, 35.5, 55.4, 101, 150);
-    danger = "Unhealthy for Sensitive Groups";
-    color = "f18b00";
-  }
-  else if (pm25 < 150.5) {
-    aqi = convertRange(pm25, 55.5, 150.4, 151, 200);
-    danger = "Unhealthy";
-    color = "e53210";
-  }
-  else if (pm25 < 250.5) {
-    aqi = convertRange(pm25, 150.5, 250.4, 201, 300);
-    danger = "Very Unhealthy";
-    color = "b567a4";
-  }
-  else if (pm25 < 350.5) {
-    aqi = convertRange(pm25, 250.5, 350.4, 301, 400);
-    danger = "Hazardous";
-    color = "7e0023";
-  }
-  else {
-    aqi = convertRange(pm25, 350.5, 500.4, 401, 500);
-    danger = "Hazardous";
-    color = "7e0023";
-  }
+  if      (aqi <  51) { danger = "Good";                           color = "3ea72d"; }
+  else if (aqi < 101) { danger = "Moderate";                       color = "fff300"; }
+  else if (aqi < 151) { danger = "Unhealthy for Sensitive Groups"; color = "f18b00"; }
+  else if (aqi < 201) { danger = "Unhealthy";                      color = "e53210"; }
+  else if (aqi < 301) { danger = "Very Unhealthy";                 color = "b567a4"; }
+  else if (aqi < 401) { danger = "Hazardous";                      color = "7e0023"; }
+  else {                danger = "Hazardous";                      color = "7e0023"; }
 
-  Boolean updated = attributeUpdateNumber(pm25, attribPm25, "µg/m³");
-  if (attributeUpdateNumber(aqi, attribAqi, "AQI")) updated = true;
+  Boolean updated = attributeUpdateNumber(aqi, attribAqi, "AQI");
   if (attributeUpdateString(danger, attribAqiDanger)) updated = true;
   if (attributeUpdateString(color, attribAqiColor)) updated = true;
 
   return (updated);
+}
+
+// ------------------------------------------------------------
+
+private Boolean attributeUpdatePM(String val, String attribPm) {
+
+  BigDecimal pm = val.toBigDecimal();
+
+  return (attributeUpdateNumber(pm, attribPm, "µg/m³"));
+}
+
+// ------------------------------------------------------------
+
+private Boolean attributeUpdateCO2(String val, String attribCo2) {
+
+  BigDecimal co2 = val.toBigDecimal();
+
+  return (attributeUpdateNumber(co2, attribCo2, "ppm"));
 }
 
 // ------------------------------------------------------------
@@ -759,12 +775,10 @@ private Boolean attributeUpdateDewPoint(String val, String attribDewPoint) {
       temperature = convert_C_to_F(temperature);
     }  
 
-    BigDecimal humidity = (device.currentValue("humidity") as BigDecimal);
-    if (humidity != null) {
-      // Calculate dewPoint based on https://en.wikipedia.org/wiki/Dew_point
-      BigDecimal degrees = temperature - (0.36 * (100 - humidity));
-      if (attributeUpdateTemperature(degrees.toString(), attribDewPoint)) updated = true;
-    }
+    // Calculate dewPoint based on https://en.wikipedia.org/wiki/Dew_point
+    BigDecimal humidity = val.toBigDecimal();
+    BigDecimal degrees = temperature - (0.36 * (100 - humidity));
+    if (attributeUpdateTemperature(degrees.toString(), attribDewPoint)) updated = true;
   }
 
   return (updated);
@@ -772,7 +786,7 @@ private Boolean attributeUpdateDewPoint(String val, String attribDewPoint) {
 
 // ------------------------------------------------------------
 
-private Boolean attributeUpdateHeatIndex(val, attribHeatIndex, attribHeatDanger, attribHeatColor) {
+private Boolean attributeUpdateHeatIndex(String val, String attribHeatIndex, String attribHeatDanger, String attribHeatColor) {
   Boolean updated = false;
 
   BigDecimal temperature = (device.currentValue("temperature") as BigDecimal);
@@ -782,31 +796,29 @@ private Boolean attributeUpdateHeatIndex(val, attribHeatIndex, attribHeatDanger,
       temperature = convert_C_to_F(temperature);
     }  
 
-    BigDecimal humidity = (device.currentValue("humidity") as BigDecimal);
-    if (humidity != null) {
-      // Calculate heatIndex based on https://en.wikipedia.org/wiki/Heat_index
-      BigDecimal degrees = -42.379 +
-                          (  2.04901523 * temperature) +
-                          ( 10.14333127 * humidity) -
-                          (  0.22475541 * (temperature * humidity)) -
-                          (  0.00683783 * (temperature ** 2)) -
-                          (  0.05481717 * (humidity ** 2)) +
-                          (  0.00122874 * ((temperature ** 2) * humidity)) +
-                          (  0.00085282 * (temperature * (humidity ** 2))) -
-                          (  0.00000199 * ((temperature ** 2) * (humidity ** 2)));
-      String danger;
-      String color;
+    // Calculate heatIndex based on https://en.wikipedia.org/wiki/Heat_index
+    BigDecimal humidity = val.toBigDecimal();
+    BigDecimal degrees = -42.379 +
+                        (  2.04901523 * temperature) +
+                        ( 10.14333127 * humidity) -
+                        (  0.22475541 * (temperature * humidity)) -
+                        (  0.00683783 * (temperature ** 2)) -
+                        (  0.05481717 * (humidity ** 2)) +
+                        (  0.00122874 * ((temperature ** 2) * humidity)) +
+                        (  0.00085282 * (temperature * (humidity ** 2))) -
+                        (  0.00000199 * ((temperature ** 2) * (humidity ** 2)));
+    String danger;
+    String color;
 
-      if (degrees < 80)       { danger = "Safe";            color = "ffffff"; }
-      else if (degrees < 91)  { danger = "Caution";         color = "ffff66"; }
-      else if (degrees < 104) { danger = "Extreme Caution"; color = "ffd700"; }
-      else if (degrees < 126) { danger = "Danger";          color = "ff8c00"; }
-      else                    { danger = "Extreme Danger";  color = "ff0000"; }
+    if      (degrees < 80)  { danger = "Safe";            color = "ffffff"; }
+    else if (degrees < 91)  { danger = "Caution";         color = "ffff66"; }
+    else if (degrees < 104) { danger = "Extreme Caution"; color = "ffd700"; }
+    else if (degrees < 126) { danger = "Danger";          color = "ff8c00"; }
+    else                    { danger = "Extreme Danger";  color = "ff0000"; }
     
-      updated = attributeUpdateTemperature(degrees.toString(), attribHeatIndex);
-      if (attributeUpdateString(danger, attribHeatDanger)) updated = true;
-      if (attributeUpdateString(color, attribHeatColor)) updated = true;
-    }
+    updated = attributeUpdateTemperature(degrees.toString(), attribHeatIndex);
+    if (attributeUpdateString(danger, attribHeatDanger)) updated = true;
+    if (attributeUpdateString(color, attribHeatColor)) updated = true;
   }
 
   return (updated);
@@ -814,7 +826,7 @@ private Boolean attributeUpdateHeatIndex(val, attribHeatIndex, attribHeatDanger,
 
 // ------------------------------------------------------------
 
-private Boolean attributeUpdateWindChill(val, attribWindChill, attribWindDanger, attribWindColor) {
+private Boolean attributeUpdateWindChill(String val, String attribWindChill, String attribWindDanger, String attribWindColor) {
   Boolean updated = false;
 
   BigDecimal temperature = (device.currentValue("temperature") as BigDecimal);
@@ -823,28 +835,26 @@ private Boolean attributeUpdateWindChill(val, attribWindChill, attribWindDanger,
       // Convert temperature back to F
       temperature = convert_C_to_F(temperature);
     } 
-    
-    BigDecimal windSpeed = (device.currentValue("windSpeed") as BigDecimal);
-    if (windSpeed != null) {
-      // Calculate windChill based on https://en.wikipedia.org/wiki/Wind_chill
-      BigDecimal degrees = 35.74 +
-                          ( 0.6215 * temperature) -
-                          (35.75 * (windSpeed ** 0.16)) +
-                          ((0.4275 * temperature) * (windSpeed ** 0.16));
-      String danger;
-      String color;
 
-      if (degrees < -69)      { danger = "Frostbite certain";  color = "2d2c52"; }
-      else if (degrees < -19) { danger = "Frostbite likely";   color = "1f479f"; }
-      else if (degrees < 1)   { danger = "Frostbite possible"; color = "0c6cb5"; }
-      else if (degrees < 21)  { danger = "Very Unpleasant";    color = "2f9fda"; }
-      else if (degrees < 41)  { danger = "Unpleasant";         color = "9dc8e6"; }
-      else                    { danger = "Safe";               color = "ffffff"; }
+    // Calculate windChill based on https://en.wikipedia.org/wiki/Wind_chill    
+    BigDecimal windSpeed = val.toBigDecimal();
+    BigDecimal degrees = 35.74 +
+                        ( 0.6215 * temperature) -
+                        (35.75 * (windSpeed ** 0.16)) +
+                        ((0.4275 * temperature) * (windSpeed ** 0.16));
+    String danger;
+    String color;
 
-      updated = attributeUpdateTemperature(degrees.toString(), attribWindChill);
-      if (attributeUpdateString(danger, attribWindDanger)) updated = true;
-      if (attributeUpdateString(color, attribWindColor)) updated = true;
-    }
+    if      (degrees < -69) { danger = "Frostbite certain";  color = "2d2c52"; }
+    else if (degrees < -19) { danger = "Frostbite likely";   color = "1f479f"; }
+    else if (degrees < 1)   { danger = "Frostbite possible"; color = "0c6cb5"; }
+    else if (degrees < 21)  { danger = "Very Unpleasant";    color = "2f9fda"; }
+    else if (degrees < 41)  { danger = "Unpleasant";         color = "9dc8e6"; }
+    else                    { danger = "Safe";               color = "ffffff"; }
+
+    updated = attributeUpdateTemperature(degrees.toString(), attribWindChill);
+    if (attributeUpdateString(danger, attribWindDanger)) updated = true;
+    if (attributeUpdateString(color, attribWindColor)) updated = true;
   }
 
   return (updated);
@@ -923,19 +933,27 @@ Boolean attributeUpdate(String key, String val) {
   case ~/pm25batt[1-4]/:
   case ~/leakbatt([1-4])/:
   case "wh57batt":
+  case "co2_batt":
     updated = attributeUpdateBattery(val, "battery", "batteryIcon", "batteryOrg", 2);  // 0 - 5
     break;
   
   case "tempinf":
   case "tempf":
   case ~/temp[1-8]f/:
+  case "tempf_co2":
     updated = attributeUpdateTemperature(val, "temperature");
     break;
 
-  case "humidityin":
   case "humidity":
+    updated = attributeUpdateHumidity(val, "humidity");
+    if (attributeUpdateDewPoint(val, "dewPoint")) updated = true;
+    if (attributeUpdateHeatIndex(val, "heatIndex", "heatDanger", "heatColor")) updated = true;
+    break;
+
+  case "humidityin":
   case ~/humidity[1-8]/:
   case ~/soilmoisture[1-8]/:
+  case "humidity_co2":
     updated = attributeUpdateHumidity(val, "humidity");
     break;
 
@@ -980,11 +998,31 @@ Boolean attributeUpdate(String key, String val) {
     break;
 
   case ~/pm25_ch[1-4]/:
-    updated = attributeUpdatePM25(val, "pm25", "aqi", "aqiDanger", "aqiColor");
+  case "pm25_co2":
+    updated = attributeUpdatePM(val, "pm25");
     break;
 
   case ~/pm25_avg_24h_ch[1-4]/:
-    updated = attributeUpdatePM25(val, "pm25_avg_24h", "aqi_avg_24h", "aqiDanger_avg_24h", "aqiColor_avg_24h");
+  case "pm25_24h_co2":
+    updated = attributeUpdatePM(val, "pm25_avg_24h");
+    if (attributeUpdateAQI(val, true, "aqi", "aqiDanger", "aqiColor")) updated = true;
+    break;
+
+  case "pm10_co2":
+    updated = attributeUpdatePM(val, "pm10");
+    break;
+
+  case "pm10_24h_co2":
+    updated = attributeUpdatePM(val, "pm10_avg_24h");
+    if (attributeUpdateAQI(val, false, "aqi", "aqiDanger", "aqiColor")) updated = true;
+    break;
+
+  case "co2":
+    updated = attributeUpdateCO2(val, "co2");
+    break;
+
+  case "co2_24h":
+    updated = attributeUpdateCO2(val, "co2_avg_24h");
     break;
 
   case ~/leak_ch([1-4])/:
@@ -1021,6 +1059,7 @@ Boolean attributeUpdate(String key, String val) {
 
   case "windspeedmph":
     updated = attributeUpdateWindSpeed(val, "windSpeed");
+    if (attributeUpdateWindChill(val, "windChill", "windDanger", "windColor")) updated = true;
     break;
 
   case "windspdmph_avg10m":
@@ -1036,19 +1075,8 @@ Boolean attributeUpdate(String key, String val) {
     break;
 
   //
-  // Internal calculated commands
+  // End Of Data
   //
-  case "inferdewpoint":
-    if (state.status) updated = attributeUpdateDewPoint(val, "dewPoint");
-    break;
-
-  case "inferheatindex":
-    if (state.status) updated = attributeUpdateHeatIndex(val, "heatIndex", "heatDanger", "heatColor");
-    break;
-
-  case "inferwindchill":
-    if (state.status) updated = attributeUpdateWindChill(val, "windChill", "windDanger", "windColor");
-    break;
 
   case "endofdata":
     // If we are a compounded sensor, at the endofdata we update the "virtual" battery with the lowest of all the "physical" batteries
