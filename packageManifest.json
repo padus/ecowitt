@@ -2,9 +2,9 @@
   "packageName": "Ecowitt WiFi Gateway",
   "minimumHEVersion": "2.1.9",
   "author": "Mirco Caramori",
-  "version": "1.10.89",
-  "dateReleased": "2020-08-31",
-  "releaseNotes": "added support for new Air Quality Sensor (WH45)",
+  "version": "1.11.95",
+  "dateReleased": "2020-09-08",
+  "releaseNotes": "added support for Water/Soil Temperature Sensor (WH34)",
   "documentationLink": "https://github.com/mircolino/ecowitt/blob/master/readme.md",
   "communityLink": "https://community.hubitat.com/t/release-ecowitt-gw1000-wi-fi-gateway/38983",
   "drivers": [

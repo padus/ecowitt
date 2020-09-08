@@ -927,11 +927,12 @@ Boolean attributeUpdate(String key, String val) {
     break;
 
   case ~/soilbatt[1-8]/:
+  case ~/tf_batt[1-8]/:
     updated = attributeUpdateBattery(val, "battery", "batteryIcon", "batteryOrg", 1);  // voltage
     break;
 
   case ~/pm25batt[1-4]/:
-  case ~/leakbatt([1-4])/:
+  case ~/leakbatt[1-4]/:
   case "wh57batt":
   case "co2_batt":
     updated = attributeUpdateBattery(val, "battery", "batteryIcon", "batteryOrg", 2);  // 0 - 5
@@ -940,6 +941,7 @@ Boolean attributeUpdate(String key, String val) {
   case "tempinf":
   case "tempf":
   case ~/temp[1-8]f/:
+  case ~/tf_ch[1-8]/:
   case "tempf_co2":
     updated = attributeUpdateTemperature(val, "temperature");
     break;
@@ -1025,7 +1027,7 @@ Boolean attributeUpdate(String key, String val) {
     updated = attributeUpdateCO2(val, "co2_avg_24h");
     break;
 
-  case ~/leak_ch([1-4])/:
+  case ~/leak_ch[1-4]/:
     updated = attributeUpdateLeak(val, "water", "leak", "leakMsg", "leakColor");
     break;
 

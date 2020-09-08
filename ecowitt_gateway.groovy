@@ -64,12 +64,12 @@
  *              Added Hubitat Package Manager repository tags
  * 2020.08.27 - Fixed null exception caused by preferences being set asynchronously
  *            - Removed sensor "time" attribute which could cause excessive sendEvent activity
- * 2020.08.31 - Added support for new Air Quality Sensor (WH45)
+ * 2020.08.31 - Added support for new Indoor Air Quality Sensor (WH45)
  *            - Optimized calculation of inferred values: dewPoint, heatIndex, windChill and AQI
- *
+ * 2020.09.08 - Added support for Water/Soil Temperature Sensor (WH34)
  */
 
-public static String version() { return "v1.10.89"; }
+public static String version() { return "v1.11.95"; }
 
 // Metadata -------------------------------------------------------------------------------------------------------------------
 
@@ -406,10 +406,10 @@ private Boolean ztatus(String str, String color = null) {
 
 String sensorUnmap(Integer id) {
 
-  // assert (id >= 0 && id <= 9);
+  // assert (id >= 0 && id <= 10);
 
-  //                      0     1     2     3     4     5     6     7     8     9    
-  // String sensorMap = "[WH69, WH25, WH26, WH31, WH40, WH41, WH51, WH55, WH57, WH80]";
+  //                      0     1     2     3     4     5     6     7     8     9     10
+  // String sensorMap = "[WH69, WH25, WH26, WH31, WH40, WH41, WH51, WH55, WH57, WH80, WH34]";
   //
   String sensorMap = device.getDataValue("sensorMap");
 
@@ -437,8 +437,8 @@ private void sensorMapping(Map data) {
   //
   // Remap sensors, boundling or decoupling devices, depending on what's present
   //
-  //                     0       1       2       3       4       5       6       7       8       9       
-  String[] sensorMap =  ["WH69", "WH25", "WH26", "WH31", "WH40", "WH41", "WH51", "WH55", "WH57", "WH80"];
+  //                     0       1       2       3       4       5       6       7       8       9       10
+  String[] sensorMap =  ["WH69", "WH25", "WH26", "WH31", "WH40", "WH41", "WH51", "WH55", "WH57", "WH80", "WH34"];
 
   logDebug("sensorMapping()");
 
@@ -493,7 +493,8 @@ private String sensorName(Integer id, Integer channel) {
                   "WH51": "Soil Moisture Sensor",
                   "WH55": "Water Leak Sensor",
                   "WH57": "Lightning Detection Sensor",
-                  "WH80": "Wind Solar Sensor"];
+                  "WH80": "Wind Solar Sensor",
+                  "WH34": "Water/Soil Temperature Sensor"];
 
   String model = sensorId."${sensorUnmap(id)}";
 
@@ -757,6 +758,14 @@ private Boolean attributeUpdate(Map data, Closure sensor) {
     case "uv":
     case "solarradiation":
       updated = sensor(it.key, it.value, 9);
+      break;
+
+    //
+    // Multi-channel Water Leak Sensor (WH34)
+    //
+    case ~/tf_batt([1-8])/:
+    case ~/tf_ch([1-8])/:
+      updated = sensor(it.key, it.value, 10, java.util.regex.Matcher.lastMatcher.group(1).toInteger());
       break;
 
     case "endofdata":
