@@ -75,6 +75,10 @@ metadata {
     attribute "aqiDanger", "string";                           // AQI danger level  
     attribute "aqiColor", "string";                            // AQI HTML color  
 
+    attribute "aqi_avg_24h", "number";                         // AQI (0-500) - average over the last 24 hours
+    attribute "aqiDanger_avg_24h", "string";                   // AQI danger level - average over the last 24 hours
+    attribute "aqiColor_avg_24h", "string";                    // AQI HTML color - average over the last 24 hours
+
  // attribute "water", "enum";                                 // "dry" or "wet"
     attribute "leak", "number";                                // dry) 0, wet) 1
     attribute "leakMsg", "string";                             // dry) "Dry", wet) "Leak detected!"
@@ -573,7 +577,7 @@ private Boolean attributeUpdateAQI(String val, Boolean pm25, String attribAqi, S
     else                 aqi = convertRange(pm, 505,   604,   401, 500);
 
     // Choose the highest AQI between PM2.5 and PM10 
-    BigDecimal aqi25 = (device.currentValue("aqi") as BigDecimal);
+    BigDecimal aqi25 = (device.currentValue(attribAqi) as BigDecimal);
     if (aqi < aqi25) aqi = aqi25;
   }
 
@@ -1002,21 +1006,23 @@ Boolean attributeUpdate(String key, String val) {
   case ~/pm25_ch[1-4]/:
   case "pm25_co2":
     updated = attributeUpdatePM(val, "pm25");
+    if (attributeUpdateAQI(val, true, "aqi", "aqiDanger", "aqiColor")) updated = true;
     break;
 
   case ~/pm25_avg_24h_ch[1-4]/:
   case "pm25_24h_co2":
     updated = attributeUpdatePM(val, "pm25_avg_24h");
-    if (attributeUpdateAQI(val, true, "aqi", "aqiDanger", "aqiColor")) updated = true;
+    if (attributeUpdateAQI(val, true, "aqi_avg_24h", "aqiDanger_avg_24h", "aqiColor_avg_24h")) updated = true;
     break;
 
   case "pm10_co2":
     updated = attributeUpdatePM(val, "pm10");
+    if (attributeUpdateAQI(val, false, "aqi", "aqiDanger", "aqiColor")) updated = true;
     break;
 
   case "pm10_24h_co2":
     updated = attributeUpdatePM(val, "pm10_avg_24h");
-    if (attributeUpdateAQI(val, false, "aqi", "aqiDanger", "aqiColor")) updated = true;
+    if (attributeUpdateAQI(val, false, "aqi_avg_24h", "aqiDanger_avg_24h", "aqiColor_avg_24h")) updated = true;
     break;
 
   case "co2":

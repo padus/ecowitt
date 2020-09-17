@@ -67,9 +67,10 @@
  * 2020.08.31 - Added support for new Indoor Air Quality Sensor (WH45)
  *            - Optimized calculation of inferred values: dewPoint, heatIndex, windChill and AQI
  * 2020.09.08 - Added support for Water/Soil Temperature Sensor (WH34)
+ * 2020.09.17 - Added (back) real-time AQI index, color and danger
  */
 
-public static String version() { return "v1.11.95"; }
+public static String version() { return "v1.11.97"; }
 
 // Metadata -------------------------------------------------------------------------------------------------------------------
 
