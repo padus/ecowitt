@@ -68,9 +68,11 @@
  *            - Optimized calculation of inferred values: dewPoint, heatIndex, windChill and AQI
  * 2020.09.08 - Added support for Water/Soil Temperature Sensor (WH34)
  * 2020.09.17 - Added (back) real-time AQI index, color and danger
+ * 2020.09.21 - Added Summer Simmer Index attributes (thank you https://github.com/lymanepp)
+ *            - Added preferences to selectively calculate HeatIndex, SimmerIndex, WindChill and DewPoint on a per-sensor basis
  */
 
-public static String version() { return "v1.11.97"; }
+public static String version() { return "v1.12.99"; }
 
 // Metadata -------------------------------------------------------------------------------------------------------------------
 
