@@ -51,6 +51,9 @@ metadata {
     attribute "heatIndex", "number";                           // °F - calculated using outdoor "temperature" & "humidity"
     attribute "heatDanger", "string";                          // Heat index danger level
     attribute "heatColor", "string";                           // Heat index HTML color
+    attribute "simmerIndex", "number";                         // °F - calculated using outdoor "temperature" & "humidity"
+    attribute "simmerDanger", "string";                        // Summer simmmer index danger level
+    attribute "simmerColor", "string";                         // Summer simmer index HTML color
 
  // attribute "pressure", "number";                            // inHg - relative pressure corrected to sea-level
     attribute "pressureAbs", "number";                         // inHg - absolute pressure
@@ -814,7 +817,7 @@ private Boolean attributeUpdateHeatIndex(String val, String attribHeatIndex, Str
     String danger;
     String color;
 
-    if      (degrees < 80)  { danger = "Safe";            color = "ffffff"; }
+    if      (degrees < 80)  { danger = "Safe";            color = "ffffff"; degrees = temperature; }
     else if (degrees < 91)  { danger = "Caution";         color = "ffff66"; }
     else if (degrees < 104) { danger = "Extreme Caution"; color = "ffd700"; }
     else if (degrees < 126) { danger = "Danger";          color = "ff8c00"; }
@@ -823,6 +826,43 @@ private Boolean attributeUpdateHeatIndex(String val, String attribHeatIndex, Str
     updated = attributeUpdateTemperature(degrees.toString(), attribHeatIndex);
     if (attributeUpdateString(danger, attribHeatDanger)) updated = true;
     if (attributeUpdateString(color, attribHeatColor)) updated = true;
+  }
+
+  return (updated);
+}
+
+// ------------------------------------------------------------
+
+private Boolean attributeUpdateSimmerIndex(String val, String attribSimmerIndex, String attribSimmerDanger, String attribSimmerColor) {
+  Boolean updated = false;
+
+  BigDecimal temperature = (device.currentValue("temperature") as BigDecimal);
+  if (temperature != null) {
+    if (unitSystemIsMetric()) {
+      // Convert temperature back to F
+      temperature = convert_C_to_F(temperature);
+    }
+
+    // Calculate heatIndex based on https://www.vcalc.com/wiki/rklarsen/Summer+Simmer+Index
+    BigDecimal humidity = val.toBigDecimal();
+	BigDecimal degrees = 1.98 * (temperature - (0.55 - (0.0055 * humidity)) * (temperature - 58.0)) - 56.83;
+
+    String danger;
+    String color;
+
+    if      (degrees < 70)  { danger = "";                              color = "000000"; degrees = temperature; }
+    else if (degrees < 77)  { danger = "Slightly Cool";                 color = "0099ff"; }
+    else if (degrees < 83)  { danger = "Comfortable"                    color = "2dca02"; }
+    else if (degrees < 91)  { danger = "Slightly Warm";                 color = "9acd32"; }
+    else if (degrees < 100) { danger = "Increased Discomfort";          color = "ffb233"; }
+    else if (degrees < 112) { danger = "Caution Heat Exhaustion";       color = "ff6600"; }
+    else if (degrees < 125) { danger = "Danger Heatstroke";             color = "ff3300"; }
+    else if (degrees < 150) { danger = "Extreme Danger";                color = "ff0000"; }
+    else                    { danger = "Circulatory Collapse Imminent"; color = "cc3300"; }
+
+    updated = attributeUpdateTemperature(degrees.toString(), attribSimmerIndex);
+    if (attributeUpdateString(danger, attribSimmerDanger)) updated = true;
+    if (attributeUpdateString(color, attribSimmerColor)) updated = true;
   }
 
   return (updated);
@@ -951,16 +991,14 @@ Boolean attributeUpdate(String key, String val) {
     break;
 
   case "humidity":
-    updated = attributeUpdateHumidity(val, "humidity");
-    if (attributeUpdateDewPoint(val, "dewPoint")) updated = true;
-    if (attributeUpdateHeatIndex(val, "heatIndex", "heatDanger", "heatColor")) updated = true;
-    break;
-
   case "humidityin":
   case ~/humidity[1-8]/:
   case ~/soilmoisture[1-8]/:
   case "humidity_co2":
     updated = attributeUpdateHumidity(val, "humidity");
+    if (attributeUpdateDewPoint(val, "dewPoint")) updated = true;
+    if (attributeUpdateHeatIndex(val, "heatIndex", "heatDanger", "heatColor")) updated = true;
+    if (attributeUpdateSimmerIndex(val, "simmerIndex", "simmerDanger", "simmerColor")) updated = true;
     break;
 
   case "baromrelin":
