@@ -2,9 +2,9 @@
   "packageName": "Ecowitt WiFi Gateway",
   "minimumHEVersion": "2.1.9",
   "author": "Mirco Caramori",
-  "version": "1.12.99",
+  "version": "1.12.100",
   "dateReleased": "2020-09-21",
-  "releaseNotes": "added summer simmer index attributes",
+  "releaseNotes": "https://github.com/lymanepp: improved accuracy of dew point calculations",
   "documentationLink": "https://github.com/mircolino/ecowitt/blob/master/readme.md",
   "communityLink": "https://community.hubitat.com/t/release-ecowitt-gw1000-wi-fi-gateway/38983",
   "drivers": [
