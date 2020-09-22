@@ -811,7 +811,7 @@ private Boolean attributeUpdateDewPoint(String val, String attribDewPoint) {
         6.1121 * Math.exp((18.678 - (tC / 234.4)) * (tC / (257.14 + tC)));
 
       // calculate current vapor pressure in millibars
-      e = e * (humidity / 100);
+      e *= humidity / 100;
 
       BigDecimal degrees = (-430.22 + 237.7 * Math.log(e)) / (-Math.log(e) + 19.08);
 
