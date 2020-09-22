@@ -800,7 +800,7 @@ private Boolean attributeUpdateDewPoint(String val, String attribDewPoint) {
         temperature = convert_F_to_C(temperature);
       }
 
-      // Calculate dew point based on https://web.archive.org/web/20150209041650/http://www.gorhamschaffler.com:80/humidity_formulas.htm
+      // Calculate dewPoint based on https://web.archive.org/web/20150209041650/http://www.gorhamschaffler.com:80/humidity_formulas.htm
       BigDecimal humidity = val.toBigDecimal();
 
       double tC = temperature as double;
