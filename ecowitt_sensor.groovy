@@ -896,7 +896,7 @@ private Boolean attributeUpdateSimmerIndex(String val, String attribSimmerIndex,
       String danger;
       String color;
 
-      if      (degrees < 70)  { danger = "";                              color = "000000"; degrees = temperature; }
+      if      (degrees < 70)  { danger = "Cool";                          color = "ffffff"; degrees = temperature; }
       else if (degrees < 77)  { danger = "Slightly Cool";                 color = "0099ff"; }
       else if (degrees < 83)  { danger = "Comfortable";                   color = "2dca02"; }
       else if (degrees < 91)  { danger = "Slightly Warm";                 color = "9acd32"; }

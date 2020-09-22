@@ -14,7 +14,7 @@
     "3": "<i class=\"ewi-windspeed\"></i> ${windSpeed} mph<br><i class=\"ewi-wind${windCompass}\"></i> ${windDirection} &deg; ${windCompass}<br><i class=\"ewi-rain\"></i> ${rainRate} in/h<br><i class=\"ewi-light\"></i> ${illuminance} lux<br>UV ${ultravioletDanger}",
     "4": "<i class=\"ewi-lightning\"></i> ${lightningDistance} mi<br>${lightningTime}<br>Count: ${lightningCount}",
     "4B": "<i class=\"ewi-lightning\"></i> ${lightningDistance} mi<br>${lightningTime}<br>Count: ${lightningCount}<br><i class=\"ewi-batt${batteryIcon}\"></i> ${battery} %",
-    "6":  "<i class=\"ewi-temperature\"></i>${temperature} &deg;F<br><i class=\"ewi-humidity\"></i>${humidity} %<br><i class=\"ewi-dew\"></i>${dewPoint}<br><i class=\"ewi-heat\"></i>${simmerIndex}<br><p style=\"color:#${simmerColor}\">${simmerDanger}</p>"
+    "6": "<i class=\"ewi-temperature\"></i>${temperature} &deg;F<br><i class=\"ewi-humidity\"></i>${humidity} %<br><i class=\"ewi-dew\"></i>${dewPoint} &deg;F<br><i class=\"ewi-heat\"></i>${simmerIndex} SSI<br><p style=\"color:#${simmerColor}\">${simmerDanger}</p>"
   },
   "templatesMetric": {
     "0": "<i class=\"ewi-temperature\"></i> ${temperature} &deg;C<br><i class=\"ewi-humidity\"></i> ${humidity} %",
@@ -24,6 +24,6 @@
     "3": "<i class=\"ewi-windspeed\"></i> ${windSpeed} km/h<br><i class=\"ewi-wind${windCompass}\"></i> ${windDirection} &deg; ${windCompass}<br><i class=\"ewi-rain\"></i> ${rainRate} mm/h<br><i class=\"ewi-light\"></i> ${illuminance} lux<br>UV ${ultravioletDanger}",
     "4": "<i class=\"ewi-lightning\"></i> ${lightningDistance} km<br>${lightningTime}<br>Count: ${lightningCount}",
     "4B": "<i class=\"ewi-lightning\"></i> ${lightningDistance} km<br>${lightningTime}<br>Count: ${lightningCount}<br><i class=\"ewi-batt${batteryIcon}\"></i> ${battery} %",
-    "6": "<i class=\"ewi-temperature\"></i>${temperature} &deg;C<br><i class=\"ewi-humidity\"></i>${humidity} %<br><i class=\"ewi-dew\"></i>${dewPoint}<br><i class=\"ewi-heat\"></i>${simmerIndex}<br><p style=\"color:#${simmerColor}\">${simmerDanger}</p>"
+    "6": "<i class=\"ewi-temperature\"></i>${temperature} &deg;C<br><i class=\"ewi-humidity\"></i>${humidity} %<br><i class=\"ewi-dew\"></i>${dewPoint} &deg;C<br><i class=\"ewi-heat\"></i>${simmerIndex} SSI<br><p style=\"color:#${simmerColor}\">${simmerDanger}</p>"
   }
 }
