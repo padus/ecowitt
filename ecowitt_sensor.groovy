@@ -795,14 +795,31 @@ private Boolean attributeUpdateDewPoint(String val, String attribDewPoint) {
     }    
     else if (settings.calcDewPoint) {
 
-      if (unitSystemIsMetric()) {
-        // Convert temperature back to F
-        temperature = convert_C_to_F(temperature);
-      }  
+      if (!unitSystemIsMetric()) {
+        // Convert temperature to C
+        temperature = convert_F_to_C(temperature);
+      }
 
-      // Calculate dewPoint based on https://en.wikipedia.org/wiki/Dew_point
+      // Calculate dew point based on https://web.archive.org/web/20150209041650/http://www.gorhamschaffler.com:80/humidity_formulas.htm
       BigDecimal humidity = val.toBigDecimal();
-      BigDecimal degrees = temperature - (0.36 * (100 - humidity));
+
+      double tC = temperature as double;
+
+      // calculate saturation vapor pressure in millibars
+      BigDecimal e = (tC < 0) ?
+        6.1115 * Math.exp((23.036 - (tC / 333.7)) * (tC / (279.82 + tC))) :
+        6.1121 * Math.exp((18.678 - (tC / 234.4)) * (tC / (257.14 + tC)));
+
+      // calculate current vapor pressure in millibars
+      e = e * (humidity / 100);
+
+      BigDecimal degrees = (-430.22 + 237.7 * Math.log(e)) / (-Math.log(e) + 19.08);
+
+      if (!unitSystemIsMetric()) {
+        // Convert temperature to C
+        degrees = convert_C_to_F(degrees);
+      }
+
       if (attributeUpdateTemperature(degrees.toString(), attribDewPoint)) updated = true;
     }
   }
