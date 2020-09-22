@@ -816,7 +816,6 @@ private Boolean attributeUpdateDewPoint(String val, String attribDewPoint) {
       BigDecimal degrees = (-430.22 + 237.7 * Math.log(e)) / (-Math.log(e) + 19.08);
 
       if (!unitSystemIsMetric()) {
-        // Convert temperature to C
         degrees = convert_C_to_F(degrees);
       }
 
