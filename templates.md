@@ -60,7 +60,7 @@ Valid for:
 
 ##### ID: 6
 
-<img src="https://github.com/mircolino/ecowitt/raw/master/images/T06.png" width="100" height="100">
+<img src="https://github.com/mircolino/ecowitt/raw/master/images/T06.png" width="140" height="100">
 
 ```
 <i class="ewi-temperature"></i>${temperature} &deg;F<br><i class="ewi-humidity"></i>${humidity} %<br><i class="ewi-dew"></i>${dewPoint} &deg;F<br><i class="ewi-heat"></i>${simmerIndex} SSI<br><p style="color:#${simmerColor}">${simmerDanger}</p>
