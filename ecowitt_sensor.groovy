@@ -87,9 +87,10 @@ metadata {
     attribute "leakMsg", "string";                             // dry) "Dry", wet) "Leak detected!"
     attribute "leakColor", "string";                           // dry) "ffffff", wet) "ff0000" to colorize the icon
     
-    attribute "lightningDistance", "number";                   // Strike distance - km
-    attribute "lightningCount", "number";                      // Strike count
     attribute "lightningTime", "string";                       // Strike time - local time
+    attribute "lightningDistance", "number";                   // Strike distance - km
+    attribute "lightningEnergy", "number";                     // Strike energy - MJ/m
+    attribute "lightningCount", "number";                      // Strike total count
 
  // attribute "ultravioletIndex", "number";                    // UV index (0-11+) 
     attribute "ultravioletDanger", "string";                   // UV danger (0-2.9) Low, (3-5.9) Medium, (6-7.9) High, (8-10.9) Very High, (11+) Extreme
@@ -664,7 +665,7 @@ private Boolean attributeUpdateLeak(String val, String attribWater, String attri
 
 private Boolean attributeUpdateLightningDistance(String val, String attrib) {
 
-  if (!val) return (attributeUpdateString("n/a", attrib));
+  if (!val || val == "0") return (attributeUpdateString("n/a", attrib));
 
   BigDecimal distance = val.toBigDecimal();
   String measure = "km";
@@ -691,9 +692,18 @@ private Boolean attributeUpdateLightningCount(String val, String attrib) {
 
 private Boolean attributeUpdateLightningTime(String val, String attrib) {
 
-  if (!val) return (attributeUpdateString("n/a", attrib));
+  if (!val || val == "0") return (attributeUpdateString("n/a", attrib));
 
   return (attributeUpdateString(timeEpochToLocal(val), attrib));
+}
+
+// ------------------------------------------------------------
+
+private Boolean attributeUpdateLightningEnergy(String val, String attrib) {
+
+  if (!val || val == "0") return (attributeUpdateString("n/a", attrib));
+
+  return (attributeUpdateNumber(val.toBigDecimal(), attrib, "MJ/m", 1));
 }
 
 // ------------------------------------------------------------
@@ -1023,6 +1033,7 @@ Boolean attributeUpdate(String key, String val) {
     updated = attributeUpdateBattery(val, "battery", "batteryIcon", "batteryOrg", 0);  // !boolean
     break;
 
+  case ~/batt_wf[1-8]/:
   case ~/soilbatt[1-8]/:
   case ~/tf_batt[1-8]/:
     updated = attributeUpdateBattery(val, "battery", "batteryIcon", "batteryOrg", 1);  // voltage
@@ -1037,6 +1048,7 @@ Boolean attributeUpdate(String key, String val) {
   
   case "tempinf":
   case "tempf":
+  case ~/tempf_wf[1-8]/:
   case ~/temp[1-8]f/:
   case ~/tf_ch[1-8]/:
   case "tempf_co2":
@@ -1045,6 +1057,7 @@ Boolean attributeUpdate(String key, String val) {
 
   case "humidity":
   case "humidityin":
+  case ~/humidity_wf[1-8]/:
   case ~/humidity[1-8]/:
   case ~/soilmoisture[1-8]/:
   case "humidity_co2":
@@ -1054,42 +1067,52 @@ Boolean attributeUpdate(String key, String val) {
     if (attributeUpdateSimmerIndex(val, "simmerIndex", "simmerDanger", "simmerColor")) updated = true;
     break;
 
+  case ~/baromrelin_wf[1-8]/:
   case "baromrelin":
     // we ignore this value as we do our own correction
     break;
 
+  case ~/baromabsin_wf[1-8]/:
   case "baromabsin":
     updated = attributeUpdatePressure(val, "pressure", "pressureAbs");
     break;
 
+  case ~/rainratein_wf[1-8]/:
   case "rainratein":
     updated = attributeUpdateRain(val, "rainRate", true);
     break;
 
+  case ~/eventrainin_wf[1-8]/:
   case "eventrainin":
     updated = attributeUpdateRain(val, "rainEvent");
     break;
 
+  case ~/hourlyrainin_wf[1-8]/:
   case "hourlyrainin":
     updated = attributeUpdateRain(val, "rainHourly");
     break;
 
+  case ~/dailyrainin_wf[1-8]/:
   case "dailyrainin":
     updated = attributeUpdateRain(val, "rainDaily");
     break;
 
+  case ~/weeklyrainin_wf[1-8]/:
   case "weeklyrainin":
     updated = attributeUpdateRain(val, "rainWeekly");
     break;
 
+  case ~/monthlyrainin_wf[1-8]/:
   case "monthlyrainin":
     updated = attributeUpdateRain(val, "rainMonthly");
     break;
 
+  case ~/yearlyrainin_wf[1-8]/:
   case "yearlyrainin":
     updated = attributeUpdateRain(val, "rainYearly");
     break;
 
+  case ~/totalrainin_wf[1-8]/:
   case "totalrainin":
     updated = attributeUpdateRain(val, "rainTotal");
     break;
@@ -1128,47 +1151,62 @@ Boolean attributeUpdate(String key, String val) {
     updated = attributeUpdateLeak(val, "water", "leak", "leakMsg", "leakColor");
     break;
 
+  case ~/lightning_wf[1-8]/:
   case "lightning":
     updated = attributeUpdateLightningDistance(val, "lightningDistance");
     break;
 
+  case ~/lightning_num_wf[1-8]/:
   case "lightning_num":
     updated = attributeUpdateLightningCount(val, "lightningCount");
     break;
 
+  case ~/lightning_time_wf[1-8]/:
   case "lightning_time":
     updated = attributeUpdateLightningTime(val, "lightningTime");
     break;
 
+  case ~/lightning_energy_wf[1-8]/:
+    updated = attributeUpdateLightningEnergy(val, "lightningEnergy");
+    break;
+
+  case ~/uv_wf[1-8]/:
   case "uv":
     updated = attributeUpdateUV(val, "ultravioletIndex", "ultravioletDanger", "ultravioletColor");
     break;
 
+  case ~/solarradiation_wf[1-8]/:
   case "solarradiation":
     updated = attributeUpdateLight(val, "solarRadiation", "illuminance");
     break;
 
+  case ~/winddir_wf[1-8]/:
   case "winddir":
     updated = attributeUpdateWindDirection(val, "windDirection", "windCompass");
     break;
 
+  case ~/winddir_avg10m_wf[1-8]/:
   case "winddir_avg10m":
     updated = attributeUpdateWindDirection(val, "windDirection_avg_10m", "windCompass_avg_10m");
     break;
 
+  case ~/windspeedmph_wf[1-8]/:
   case "windspeedmph":
     updated = attributeUpdateWindSpeed(val, "windSpeed");
     if (attributeUpdateWindChill(val, "windChill", "windDanger", "windColor")) updated = true;
     break;
 
+  case ~/windspdmph_avg10m_wf[1-8]/:
   case "windspdmph_avg10m":
     updated = attributeUpdateWindSpeed(val, "windSpeed_avg_10m");
     break;
 
+  case ~/windgustmph_wf[1-8]/:
   case "windgustmph":
     updated = attributeUpdateWindSpeed(val, "windGust");
     break;
 
+  case ~/maxdailygust_wf[1-8]/:
   case "maxdailygust":
     updated = attributeUpdateWindSpeed(val, "windGustMaxDaily");
     break;

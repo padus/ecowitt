@@ -71,9 +71,10 @@
  * 2020.09.20 - https://github.com/lymanepp: Added Summer Simmer Index attributes
  *            - Added preferences to selectively calculate HeatIndex, SimmerIndex, WindChill and DewPoint on a per-sensor basis
  * 2020.09.21 - https://github.com/lymanepp: Improved accuracy of dew point calculations
+ * 2020.10.02 - Added WeatherFlow Smart Weather Stations local UDP support
  */
 
-public static String version() { return "v1.12.100"; }
+public static String version() { return "v1.20.151"; }
 
 // Metadata -------------------------------------------------------------------------------------------------------------------
 
@@ -96,7 +97,7 @@ metadata {
   }
 
   preferences {
-    input(name: "macAddress", type: "string", title: "<font style='font-size:12px; color:#1a77c9'>MAC / IP Address</font>", description: "<font style='font-size:12px; font-style: italic'>Ecowitt Wi-Fi gateway MAC or IP address</font>", defaultValue: "", required: true);
+    input(name: "macAddress", type: "string", title: "<font style='font-size:12px; color:#1a77c9'>MAC / IP Address</font>", description: "<font style='font-size:12px; font-style: italic'>Wi-Fi gateway MAC or IP address</font>", defaultValue: "", required: true);
     input(name: "bundleSensors", type: "bool", title: "<font style='font-size:12px; color:#1a77c9'>Compound Outdoor Sensors</font>", description: "<font style='font-size:12px; font-style: italic'>Combine sensors in a virtual PWS array</font>", defaultValue: true);
     input(name: "unitSystem", type: "enum", title: "<font style='font-size:12px; color:#1a77c9'>System of Measurement</font>", description: "<font style='font-size:12px; font-style: italic'>Unit system all values are converted to</font>", options: [0:"Imperial", 1:"Metric"], multiple: false, defaultValue: 0, required: true);
     input(name: "logLevel", type: "enum", title: "<font style='font-size:12px; color:#1a77c9'>Log Verbosity</font>", description: "<font style='font-size:12px; font-style: italic'>Default: 'Debug' for 30 min and 'Info' thereafter</font>", options: [0:"Error", 1:"Warning", 2:"Info", 3:"Debug", 4:"Trace"], multiple: false, defaultValue: 3, required: true);
@@ -308,7 +309,7 @@ private Map dniIsValid(String str) {
 
 private String dniUpdate() {
   //
-  // Get the Ecowitt address (either MAC or IP) from the properties and, if valid and not done already, update the driver DNI
+  // Get the gateway address (either MAC or IP) from the properties and, if valid and not done already, update the driver DNI
   // Return "error") invalid address entered by the user
   //           null) same address as before
   //             "") new valid address
@@ -387,7 +388,7 @@ private void logTrace(String str) { if (logGetLevel() > 3) log.trace(str); }
 
 private void logData(Map data) {
   //
-  // Log all data received from the Ecowitt gateway
+  // Log all data received from the wifi gateway
   // Used only for diagnostic/debug purposes
   //
   if (logGetLevel() > 3) {
@@ -412,8 +413,8 @@ String sensorUnmap(Integer id) {
 
   // assert (id >= 0 && id <= 10);
 
-  //                      0     1     2     3     4     5     6     7     8     9     10
-  // String sensorMap = "[WH69, WH25, WH26, WH31, WH40, WH41, WH51, WH55, WH57, WH80, WH34]";
+  //                      0     1     2     3     4     5     6     7     8     9     10    11
+  // String sensorMap = "[WH69, WH25, WH26, WH31, WH40, WH41, WH51, WH55, WH57, WH80, WH34, WFST]";
   //
   String sensorMap = device.getDataValue("sensorMap");
 
@@ -441,8 +442,8 @@ private void sensorMapping(Map data) {
   //
   // Remap sensors, boundling or decoupling devices, depending on what's present
   //
-  //                     0       1       2       3       4       5       6       7       8       9       10
-  String[] sensorMap =  ["WH69", "WH25", "WH26", "WH31", "WH40", "WH41", "WH51", "WH55", "WH57", "WH80", "WH34"];
+  //                     0       1       2       3       4       5       6       7       8       9       10      11
+  String[] sensorMap =  ["WH69", "WH25", "WH26", "WH31", "WH40", "WH41", "WH51", "WH55", "WH57", "WH80", "WH34", "WFST"];
 
   logDebug("sensorMapping()");
 
@@ -498,7 +499,8 @@ private String sensorName(Integer id, Integer channel) {
                   "WH55": "Water Leak Sensor",
                   "WH57": "Lightning Detection Sensor",
                   "WH80": "Wind Solar Sensor",
-                  "WH34": "Water/Soil Temperature Sensor"];
+                  "WH34": "Water/Soil Temperature Sensor",
+                  "WFST": "WeatherFlow Station"];
 
   String model = sensorId."${sensorUnmap(id)}";
 
@@ -772,6 +774,34 @@ private Boolean attributeUpdate(Map data, Closure sensor) {
       updated = sensor(it.key, it.value, 10, java.util.regex.Matcher.lastMatcher.group(1).toInteger());
       break;
 
+    case ~/batt_wf([1-8])/:
+    case ~/tempf_wf([1-8])/:
+    case ~/humidity_wf([1-8])/:
+    case ~/baromrelin_wf([1-8])/:
+    case ~/baromabsin_wf([1-8])/:
+    case ~/lightning_wf([1-8])/:
+    case ~/lightning_time_wf([1-8])/:
+    case ~/lightning_energy_wf([1-8])/:
+    case ~/lightning_num_wf([1-8])/:
+    case ~/uv_wf([1-8])/:
+    case ~/solarradiation_wf([1-8])/:
+    case ~/rainratein_wf([1-8])/:
+    case ~/eventrainin_wf([1-8])/:
+    case ~/hourlyrainin_wf([1-8])/:
+    case ~/dailyrainin_wf([1-8])/:
+    case ~/weeklyrainin_wf([1-8])/:
+    case ~/monthlyrainin_wf([1-8])/:
+    case ~/yearlyrainin_wf([1-8])/:
+    case ~/totalrainin_wf([1-8])/:
+    case ~/winddir_wf([1-8])/:
+    case ~/winddir_avg10m_wf([1-8])/:
+    case ~/windspeedmph_wf([1-8])/:
+    case ~/windspdmph_avg10m_wf([1-8])/:
+    case ~/windgustmph_wf([1-8])/:
+    case ~/maxdailygust_wf([1-8])/:
+      updated = sensor(it.key, it.value, 11, java.util.regex.Matcher.lastMatcher.group(1).toInteger());
+      break;
+
     case "endofdata":
       // Special key to notify all drivers (parent and children) of end-od-data status 
       updated = sensor(it.key, it.value);
@@ -896,7 +926,7 @@ void uninstalledChildDevice(String dni) {
 
 void parse(String msg) {
   //
-  // Called everytime a POST message is received from the Ecowitt WiFi Gateway
+  // Called everytime a POST message is received from the WiFi Gateway
   //
   try {
     logDebug("parse()");

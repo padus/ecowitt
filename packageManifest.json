@@ -2,9 +2,9 @@
   "packageName": "Ecowitt WiFi Gateway",
   "minimumHEVersion": "2.1.9",
   "author": "Mirco Caramori",
-  "version": "1.12.100",
-  "dateReleased": "2020-09-21",
-  "releaseNotes": "https://github.com/lymanepp: improved accuracy of dew point calculations",
+  "version": "1.20.151",
+  "dateReleased": "2020-10-02",
+  "releaseNotes": "added WeatherFlow Smart Weather Stations local UDP support",
   "documentationLink": "https://github.com/mircolino/ecowitt/blob/master/readme.md",
   "communityLink": "https://community.hubitat.com/t/release-ecowitt-gw1000-wi-fi-gateway/38983",
   "drivers": [
