@@ -64,8 +64,31 @@
   content: "\0048";
 }
 
+.ewi-rising:before {
+  content: "\0049";
+  transform: rotate(45deg);
+}
+
+.ewi-steady:before {
+  content: "\0049";
+  transform: rotate(90deg);
+}
+
+.ewi-falling:before {
+  content: "\0049";
+  transform: rotate(135deg);
+}
+
 .ewi-lightning:before {
   content: "\004c";
+}
+
+.ewi-na:before {
+  content: "\004e";
+}
+
+.ewi-time:before {
+  content: "\004f";
 }
 
 .ewi-pressure:before {

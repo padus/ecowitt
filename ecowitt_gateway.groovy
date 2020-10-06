@@ -16,7 +16,7 @@
  * Change Log:
  *
  * 2020.04.24 - Initial implementation
- * 2020.04.29 - Added GitHub versioning 
+ * 2020.04.29 - Added GitHub versioning
  *            - Added support for more sensors: WH40, WH41, WH43, WS68 and WS80
  * 2020.04.29 - Added sensor battery range conversion to 0-100%
  * 2020.05.03 - Optimized state dispatch and removed unnecessary attributes
@@ -72,9 +72,11 @@
  *            - Added preferences to selectively calculate HeatIndex, SimmerIndex, WindChill and DewPoint on a per-sensor basis
  * 2020.09.21 - https://github.com/lymanepp: Improved accuracy of dew point calculations
  * 2020.10.02 - Added WeatherFlow Smart Weather Stations local UDP support
+ * 2020.10.06 - Fixed a minor issue with lightning attributes
+ *            - Added new templates to the template repository
  */
 
-public static String version() { return "v1.20.151"; }
+public static String version() { return "v1.20.152"; }
 
 // Metadata -------------------------------------------------------------------------------------------------------------------
 
@@ -86,7 +88,7 @@ metadata {
 
     // Gateway info
     attribute "driver", "string";                              // Driver version (new version notification)
-    attribute "mac", "string";                                 // Address (either MAC or IP) 
+    attribute "mac", "string";                                 // Address (either MAC or IP)
     attribute "model", "string";                               // Model number
     attribute "firmware", "string";                            // Firmware version
     attribute "rf", "string";                                  // Sensors radio frequency
@@ -107,11 +109,11 @@ metadata {
 /*
  * Data variables used by the driver:
  *
- * "sensorResync"                                              // User command triggered condition to cleanup/resynchronize the sensors 
+ * "sensorResync"                                              // User command triggered condition to cleanup/resynchronize the sensors
  * "sensorMap"                                                 // Map of whether sensors have been combined or not into a PWS
  * "sensorList"                                                // List of children DNIs
  */
- 
+
 // Preferences ----------------------------------------------------------------------------------------------------------------
 
 private String gatewayMacAddress() {
@@ -223,7 +225,7 @@ Boolean versionUpdate() {
       if (manifestText) {
         // text -> json
         Object parser = new groovy.json.JsonSlurper();
-        Object manifest = parser.parseText(manifestText);  
+        Object manifest = parser.parseText(manifestText);
 
         verNew = versionExtract(manifest.version);
         if (verNew) {
@@ -324,12 +326,12 @@ private String dniUpdate() {
   if (dni) {
 
     if ((device.currentValue(attribute) as String) == dni.canonical) {
-      // The address hasn't changed: we do nothing 
-      error = null; 
+      // The address hasn't changed: we do nothing
+      error = null;
     }
     else {
       // Save the new address as an attribute for later comparison
-      attributeUpdateString(dni.canonical, attribute);   
+      attributeUpdateString(dni.canonical, attribute);
 
       // Update the DNI
       device.setDeviceNetworkId(dni.hex);
@@ -346,7 +348,7 @@ private String dniUpdate() {
 
 private String timeUtcToLocal(String time) {
   //
-  // Convert a UTC date and time in the format "yyyy-MM-dd+HH:mm:ss" to a local time with locale format 
+  // Convert a UTC date and time in the format "yyyy-MM-dd+HH:mm:ss" to a local time with locale format
   //
   try {
     // Create a UTC formatter and parse the given time
@@ -425,15 +427,15 @@ String sensorUnmap(Integer id) {
 
 // ------------------------------------------------------------
 
-/*     
+/*
  *            Outdoor
  *            Temperature                 Wind
  *            & Humidity    Rain          & Solar
  *            ------------- ------------- --------------
  *      WH26  X
- *      WH40                X        
+ *      WH40                X
  *      WH68                              X
- *      WH80  X                           X 
+ *      WH80  X                           X
  * WH65/WH69  X             X             X
  *
  */
@@ -456,16 +458,16 @@ private void sensorMapping(Map data) {
 
   // Count outdoor sensor
   Integer outdoorSensors = 0;
-  if (wh26) outdoorSensors += 1; 
-  if (wh40) outdoorSensors += 1; 
-  if (wh68) outdoorSensors += 1; 
-  if (wh80) outdoorSensors += 1; 
+  if (wh26) outdoorSensors += 1;
+  if (wh40) outdoorSensors += 1;
+  if (wh68) outdoorSensors += 1;
+  if (wh80) outdoorSensors += 1;
 
   // A bit of sanity check
   if (wh69 && outdoorSensors) logWarning("The PWS should be the only outdoor sensor");
   if (wh80 && wh26) logWarning("Both WH80 and WH26 are present with overlapping sensors");
 
-  if (wh80) { 
+  if (wh80) {
     //
     // WH80 (includes temp & humidity)
     //
@@ -529,7 +531,7 @@ private void sensorGarbageCollect() {
   if (value) sensorList = value.tokenize("[, ]");
 
   List<com.hubitat.app.ChildDeviceWrapper> list = getChildDevices();
-  if (list) list.each { 
+  if (list) list.each {
     String dni = it.getDeviceNetworkId();
     if (sensorList.contains(dni) == false) deleteChildDevice(dni);
   }
@@ -582,7 +584,7 @@ private Boolean sensorUpdate(String key, String value, Integer id = null, Intege
         // val != null ensures that it's not an injected (fake) key which will create a ghost child sensor
         //
         sensor = addChildDevice("Ecowitt RF Sensor", dni, [name: sensorName(id, channel), isComponent: true]);
-        
+
         ztatus("OK", "green");
       }
 
@@ -591,7 +593,7 @@ private Boolean sensorUpdate(String key, String value, Integer id = null, Intege
     else {
       // We broadcast to all children
       List<com.hubitat.app.ChildDeviceWrapper> list = getChildDevices();
-      if (list) list.each { if (it.attributeUpdate(key, value)) updated = true; } 
+      if (list) list.each { if (it.attributeUpdate(key, value)) updated = true; }
     }
   }
   catch (Exception e) {
@@ -687,7 +689,7 @@ private Boolean attributeUpdate(Map data, Closure sensor) {
     //
     // Rain Gauge Sensor (WH40 -> WH69)
     //
-    case "wh40batt": 
+    case "wh40batt":
     case "rainratein":
     case "eventrainin":
     case "hourlyrainin":
@@ -710,7 +712,7 @@ private Boolean attributeUpdate(Map data, Closure sensor) {
 
     //
     // Air Quality Monitor (WH45)
-    // 
+    //
     case "tempf_co2":
     case "humidity_co2":
     case "pm25_co2":
@@ -803,7 +805,7 @@ private Boolean attributeUpdate(Map data, Closure sensor) {
       break;
 
     case "endofdata":
-      // Special key to notify all drivers (parent and children) of end-od-data status 
+      // Special key to notify all drivers (parent and children) of end-od-data status
       updated = sensor(it.key, it.value);
 
       // Last thing we do on the driver
@@ -832,7 +834,7 @@ void resyncSensors() {
       // We have a valid gateway dni
       ztatus("Sensor sync pending", "blue");
 
-      device.updateDataValue("sensorResync", "true");    
+      device.updateDataValue("sensorResync", "true");
     }
   }
   catch (Exception e) {
@@ -885,7 +887,7 @@ void updated() {
     }
     else if (error != "") ztatus(error, "red");
     else resyncSensors();
-  
+
     // Update driver version now and every Sunday @ 2am
     versionUpdate();
     schedule("0 0 2 ? * 1 *", versionUpdate);
@@ -919,7 +921,7 @@ void uninstalled() {
 void uninstalledChildDevice(String dni) {
   //
   // Called by the children to notify the parent they are being uninstalled
-  // 
+  //
 }
 
 // ------------------------------------------------------------
@@ -945,13 +947,13 @@ void parse(String msg) {
     }
 
     // "dewPoint" and "heatIndex" are based on "tempf" and "humidity"
-    // for them to be calculated properly, in "data", "humidity", if present, must come after "tempf" 
+    // for them to be calculated properly, in "data", "humidity", if present, must come after "tempf"
 
     // "windchill" is based on "tempf" and "windspeedmph"
-    // for it to be calculated properly, in "data", "windspeedmph", if present, must come after "tempf" 
+    // for it to be calculated properly, in "data", "windspeedmph", if present, must come after "tempf"
 
     // "aqi" is based on "pm25_24h_co2" and "pm10_24h_co2"
-    // for it to be calculated properly, in "data", "pm10_24h_co2", if present, must come after "pm25_24h_co2" 
+    // for it to be calculated properly, in "data", "pm10_24h_co2", if present, must come after "pm25_24h_co2"
 
     // Inject a special key (at the end of the data map) to notify all the driver of end-of-data status. Value is local time
     data["endofdata"] = timeUtcToLocal(data["dateutc"]);

@@ -1,5 +1,5 @@
 /**
- * Driver:     Ecowitt RF Sensor 
+ * Driver:     Ecowitt RF Sensor
  * Author:     Mirco Caramori
  * Repository: https://github.com/mircolino/ecowitt
  * Import URL: https://raw.githubusercontent.com/mircolino/ecowitt/master/ecowitt_sensor.groovy
@@ -20,7 +20,7 @@ metadata {
   definition(name: "Ecowitt RF Sensor", namespace: "mircolino", author: "Mirco Caramori", importUrl: "https://raw.githubusercontent.com/mircolino/ecowitt/master/ecowitt_sensor.groovy") {
     capability "Sensor";
 
-    capability "Battery"; 
+    capability "Battery";
     capability "Temperature Measurement";
     capability "Relative Humidity Measurement";
     capability "Pressure Measurement";
@@ -29,25 +29,25 @@ metadata {
     capability "Water Sensor";
 
  // attribute "battery", "number";                             // 0-100%
-    attribute "batteryIcon", "number";                         // 0, 20, 40, 60, 80, 100 
-    attribute "batteryOrg", "number";                          // original/un-translated battery value returned by the sensor 
+    attribute "batteryIcon", "number";                         // 0, 20, 40, 60, 80, 100
+    attribute "batteryOrg", "number";                          // original/un-translated battery value returned by the sensor
 
-    attribute "batteryTemp", "number";                         // 
+    attribute "batteryTemp", "number";                         //
     attribute "batteryTempIcon", "number";                     // Only created/used when a WH32 is compounded in a PWS
-    attribute "batteryTempOrg", "number";                      // 
+    attribute "batteryTempOrg", "number";                      //
 
-    attribute "batteryRain", "number";                         // 
+    attribute "batteryRain", "number";                         //
     attribute "batteryRainIcon", "number";                     // Only created/used when a WH40 is compounded in a PWS
-    attribute "batteryRainOrg", "number";                      // 
+    attribute "batteryRainOrg", "number";                      //
 
-    attribute "batteryWind", "number";                         // 
-    attribute "batteryWindIcon", "number";                     // Only created/used when a WH68/WH80 is compounded in a PWS 
-    attribute "batteryWindOrg", "number";                      // 
+    attribute "batteryWind", "number";                         //
+    attribute "batteryWindIcon", "number";                     // Only created/used when a WH68/WH80 is compounded in a PWS
+    attribute "batteryWindOrg", "number";                      //
 
  // attribute "temperature", "number";                         // °F
 
  // attribute "humidity", "number";                            // 0-100%
-    attribute "dewPoint", "number";                            // °F - calculated using outdoor "temperature" & "humidity" 
+    attribute "dewPoint", "number";                            // °F - calculated using outdoor "temperature" & "humidity"
     attribute "heatIndex", "number";                           // °F - calculated using outdoor "temperature" & "humidity"
     attribute "heatDanger", "string";                          // Heat index danger level
     attribute "heatColor", "string";                           // Heat index HTML color
@@ -58,7 +58,7 @@ metadata {
  // attribute "pressure", "number";                            // inHg - relative pressure corrected to sea-level
     attribute "pressureAbs", "number";                         // inHg - absolute pressure
 
-    attribute "rainRate", "number";                            // in/h - rainfall rate 
+    attribute "rainRate", "number";                            // in/h - rainfall rate
     attribute "rainEvent", "number";                           // in - rainfall in the current event
     attribute "rainHourly", "number";                          // in - rainfall in the current hour
     attribute "rainDaily", "number";                           // in - rainfall in the current day
@@ -72,11 +72,11 @@ metadata {
     attribute "pm10", "number";                                // µg/m³ - PM10 particle reading - current
     attribute "pm10_avg_24h", "number";                        // µg/m³ - PM10 particle reading - average over the last 24 hours
     attribute "co2", "number";                                 // ppm - CO2 concetration - current
-    attribute "co2_avg_24h", "number";                         // ppm - CO2 concetration - average over the last 24 hours 
+    attribute "co2_avg_24h", "number";                         // ppm - CO2 concetration - average over the last 24 hours
 
     attribute "aqi", "number";                                 // AQI (0-500)
-    attribute "aqiDanger", "string";                           // AQI danger level  
-    attribute "aqiColor", "string";                            // AQI HTML color  
+    attribute "aqiDanger", "string";                           // AQI danger level
+    attribute "aqiColor", "string";                            // AQI HTML color
 
     attribute "aqi_avg_24h", "number";                         // AQI (0-500) - average over the last 24 hours
     attribute "aqiDanger_avg_24h", "string";                   // AQI danger level - average over the last 24 hours
@@ -86,13 +86,13 @@ metadata {
     attribute "leak", "number";                                // dry) 0, wet) 1
     attribute "leakMsg", "string";                             // dry) "Dry", wet) "Leak detected!"
     attribute "leakColor", "string";                           // dry) "ffffff", wet) "ff0000" to colorize the icon
-    
+
     attribute "lightningTime", "string";                       // Strike time - local time
     attribute "lightningDistance", "number";                   // Strike distance - km
     attribute "lightningEnergy", "number";                     // Strike energy - MJ/m
     attribute "lightningCount", "number";                      // Strike total count
 
- // attribute "ultravioletIndex", "number";                    // UV index (0-11+) 
+ // attribute "ultravioletIndex", "number";                    // UV index (0-11+)
     attribute "ultravioletDanger", "string";                   // UV danger (0-2.9) Low, (3-5.9) Medium, (6-7.9) High, (8-10.9) Very High, (11+) Extreme
     attribute "ultravioletColor", "string";                    // UV HTML color
 
@@ -101,21 +101,21 @@ metadata {
 
     attribute "windDirection", "number";                       // 0-359°
     attribute "windCompass", "string";                         // NNE
-    attribute "windDirection_avg_10m", "number";               // 0-359° - average over the last 10 minutes 
-    attribute "windCompass_avg_10m", "string";                 // NNE - average over the last 10 minutes 
+    attribute "windDirection_avg_10m", "number";               // 0-359° - average over the last 10 minutes
+    attribute "windCompass_avg_10m", "string";                 // NNE - average over the last 10 minutes
     attribute "windSpeed", "number";                           // mph
     attribute "windSpeed_avg_10m", "number";                   // mph - average over the last 10 minutes
     attribute "windGust", "number";                            // mph
-    attribute "windGustMaxDaily", "number";                    // mph - max in the current day 
+    attribute "windGustMaxDaily", "number";                    // mph - max in the current day
     attribute "windChill", "number";                           // °F - calculated using outdoor "temperature" & "windSpeed"
     attribute "windDanger", "string";                          // Windchill danger level
     attribute "windColor", "string";                           // Windchill HTML color
 
-    attribute "html", "string";                                // 
-    attribute "html1", "string";                               // 
+    attribute "html", "string";                                //
+    attribute "html1", "string";                               //
     attribute "html2", "string";                               // e.g. "<div>Temperature: ${temperature}°F<br>Humidity: ${humidity}%</div>"
-    attribute "html3", "string";                               // 
-    attribute "html4", "string";                               // 
+    attribute "html3", "string";                               //
+    attribute "html4", "string";                               //
 
     attribute "status", "string";                              // Display current driver status
   }
@@ -194,7 +194,7 @@ private Boolean unitSystemIsMetric() {
 
 private String timeEpochToLocal(String time) {
   //
-  // Convert Unix Epoch time (seconds) to local time with locale format 
+  // Convert Unix Epoch time (seconds) to local time with locale format
   //
   try {
     Long epoch = time.toLong() * 1000L;
@@ -344,7 +344,7 @@ private Boolean attributeUpdateNumber(BigDecimal val, String attribute, String m
   // Coerce Object -> BigDecimal
   if ((device.currentValue(attribute) as BigDecimal) != val) {
     if (measure) sendEvent(name: attribute, value: val, unit: measure);
-    else sendEvent(name: attribute, value: val); 
+    else sendEvent(name: attribute, value: val);
     return (true);
   }
 
@@ -387,7 +387,7 @@ private Boolean attributeUpdateBattery(String val, String attribBattery, String 
   switch (type) {
   case 1:
     // Change range from voltage to (0% - 100%)
-    BigDecimal vMin, vMax; 
+    BigDecimal vMin, vMax;
 
     if (!(settings.voltageMin) || !(settings.voltageMax)) {
       // First time: initialize and show the preference
@@ -446,19 +446,19 @@ private Boolean attributeUpdateLowestBattery() {
   if (temp != null) {
     percent = temp;
     org = device.currentValue("batteryTempOrg") as String;
-    type = 0; 
+    type = 0;
   }
-  
+
   if (rain != null && rain < percent) {
     percent = rain;
     org = device.currentValue("batteryRainOrg") as String;
-    type = 1; 
+    type = 1;
   }
 
   if (wind != null && wind < percent) {
     percent = wind;
     org = device.currentValue("batteryWindOrg") as String;
-    type = 1; 
+    type = 1;
   }
 
   return (attributeUpdateBattery(org, "battery", "batteryIcon", "batteryOrg", type));
@@ -467,7 +467,7 @@ private Boolean attributeUpdateLowestBattery() {
 // ------------------------------------------------------------
 
 private Boolean attributeUpdateTemperature(String val, String attribTemperature) {
-  
+
   BigDecimal degrees = val.toBigDecimal();
   String measure = "°F";
 
@@ -483,7 +483,7 @@ private Boolean attributeUpdateTemperature(String val, String attribTemperature)
 // ------------------------------------------------------------
 
 private Boolean attributeUpdateHumidity(String val, String attribHumidity) {
-  
+
   BigDecimal percent = val.toBigDecimal();
 
   return (attributeUpdateNumber(percent, attribHumidity, "%", 0));
@@ -492,7 +492,7 @@ private Boolean attributeUpdateHumidity(String val, String attribHumidity) {
 // ------------------------------------------------------------
 
 private Boolean attributeUpdatePressure(String val, String attribPressure, String attribPressureAbs) {
-  
+
   // Get unit system
   Boolean metric = unitSystemIsMetric();
 
@@ -549,7 +549,7 @@ private Boolean attributeUpdatePressure(String val, String attribPressure, Strin
 // ------------------------------------------------------------
 
 private Boolean attributeUpdateRain(String val, String attribRain, Boolean hour = false) {
-  
+
   BigDecimal amount = val.toBigDecimal();
   String measure = hour? "in/h": "in";
 
@@ -592,7 +592,7 @@ private Boolean attributeUpdateAQI(String val, Boolean pm25, String attribAqi, S
     else if (pm < 505)   aqi = convertRange(pm, 425,   504,   301, 400);
     else                 aqi = convertRange(pm, 505,   604,   401, 500);
 
-    // Choose the highest AQI between PM2.5 and PM10 
+    // Choose the highest AQI between PM2.5 and PM10
     BigDecimal aqi25 = (device.currentValue(attribAqi) as BigDecimal);
     if (aqi < aqi25) aqi = aqi25;
   }
@@ -665,8 +665,6 @@ private Boolean attributeUpdateLeak(String val, String attribWater, String attri
 
 private Boolean attributeUpdateLightningDistance(String val, String attrib) {
 
-  if (!val || val == "0") return (attributeUpdateString("n/a", attrib));
-
   BigDecimal distance = val.toBigDecimal();
   String measure = "km";
 
@@ -682,8 +680,6 @@ private Boolean attributeUpdateLightningDistance(String val, String attrib) {
 // ------------------------------------------------------------
 
 private Boolean attributeUpdateLightningCount(String val, String attrib) {
-
-  if (!val) return (attributeUpdateString("n/a", attrib));
 
   return (attributeUpdateNumber(val.toBigDecimal(), attrib));
 }
@@ -701,8 +697,6 @@ private Boolean attributeUpdateLightningTime(String val, String attrib) {
 
 private Boolean attributeUpdateLightningEnergy(String val, String attrib) {
 
-  if (!val || val == "0") return (attributeUpdateString("n/a", attrib));
-
   return (attributeUpdateNumber(val.toBigDecimal(), attrib, "MJ/m", 1));
 }
 
@@ -711,7 +705,7 @@ private Boolean attributeUpdateLightningEnergy(String val, String attrib) {
 private Boolean attributeUpdateUV(String val, String attribUvIndex, String attribUvDanger, String attribUvColor) {
   //
   // Conversions based on https://en.wikipedia.org/wiki/Ultraviolet_index
-  // 
+  //
   BigDecimal index = val.toBigDecimal();
 
   String danger;
@@ -722,7 +716,7 @@ private Boolean attributeUpdateUV(String val, String attribUvIndex, String attri
   else if (index < 8)  { danger = "High";      color = "f18b00"; }
   else if (index < 11) { danger = "Very High"; color = "e53210"; }
   else                 { danger = "Extreme";   color = "b567a4"; }
-    
+
   Boolean updated = attributeUpdateNumber(index, attribUvIndex, "uvi");
   if (attributeUpdateString(danger, attribUvDanger)) updated = true;
   if (attributeUpdateString(color, attribUvColor)) updated = true;
@@ -745,7 +739,7 @@ private Boolean attributeUpdateLight(String val, String attribSolarRadiation, St
 // ------------------------------------------------------------
 
 private Boolean attributeUpdateWindSpeed(String val, String attribWindSpeed) {
-  
+
   BigDecimal speed = val.toBigDecimal();
   String measure = "mph";
 
@@ -761,10 +755,10 @@ private Boolean attributeUpdateWindSpeed(String val, String attribWindSpeed) {
 // ------------------------------------------------------------
 
 private Boolean attributeUpdateWindDirection(String val, String attribWindDirection, String attribWindCompass) {
-  
+
   BigDecimal direction = val.toBigDecimal();
 
-  // BigDecimal doesn't support modulo operation so we roll up our own  
+  // BigDecimal doesn't support modulo operation so we roll up our own
   direction = direction - (direction.divideToIntegralValue(360) * 360);
 
   String compass;
@@ -785,7 +779,7 @@ private Boolean attributeUpdateWindDirection(String val, String attribWindDirect
   else if (direction < 303.75)                  compass = "WNW";
   else if (direction < 326.25)                  compass = "NW";
   else                                          compass = "NNW";
-  
+
   Boolean updated = attributeUpdateNumber(direction, attribWindDirection, "°");
   if (attributeUpdateString(compass, attribWindCompass)) updated = true;
 
@@ -802,7 +796,7 @@ private Boolean attributeUpdateDewPoint(String val, String attribDewPoint) {
     if (settings.calcDewPoint == null) {
       // First time: initialize and show the preference
       device.updateSetting("calcDewPoint", [value: false, type: "bool"]);
-    }    
+    }
     else if (settings.calcDewPoint) {
 
       if (!unitSystemIsMetric()) {
@@ -846,12 +840,12 @@ private Boolean attributeUpdateHeatIndex(String val, String attribHeatIndex, Str
     if (settings.calcHeatIndex == null) {
       // First time: initialize and show the preference
       device.updateSetting("calcHeatIndex", [value: false, type: "bool"]);
-    }    
+    }
     else if (settings.calcHeatIndex) {
       if (unitSystemIsMetric()) {
         // Convert temperature back to F
         temperature = convert_C_to_F(temperature);
-      }  
+      }
 
       // Calculate heatIndex based on https://en.wikipedia.org/wiki/Heat_index
       BigDecimal humidity = val.toBigDecimal();
@@ -872,7 +866,7 @@ private Boolean attributeUpdateHeatIndex(String val, String attribHeatIndex, Str
       else if (degrees < 104) { danger = "Extreme Caution"; color = "ffd700"; }
       else if (degrees < 126) { danger = "Danger";          color = "ff8c00"; }
       else                    { danger = "Extreme Danger";  color = "ff0000"; }
-    
+
       updated = attributeUpdateTemperature(degrees.toString(), attribHeatIndex);
       if (attributeUpdateString(danger, attribHeatDanger)) updated = true;
       if (attributeUpdateString(color, attribHeatColor)) updated = true;
@@ -892,7 +886,7 @@ private Boolean attributeUpdateSimmerIndex(String val, String attribSimmerIndex,
     if (settings.calcSimmerIndex == null) {
       // First time: initialize and show the preference
       device.updateSetting("calcSimmerIndex", [value: false, type: "bool"]);
-    }    
+    }
     else if (settings.calcSimmerIndex) {
       if (unitSystemIsMetric()) {
         // Convert temperature back to F
@@ -935,14 +929,14 @@ private Boolean attributeUpdateWindChill(String val, String attribWindChill, Str
     if (settings.calcWindChill == null) {
       // First time: initialize and show the preference
       device.updateSetting("calcWindChill", [value: false, type: "bool"]);
-    }    
+    }
     else if (settings.calcWindChill) {
       if (unitSystemIsMetric()) {
         // Convert temperature back to F
         temperature = convert_C_to_F(temperature);
-      } 
+      }
 
-      // Calculate windChill based on https://en.wikipedia.org/wiki/Wind_chill    
+      // Calculate windChill based on https://en.wikipedia.org/wiki/Wind_chill
       BigDecimal windSpeed = val.toBigDecimal();
       BigDecimal degrees = 35.74 +
                           ( 0.6215 * temperature) -
@@ -997,7 +991,7 @@ Boolean attributeUpdate(String key, String val) {
   //
   // Dispatch attributes changes to hub
   //
-  
+
   Boolean updated = false;
 
   switch (key) {
@@ -1045,7 +1039,7 @@ Boolean attributeUpdate(String key, String val) {
   case "co2_batt":
     updated = attributeUpdateBattery(val, "battery", "batteryIcon", "batteryOrg", 2);  // 0 - 5
     break;
-  
+
   case "tempinf":
   case "tempf":
   case ~/tempf_wf[1-8]/:
@@ -1290,7 +1284,7 @@ private Integer htmlCountAttributes(String htmlAttrib) {
   }
 
   return (count);
-} 
+}
 
 // ------------------------------------------------------------
 
@@ -1335,8 +1329,8 @@ private Integer htmlValidateTemplate(String htmlTempl, String htmlAttrib, Intege
   List<String> attribOk = [];
   List<String> attribErr = [];
 
-  htmlTempl.findAll(~pattern) { java.util.ArrayList match -> 
-    attrib = match[1].trim();  
+  htmlTempl.findAll(~pattern) { java.util.ArrayList match ->
+    attrib = match[1].trim();
 
     if (attribDrv.contains(attrib)) attribOk.add(attrib);
     else attribErr.add(attrib);
@@ -1406,7 +1400,7 @@ private String htmlUpdateUserInput(String input) {
   Integer count = htmlCountAttributes(htmlAttrib);
 
   if (!count) {
-    // Return if we do not support HTML templates 
+    // Return if we do not support HTML templates
     return ("");
   }
 
@@ -1433,10 +1427,10 @@ private String htmlUpdateUserInput(String input) {
   }
 
   for (Integer idx = 0; idx < templateList.size(); idx++) {
-    // We have valid templates: let's validate them    
+    // We have valid templates: let's validate them
     if (htmlValidateTemplate(templateList[idx], htmlAttrib, count) < 1) {
       // Invalid or no attribute in template
-      return ("Invalid attribute or template for the current sensor");    
+      return ("Invalid attribute or template for the current sensor");
     }
   }
 
