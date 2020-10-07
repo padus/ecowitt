@@ -5,7 +5,7 @@
     "2B": "<i class=\"ewi-air\" style=\"color:#${aqiColor}\"></i> ${aqiDanger}<br>PM2.5: ${pm25} &micro;g/m&sup3;<br>AQI: ${aqi}<br><i class=\"ewi-batt${batteryIcon}\"></i> ${battery} %",
     "5":  "<i class=\"ewi-water\" style=\"color:#${leakColor}\"></i> ${leakMsg}",
     "5B": "<i class=\"ewi-water\" style=\"color:#${leakColor}\"></i> ${leakMsg}<br><i class=\"ewi-batt${batteryIcon}\"></i> ${battery} %",
-    "7":  "<i class=\"ewi-light\"></i> ${illuminance} lux<br><i class=\"ewi-UV\"></i> UV ${ultravioletIndex}<br><div style=\"color:#${ultravioletColor}\">${ultravioletDanger}</div>"
+    "7":  "<i class=\"ewi-light\"></i> ${illuminance} lux<br><i class=\"ewi-UV\"></i> ${ultravioletIndex} UVI<br><div style=\"color:#${ultravioletColor}\">${ultravioletDanger}</div>"
   },
   "templatesImperial": {
     "0":  "<i class=\"ewi-temperature\"></i> ${temperature} &deg;F<br><i class=\"ewi-humidity\"></i> ${humidity} %",
