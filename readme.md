@@ -55,7 +55,7 @@
 HTML templates are a powerful way to gang-up multiple Ecowitt sensor attributes in a single Hubitat dashboard tile with endless customization.
 The following is a basic example of what you can achieve with a simple HTML template:
 
-<img src="https://github.com/mircolino/ecowitt/raw/master/images/D08.png" width="400" height="110">
+<img src="https://github.com/mircolino/ecowitt/raw/master/images/D08.png" width="400" height="235">
 
 Each sensor can specify up to 5 templates which will allow the creation of 5 customized dashboard tiles.
 
@@ -113,7 +113,7 @@ NB:
 
 Using a small true-type font with only specific weather icons, it is possible to add dynamic icons to the Ecowitt dashboard tiles.
 
-For example, using the driver **windCompass** attribute, the following is the syntax to obtain a 360° wind icon which always points to the current wind direction as reported by the Ecowitt gateway:
+For example, using the driver **windCompass** attribute, the following is the syntax to obtain a 360ï¿½ wind icon which always points to the current wind direction as reported by the Ecowitt gateway:
 
   ```
   <i class="ewi-wind${windCompass}"></i>
