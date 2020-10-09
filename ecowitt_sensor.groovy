@@ -665,6 +665,8 @@ private Boolean attributeUpdateLeak(String val, String attribWater, String attri
 
 private Boolean attributeUpdateLightningDistance(String val, String attrib) {
 
+  if (!val) val = "0";
+
   BigDecimal distance = val.toBigDecimal();
   String measure = "km";
 
@@ -681,6 +683,8 @@ private Boolean attributeUpdateLightningDistance(String val, String attrib) {
 
 private Boolean attributeUpdateLightningCount(String val, String attrib) {
 
+  if (!val) val = "0";
+
   return (attributeUpdateNumber(val.toBigDecimal(), attrib));
 }
 
@@ -688,14 +692,16 @@ private Boolean attributeUpdateLightningCount(String val, String attrib) {
 
 private Boolean attributeUpdateLightningTime(String val, String attrib) {
 
-  if (!val || val == "0") return (attributeUpdateString("n/a", attrib));
+  val = (!val || val == "0")? "n/a": timeEpochToLocal(val);
 
-  return (attributeUpdateString(timeEpochToLocal(val), attrib));
+  return (attributeUpdateString(val, attrib));
 }
 
 // ------------------------------------------------------------
 
 private Boolean attributeUpdateLightningEnergy(String val, String attrib) {
+
+  if (!val) val = "0";
 
   return (attributeUpdateNumber(val.toBigDecimal(), attrib, "MJ/m", 1));
 }

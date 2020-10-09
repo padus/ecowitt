@@ -74,9 +74,10 @@
  * 2020.10.02 - Added WeatherFlow Smart Weather Stations local UDP support
  * 2020.10.06 - Fixed a minor issue with lightning attributes
  *            - Added new templates to the template repository
+ * 2020.10.09 - Fixed a regression causing a null exception when the lightning sensor reports no strikes
  */
 
-public static String version() { return "v1.20.152"; }
+public static String version() { return "v1.20.153"; }
 
 // Metadata -------------------------------------------------------------------------------------------------------------------
 
