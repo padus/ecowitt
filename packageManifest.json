@@ -2,9 +2,9 @@
   "packageName": "Ecowitt WiFi Gateway",
   "minimumHEVersion": "2.1.9",
   "author": "Mirco Caramori",
-  "version": "1.20.153",
-  "dateReleased": "2020-10-09",
-  "releaseNotes": "added WeatherFlow Smart Weather Stations local UDP support",
+  "version": "1.20.155",
+  "dateReleased": "2020-10-27",
+  "releaseNotes": "changed the sensor DNI naming scheme which prevented the support for multiple gateways",
   "documentationLink": "https://github.com/mircolino/ecowitt/blob/master/readme.md",
   "communityLink": "https://community.hubitat.com/t/release-ecowitt-gw1000-wi-fi-gateway/38983",
   "drivers": [

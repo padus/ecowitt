@@ -78,7 +78,7 @@
  * 2020.10.27 - Changed the sensor DNI naming scheme which prevented the support for multiple gateways
  */
 
-public static String version() { return "v1.20.153"; }
+public static String version() { return "v1.20.155"; }
 
 // Metadata -------------------------------------------------------------------------------------------------------------------
 
