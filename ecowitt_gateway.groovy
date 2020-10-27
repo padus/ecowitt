@@ -75,6 +75,7 @@
  * 2020.10.06 - Fixed a minor issue with lightning attributes
  *            - Added new templates to the template repository
  * 2020.10.09 - Fixed a regression causing a null exception when the lightning sensor reports no strikes
+ * 2020.10.27 - Changed the sensor DNI naming scheme which prevented the support for multiple gateways
  */
 
 public static String version() { return "v1.20.153"; }
@@ -412,6 +413,24 @@ private Boolean ztatus(String str, String color = null) {
 
 // Sensor handling ------------------------------------------------------------------------------------------------------------
 
+String sensorIdToDni(String sid) {
+  String pid = device.getId().concat("-"); 
+
+  if (sid.startsWith(pid)) return (sid);
+  return (pid.concat(sid));
+}
+
+// ------------------------------------------------------------
+
+String sensorDniToId(String dni) {
+  String pid = device.getId().concat("-"); 
+
+  if (dni.startsWith(pid)) return (dni.substring(pid.size()));
+  return (dni); 
+}
+
+// ------------------------------------------------------------
+
 String sensorUnmap(Integer id) {
 
   // assert (id >= 0 && id <= 10);
@@ -512,7 +531,7 @@ private String sensorName(Integer id, Integer channel) {
 
 // ------------------------------------------------------------
 
-private String sensorDni(Integer id, Integer channel) {
+private String sensorId(Integer id, Integer channel) {
 
   String model = sensorUnmap(id);
 
@@ -534,7 +553,7 @@ private void sensorGarbageCollect() {
   List<com.hubitat.app.ChildDeviceWrapper> list = getChildDevices();
   if (list) list.each {
     String dni = it.getDeviceNetworkId();
-    if (sensorList.contains(dni) == false) deleteChildDevice(dni);
+    if (sensorList.contains(sensorDniToId(dni)) == false) deleteChildDevice(dni);
   }
 }
 
@@ -544,16 +563,16 @@ private Boolean sensorEnumerate(String key, String value, Integer id = null, Int
   //
   // Enumerate sensors needed for the current data
   //
-  if (id && value != null) {
-    String dni = sensorDni(id, channel);
+  if (id) {
+    String sid = sensorId(id, channel);
 
     ArrayList<String> sensorList = [];
 
     value = device.getDataValue("sensorList");
     if (value) sensorList = value.tokenize("[, ]");
 
-    if (sensorList.contains(dni) == false) {
-      sensorList.add(dni);
+    if (sensorList.contains(sid) == false) {
+      sensorList.add(sid);
 
       // Save the list in the state variables
       device.updateDataValue("sensorList", sensorList.toString());
@@ -576,15 +595,24 @@ private Boolean sensorUpdate(String key, String value, Integer id = null, Intege
 
   try {
     if (id) {
-      String dni = sensorDni(id, channel);
+      String dni = sensorIdToDni(sensorId(id, channel));
 
       com.hubitat.app.ChildDeviceWrapper sensor = getChildDevice(dni);
-      if (sensor == null && value != null) {
+      if (sensor == null) {
         //
-        // Sensor doesn't exist: we need to create it
-        // val != null ensures that it's not an injected (fake) key which will create a ghost child sensor
+        // Support for sensors with legacy DNI (without the parent ID)
         //
-        sensor = addChildDevice("Ecowitt RF Sensor", dni, [name: sensorName(id, channel), isComponent: true]);
+        sensor = getChildDevice(sensorDniToId(dni)); 
+        if (sensor) {
+          // Found legacy name: update it
+          sensor.setDeviceNetworkId(dni);
+        }
+        else {
+          //
+          // Sensor doesn't exist: we need to create it
+          //
+          sensor = addChildDevice("Ecowitt RF Sensor", dni, [name: sensorName(id, channel), isComponent: true]);
+        }
 
         ztatus("OK", "green");
       }
