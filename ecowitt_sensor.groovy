@@ -33,15 +33,15 @@ metadata {
     attribute "batteryOrg", "number";                          // original/un-translated battery value returned by the sensor
 
     attribute "batteryTemp", "number";                         //
-    attribute "batteryTempIcon", "number";                     // Only created/used when a WH32 is compounded in a PWS
+    attribute "batteryTempIcon", "number";                     // Only created/used when a WH32 is bundled in a PWS
     attribute "batteryTempOrg", "number";                      //
 
     attribute "batteryRain", "number";                         //
-    attribute "batteryRainIcon", "number";                     // Only created/used when a WH40 is compounded in a PWS
+    attribute "batteryRainIcon", "number";                     // Only created/used when a WH40 is bundled in a PWS
     attribute "batteryRainOrg", "number";                      //
 
     attribute "batteryWind", "number";                         //
-    attribute "batteryWindIcon", "number";                     // Only created/used when a WH68/WH80 is compounded in a PWS
+    attribute "batteryWindIcon", "number";                     // Only created/used when a WH68/WH80 is bundled in a PWS
     attribute "batteryWindOrg", "number";                      //
 
  // attribute "temperature", "number";                         // °F
@@ -82,10 +82,9 @@ metadata {
     attribute "aqiDanger_avg_24h", "string";                   // AQI danger level - average over the last 24 hours
     attribute "aqiColor_avg_24h", "string";                    // AQI HTML color - average over the last 24 hours
 
- // attribute "water", "enum";                                 // "dry" or "wet"
-    attribute "leak", "number";                                // dry) 0, wet) 1
-    attribute "leakMsg", "string";                             // dry) "Dry", wet) "Leak detected!"
-    attribute "leakColor", "string";                           // dry) "ffffff", wet) "ff0000" to colorize the icon
+ // attribute "water", "enum", ["dry", "wet"];                 // "dry" or "wet"
+    attribute "waterMsg", "string";                            // dry) "Dry", wet) "Leak detected!"
+    attribute "waterColor", "string";                          // dry) "ffffff", wet) "ff0000" to colorize the icon
 
     attribute "lightningTime", "string";                       // Strike time - local time
     attribute "lightningDistance", "number";                   // Strike distance - km
@@ -118,6 +117,11 @@ metadata {
     attribute "html4", "string";                               //
 
     attribute "status", "string";                              // Display current driver status
+
+    attribute "orphaned", "enum", ["false", "true"];           // Whether or not the unbundled sensor is still receiving data from the gateway
+    attribute "orphanedTemp", "enum", ["false", "true"];       // Whether or not the bundled WH32 is still receiving data from the gateway
+    attribute "orphanedRain", "enum", ["false", "true"];       // Whether or not the bundled WH40 is still receiving data from the gateway
+    attribute "orphanedWind", "enum", ["false", "true"];       // Whether or not the bundled WH68/WH80 sensor is still receiving data from the gateway            
   }
 
   preferences {
@@ -147,16 +151,17 @@ metadata {
 /*
  * State variables used by the driver:
  *
- * status: -1) driver is in error
- *          0) driver is waiting to receive data
- *          1) driver is OK and processing data
+ * sensor                      \
+ * sensorTemp                   | null) not present, 0) waiting to receive data, 1) processing data
+ * sensorRain                   |
+ * sensorWind                  /
  *
- * compounded: true) child sensor bundles more than one physical sensor
  */
 
 /*
  * Data variables used by the driver:
  *
+ * "isBundled"                                                 // "true" if we are a bundled PWS (set by the parent at creation time)
  * "htmlTemplate"                                              // User template 0
  * "htmlTemplate1"                                             // User template 1
  * "htmlTemplate2"                                             // User template 2
@@ -179,6 +184,16 @@ private Boolean ztatus(String str, String color = null) {
   if (color) str = "<font style='color:${color}'>${str}</font>";
 
   return (attributeUpdateString(str, "status"));
+}
+
+// ------------------------------------------------------------
+
+private Boolean ztatusIsError() {
+  
+  String str = device.currentValue("status") as String;
+
+  if (str && str.contains("<font style='color:red'>")) return (true);
+  return (false);
 }
 
 // Conversions ----------------------------------------------------------------------------------------------------------------
@@ -310,10 +325,7 @@ private Boolean attributeUpdateString(String val, String attribute) {
   // Only update "attribute" if different
   // Return true if "attribute" has actually been updated/created
   //
-
-  // If starving, register the sensor as alive and receiving data
-  if (!state.status) state.status = 1;
-
+  
   if ((device.currentValue(attribute) as String) != val) {
     sendEvent(name: attribute, value: val);
     return (true);
@@ -329,9 +341,6 @@ private Boolean attributeUpdateNumber(BigDecimal val, String attribute, String m
   // Only update "attribute" if different
   // Return true if "attribute" has actually been updated/created
   //
-
-  // If starving, register the sensor as alive and receiving data
-  if (!state.status) state.status = 1;
 
   // If rounding is required we use the Float one because the BigDecimal is not supported/not working on Hubitat
   if (decimals >= 0) val = val.toFloat().round(decimals).toBigDecimal();
@@ -432,7 +441,7 @@ private Boolean attributeUpdateBattery(String val, String attribBattery, String 
   return (updated);
 }
 
-// ----------------------------
+// -----------------------------
 
 private Boolean attributeUpdateLowestBattery() {
   BigDecimal percent = 100;
@@ -564,6 +573,15 @@ private Boolean attributeUpdateRain(String val, String attribRain, Boolean hour 
 
 // ------------------------------------------------------------
 
+private Boolean attributeUpdatePM(String val, String attribPm) {
+
+  BigDecimal pm = val.toBigDecimal();
+
+  return (attributeUpdateNumber(pm, attribPm, "µg/m³"));
+}
+
+// ------------------------------------------------------------
+
 private Boolean attributeUpdateAQI(String val, Boolean pm25, String attribAqi, String attribAqiDanger, String attribAqiColor) {
   //
   // Conversions based on https://en.wikipedia.org/wiki/Air_quality_index
@@ -617,15 +635,6 @@ private Boolean attributeUpdateAQI(String val, Boolean pm25, String attribAqi, S
 
 // ------------------------------------------------------------
 
-private Boolean attributeUpdatePM(String val, String attribPm) {
-
-  BigDecimal pm = val.toBigDecimal();
-
-  return (attributeUpdateNumber(pm, attribPm, "µg/m³"));
-}
-
-// ------------------------------------------------------------
-
 private Boolean attributeUpdateCO2(String val, String attribCo2) {
 
   BigDecimal co2 = val.toBigDecimal();
@@ -635,28 +644,25 @@ private Boolean attributeUpdateCO2(String val, String attribCo2) {
 
 // ------------------------------------------------------------
 
-private Boolean attributeUpdateLeak(String val, String attribWater, String attribLeak, String attribLeakMsg, String attribLeakColor) {
+private Boolean attributeUpdateLeak(String val, String attribWater, String attribWaterMsg, String attribWaterColor) {
 
   BigDecimal leak = (val.toBigDecimal())? 1: 0;
   String water, message, color;
 
   if (leak) {
     water = "wet";
-    leak = 1;
     message = "Leak detected!";
     color = "ff0000";
   }
   else {
     water = "dry";
-    leak = 0;
     message = "Dry";
     color = "ffffff";
   }
 
   Boolean updated = attributeUpdateString(water, attribWater);
-  if (attributeUpdateNumber(leak, attribLeak)) updated = true;
-  if (attributeUpdateString(message, attribLeakMsg)) updated = true;
-  if (attributeUpdateString(color, attribLeakColor)) updated = true;
+  if (attributeUpdateString(message, attribWaterMsg)) updated = true;
+  if (attributeUpdateString(color, attribWaterColor)) updated = true;
 
   return (updated);
 }
@@ -999,43 +1005,55 @@ Boolean attributeUpdate(String key, String val) {
   //
 
   Boolean updated = false;
+  Boolean bundled = device.getDataValue("isBundled");
 
   switch (key) {
 
   case "wh26batt":
-    if (device.getDeviceNetworkId() != "WH26") {
-      state.compounded = true;
+    if (bundled) {
+      state.sensorTemp = 1;
       updated = attributeUpdateBattery(val, "batteryTemp", "batteryTempIcon", "batteryTempOrg", 0);  // !boolean
     }
-    else updated = attributeUpdateBattery(val, "battery", "batteryIcon", "batteryOrg", 0);
+    else {
+      state.sensor = 1;
+      updated = attributeUpdateBattery(val, "battery", "batteryIcon", "batteryOrg", 0);
+    }
     break;
 
   case "wh40batt":
-    if (device.getDeviceNetworkId() != "WH40") {
-      state.compounded = true;
+    if (bundled) {
+      state.sensorRain = 1;
       updated = attributeUpdateBattery(val, "batteryRain", "batteryRainIcon", "batteryRainOrg", 1);  // voltage
     }
-    else updated = attributeUpdateBattery(val, "battery", "batteryIcon", "batteryOrg", 1);
+    else {
+      state.sensor = 1;
+      updated = attributeUpdateBattery(val, "battery", "batteryIcon", "batteryOrg", 1);
+    }
     break;
 
   case "wh68batt":
   case "wh80batt":
-    if (device.getDeviceNetworkId() != "WH80") {
-      state.compounded = true;
+    if (bundled) {
+      state.sensorWind = 1;
       updated = attributeUpdateBattery(val, "batteryWind", "batteryWindIcon", "batteryWindOrg", 1);  // voltage
     }
-    else updated = attributeUpdateBattery(val, "battery", "batteryIcon", "batteryOrg", 1);
+    else {
+      state.sensor = 1;
+      updated = attributeUpdateBattery(val, "battery", "batteryIcon", "batteryOrg", 1);
+    }
     break;
 
   case ~/batt[1-8]/:
   case "wh25batt":
   case "wh65batt":
+    state.sensor = 1;
     updated = attributeUpdateBattery(val, "battery", "batteryIcon", "batteryOrg", 0);  // !boolean
     break;
 
   case ~/batt_wf[1-8]/:
   case ~/soilbatt[1-8]/:
   case ~/tf_batt[1-8]/:
+    state.sensor = 1;
     updated = attributeUpdateBattery(val, "battery", "batteryIcon", "batteryOrg", 1);  // voltage
     break;
 
@@ -1043,6 +1061,7 @@ Boolean attributeUpdate(String key, String val) {
   case ~/leakbatt[1-4]/:
   case "wh57batt":
   case "co2_batt":
+    state.sensor = 1;
     updated = attributeUpdateBattery(val, "battery", "batteryIcon", "batteryOrg", 2);  // 0 - 5
     break;
 
@@ -1052,6 +1071,7 @@ Boolean attributeUpdate(String key, String val) {
   case ~/temp[1-8]f/:
   case ~/tf_ch[1-8]/:
   case "tempf_co2":
+    state.sensor = 1;
     updated = attributeUpdateTemperature(val, "temperature");
     break;
 
@@ -1061,6 +1081,7 @@ Boolean attributeUpdate(String key, String val) {
   case ~/humidity[1-8]/:
   case ~/soilmoisture[1-8]/:
   case "humidity_co2":
+    state.sensor = 1;
     updated = attributeUpdateHumidity(val, "humidity");
     if (attributeUpdateDewPoint(val, "dewPoint")) updated = true;
     if (attributeUpdateHeatIndex(val, "heatIndex", "heatDanger", "heatColor")) updated = true;
@@ -1069,145 +1090,174 @@ Boolean attributeUpdate(String key, String val) {
 
   case ~/baromrelin_wf[1-8]/:
   case "baromrelin":
+    state.sensor = 1;
     // we ignore this value as we do our own correction
     break;
 
   case ~/baromabsin_wf[1-8]/:
   case "baromabsin":
+    state.sensor = 1;
     updated = attributeUpdatePressure(val, "pressure", "pressureAbs");
     break;
 
   case ~/rainratein_wf[1-8]/:
   case "rainratein":
+    state.sensor = 1;
     updated = attributeUpdateRain(val, "rainRate", true);
     break;
 
   case ~/eventrainin_wf[1-8]/:
   case "eventrainin":
+    state.sensor = 1;
     updated = attributeUpdateRain(val, "rainEvent");
     break;
 
   case ~/hourlyrainin_wf[1-8]/:
   case "hourlyrainin":
+    state.sensor = 1;
     updated = attributeUpdateRain(val, "rainHourly");
     break;
 
   case ~/dailyrainin_wf[1-8]/:
   case "dailyrainin":
+    state.sensor = 1;
     updated = attributeUpdateRain(val, "rainDaily");
     break;
 
   case ~/weeklyrainin_wf[1-8]/:
   case "weeklyrainin":
+    state.sensor = 1;
     updated = attributeUpdateRain(val, "rainWeekly");
     break;
 
   case ~/monthlyrainin_wf[1-8]/:
   case "monthlyrainin":
+    state.sensor = 1;
     updated = attributeUpdateRain(val, "rainMonthly");
     break;
 
   case ~/yearlyrainin_wf[1-8]/:
   case "yearlyrainin":
+    state.sensor = 1;
     updated = attributeUpdateRain(val, "rainYearly");
     break;
 
   case ~/totalrainin_wf[1-8]/:
   case "totalrainin":
+    state.sensor = 1;
     updated = attributeUpdateRain(val, "rainTotal");
     break;
 
   case ~/pm25_ch[1-4]/:
   case "pm25_co2":
+    state.sensor = 1;
     updated = attributeUpdatePM(val, "pm25");
     if (attributeUpdateAQI(val, true, "aqi", "aqiDanger", "aqiColor")) updated = true;
     break;
 
   case ~/pm25_avg_24h_ch[1-4]/:
   case "pm25_24h_co2":
+    state.sensor = 1;
     updated = attributeUpdatePM(val, "pm25_avg_24h");
     if (attributeUpdateAQI(val, true, "aqi_avg_24h", "aqiDanger_avg_24h", "aqiColor_avg_24h")) updated = true;
     break;
 
   case "pm10_co2":
+    state.sensor = 1;
     updated = attributeUpdatePM(val, "pm10");
     if (attributeUpdateAQI(val, false, "aqi", "aqiDanger", "aqiColor")) updated = true;
     break;
 
   case "pm10_24h_co2":
+    state.sensor = 1;
     updated = attributeUpdatePM(val, "pm10_avg_24h");
     if (attributeUpdateAQI(val, false, "aqi_avg_24h", "aqiDanger_avg_24h", "aqiColor_avg_24h")) updated = true;
     break;
 
   case "co2":
+    state.sensor = 1;
     updated = attributeUpdateCO2(val, "co2");
     break;
 
   case "co2_24h":
+    state.sensor = 1;
     updated = attributeUpdateCO2(val, "co2_avg_24h");
     break;
 
   case ~/leak_ch[1-4]/:
-    updated = attributeUpdateLeak(val, "water", "leak", "leakMsg", "leakColor");
+    state.sensor = 1;
+    updated = attributeUpdateLeak(val, "water", "waterMsg", "waterColor");
     break;
 
   case ~/lightning_wf[1-8]/:
   case "lightning":
+    state.sensor = 1;
     updated = attributeUpdateLightningDistance(val, "lightningDistance");
     break;
 
   case ~/lightning_num_wf[1-8]/:
   case "lightning_num":
+    state.sensor = 1;
     updated = attributeUpdateLightningCount(val, "lightningCount");
     break;
 
   case ~/lightning_time_wf[1-8]/:
   case "lightning_time":
+    state.sensor = 1;
     updated = attributeUpdateLightningTime(val, "lightningTime");
     break;
 
   case ~/lightning_energy_wf[1-8]/:
+    state.sensor = 1;
     updated = attributeUpdateLightningEnergy(val, "lightningEnergy");
     break;
 
   case ~/uv_wf[1-8]/:
   case "uv":
+    state.sensor = 1;
     updated = attributeUpdateUV(val, "ultravioletIndex", "ultravioletDanger", "ultravioletColor");
     break;
 
   case ~/solarradiation_wf[1-8]/:
   case "solarradiation":
+    state.sensor = 1;
     updated = attributeUpdateLight(val, "solarRadiation", "illuminance");
     break;
 
   case ~/winddir_wf[1-8]/:
   case "winddir":
+    state.sensor = 1;
     updated = attributeUpdateWindDirection(val, "windDirection", "windCompass");
     break;
 
   case ~/winddir_avg10m_wf[1-8]/:
   case "winddir_avg10m":
+    state.sensor = 1;
     updated = attributeUpdateWindDirection(val, "windDirection_avg_10m", "windCompass_avg_10m");
     break;
 
   case ~/windspeedmph_wf[1-8]/:
   case "windspeedmph":
+    state.sensor = 1;
     updated = attributeUpdateWindSpeed(val, "windSpeed");
     if (attributeUpdateWindChill(val, "windChill", "windDanger", "windColor")) updated = true;
     break;
 
   case ~/windspdmph_avg10m_wf[1-8]/:
   case "windspdmph_avg10m":
+    state.sensor = 1;
     updated = attributeUpdateWindSpeed(val, "windSpeed_avg_10m");
     break;
 
   case ~/windgustmph_wf[1-8]/:
   case "windgustmph":
+    state.sensor = 1;
     updated = attributeUpdateWindSpeed(val, "windGust");
     break;
 
   case ~/maxdailygust_wf[1-8]/:
   case "maxdailygust":
+    state.sensor = 1;
     updated = attributeUpdateWindSpeed(val, "windGustMaxDaily");
     break;
 
@@ -1216,26 +1266,20 @@ Boolean attributeUpdate(String key, String val) {
   //
 
   case "endofdata":
-    // If we are a compounded sensor, at the endofdata we update the "virtual" battery with the lowest of all the "physical" batteries
-    if (state.compounded) attributeUpdateLowestBattery();
-
-    // Last thing we do on the driver: update status
-    if (!state.status) {
-      // Last round we have not received any data
-      ztatus("Orphaned", "orange");
-      state.status = 0;
+    if (updateSensorStatus(bundled)) {
+      // Sensor or part the PWS bundle is not receiving data
+      if (!ztatusIsError()) ztatus("Orphaned", "orange");
     }
     else {
-      // Receiving data or user error
-      updated = attributeUpdateHtml("htmlTemplate", "html");
+      // Sensor or all parts of the PWS bundle are receiving data      
+      if (!ztatusIsError()) ztatus("OK", "green"); 
 
-      if (state.status != -1) {
-        // If no user error pending we trigger a starving next cycle if we don't receive data
-        ztatus("OK", "green");
-        state.status = 0;
-      }
+      // If we are a bundled PWS sensor, at the endofdata we update the "virtual" battery with the lowest of all the "physical" batteries
+      if (bundled) updated = attributeUpdateLowestBattery();
+
+      // Update templates if any
+      if (attributeUpdateHtml("htmlTemplate", "html")) updated = true;
     }
-
     break;
 
   default:
@@ -1244,6 +1288,40 @@ Boolean attributeUpdate(String key, String val) {
   }
 
   return (updated);
+}
+
+// -------------------------------------------------------------
+
+Boolean updateSensorStatus(bundled) {
+  Boolean orphaned = false; 
+
+  if (bundled) {
+    if (state.sensorTemp != null) {
+      if (state.sensorTemp == 0) orphaned = true;
+      attributeUpdateString(state.sensorTemp? "false": "true", "orphanedTemp");
+      state.sensorTemp = 0;
+    }
+    if (state.sensorRain != null) {
+      if (state.sensorRain == 0) orphaned = true;
+      attributeUpdateString(state.sensorRain? "false": "true", "orphanedRain");
+      state.sensorRain = 0;
+    }
+    if (state.sensorWind != null) {
+      if (state.sensorWind == 0) orphaned = true;
+      attributeUpdateString(state.sensorWind? "false": "true", "orphanedWind");
+      state.sensorWind = 0;
+    }      
+  }
+  else {
+    if (state.sensor != null) {
+      if (state.sensor == 0) orphaned = true;
+      attributeUpdateString(state.sensor? "false": "true", "orphaned");
+    }
+  }
+
+  if (state.sensor != null) state.sensor = 0;
+
+  return (orphaned);
 }
 
 // HTML templates --------------------------------------------------------------------------------------------------------------
@@ -1472,15 +1550,9 @@ void updated() {
 
     // Pre-process HTML templates (if any)
     String error = htmlUpdateUserInput(settings.htmlTemplate as String);
-    if (error) {
-      ztatus(error, "red");
-      state.status = -1;
-    }
-    else {
-      ztatus("OK", "green");
-      state.status = 0;
-    }
-  }
+    if (error) ztatus(error, "red");
+    else ztatus("OK", "green");
+   }
   catch (Exception e) {
     logError("Exception in updated(): ${e}");
   }

@@ -59,7 +59,7 @@
  * 2020.06.08 - Added support for Multi-channel Water Leak Sensor (WH55)
  * 2020.06.21 - Added support for pressure correction to sea level based on altitude and temperature
  * 2020.06.22 - Added preference to let the end-user decide whether to compound or not outdoor sensors
- *              Added custom battery attributes in compounded sensors
+ *              Added custom battery attributes in bundled PWS sensors
  * 2020.08.27 - Added user defined min/max voltage values to fine-tune battery status in sensors reporting it as voltage range
  *              Added Hubitat Package Manager repository tags
  * 2020.08.27 - Fixed null exception caused by preferences being set asynchronously
@@ -76,9 +76,10 @@
  *            - Added new templates to the template repository
  * 2020.10.09 - Fixed a regression causing a null exception when the lightning sensor reports no strikes
  * 2020.10.27 - Changed the sensor DNI naming scheme which prevented the support for multiple gateways
+ * 2020.10.29 - In a virtual (bundled) PWS, now each individual component is correctly identified if orphaned
  */
 
-public static String version() { return "v1.20.155"; }
+public static String version() { return "v1.23.8"; }
 
 // Metadata -------------------------------------------------------------------------------------------------------------------
 
@@ -113,7 +114,8 @@ metadata {
  *
  * "sensorResync"                                              // User command triggered condition to cleanup/resynchronize the sensors
  * "sensorMap"                                                 // Map of whether sensors have been combined or not into a PWS
- * "sensorList"                                                // List of children DNIs
+ * "sensorBundled"                                             // "true" is we have an actual bundled PWS
+ * "sensorList"                                                // List of children IDs
  */
 
 // Preferences ----------------------------------------------------------------------------------------------------------------
@@ -411,6 +413,16 @@ private Boolean ztatus(String str, String color = null) {
   return (attributeUpdateString(str, "status"));
 }
 
+// ------------------------------------------------------------
+
+private Boolean ztatusIsError() {
+  
+  String str = device.currentValue("status") as String;
+
+  if (str && str.contains("<font style='color:red'>")) return (true);
+  return (false);
+}
+
 // Sensor handling ------------------------------------------------------------------------------------------------------------
 
 String sensorIdToDni(String sid) {
@@ -427,22 +439,6 @@ String sensorDniToId(String dni) {
 
   if (dni.startsWith(pid)) return (dni.substring(pid.size()));
   return (dni); 
-}
-
-// ------------------------------------------------------------
-
-String sensorUnmap(Integer id) {
-
-  // assert (id >= 0 && id <= 10);
-
-  //                      0     1     2     3     4     5     6     7     8     9     10    11
-  // String sensorMap = "[WH69, WH25, WH26, WH31, WH40, WH41, WH51, WH55, WH57, WH80, WH34, WFST]";
-  //
-  String sensorMap = device.getDataValue("sensorMap");
-
-  id *= 6;
-
-  return (sensorMap.substring(id + 1, id + 5));
 }
 
 // ------------------------------------------------------------
@@ -494,17 +490,43 @@ private void sensorMapping(Map data) {
     sensorMap[2] = sensorMap[9];
   }
 
-  if (wh69 || (bundleOutdoorSensors() && outdoorSensors > 1)) {
+  if (wh69) {
     //
-    // Either (1) we have a WH65/WH69 or (2) we are requested to bundle outdoor sensors and we have more than 1
+    // We have a real WH65/WH69 PWS
     //
     sensorMap[2] = sensorMap[0];
     sensorMap[4] = sensorMap[0];
     sensorMap[9] = sensorMap[0];
   }
+  else if (bundleOutdoorSensors() && outdoorSensors > 1) {
+    //
+    // We are requested to bundle outdoor sensors and we have more than 1
+    //
+    sensorMap[2] = sensorMap[0];
+    sensorMap[4] = sensorMap[0];
+    sensorMap[9] = sensorMap[0];
+
+    device.updateDataValue("sensorBundled", "WH69");
+  }
 
   // Save the mapping in the state variables
   device.updateDataValue("sensorMap", sensorMap.toString());
+}
+
+// ------------------------------------------------------------
+
+String sensorModel(Integer id) {
+
+  // assert (id >= 0 && id <= 10);
+
+  //                      0     1     2     3     4     5     6     7     8     9     10    11
+  // String sensorMap = "[WH69, WH25, WH26, WH31, WH40, WH41, WH51, WH55, WH57, WH80, WH34, WFST]";
+  //
+  String sensorMap = device.getDataValue("sensorMap");
+
+  id *= 6;
+
+  return (sensorMap.substring(id + 1, id + 5));
 }
 
 // ------------------------------------------------------------
@@ -524,7 +546,7 @@ private String sensorName(Integer id, Integer channel) {
                   "WH34": "Water/Soil Temperature Sensor",
                   "WFST": "WeatherFlow Station"];
 
-  String model = sensorId."${sensorUnmap(id)}";
+  String model = sensorId."${sensorModel(id)}";
 
   return (channel? "${model} ${channel}": model);
 }
@@ -533,9 +555,16 @@ private String sensorName(Integer id, Integer channel) {
 
 private String sensorId(Integer id, Integer channel) {
 
-  String model = sensorUnmap(id);
+  String model = sensorModel(id);
 
   return (channel? "${model}_CH${channel}": model);
+}
+
+// ------------------------------------------------------------
+
+private Boolean sensorIsBundled(Integer id, Integer channel) {
+
+  return (sensorModel(id) == device.getDataValue("sensorBundled"));
 }
 
 // ------------------------------------------------------------
@@ -604,7 +633,7 @@ private Boolean sensorUpdate(String key, String value, Integer id = null, Intege
         //
         sensor = getChildDevice(sensorDniToId(dni)); 
         if (sensor) {
-          // Found legacy name: update it
+          // Found existing sensor with legacy name: update it
           sensor.setDeviceNetworkId(dni);
         }
         else {
@@ -612,6 +641,7 @@ private Boolean sensorUpdate(String key, String value, Integer id = null, Intege
           // Sensor doesn't exist: we need to create it
           //
           sensor = addChildDevice("Ecowitt RF Sensor", dni, [name: sensorName(id, channel), isComponent: true]);
+          if (sensor && sensorIsBundled(id, channel)) sensor.updateDataValue("isBundled", "true");
         }
 
         ztatus("OK", "green");
@@ -997,6 +1027,8 @@ void parse(String msg) {
       device.data.remove("sensorResync");
 
       // (Re)create sensor map
+      device.updateDataValue("sensorBundled", null);
+      device.data.remove("sensorBundled");      
       device.updateDataValue("sensorMap", null);
       sensorMapping(data);
 
