@@ -77,9 +77,11 @@
  * 2020.10.09 - Fixed a regression causing a null exception when the lightning sensor reports no strikes
  * 2020.10.27 - Changed the sensor DNI naming scheme which prevented the support for multiple gateways
  * 2020.10.29 - In a virtual (bundled) PWS, now each individual component is correctly identified if orphaned
+ *            - Added safeguards for heat, summer simmer and wind chill indexes to prevent invalid values when temperature is
+ *              above or below a certain threshold
  */
 
-public static String version() { return "v1.23.8"; }
+public static String version() { return "v1.23.10"; }
 
 // Metadata -------------------------------------------------------------------------------------------------------------------
 

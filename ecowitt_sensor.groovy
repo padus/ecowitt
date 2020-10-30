@@ -860,24 +860,34 @@ private Boolean attributeUpdateHeatIndex(String val, String attribHeatIndex, Str
       }
 
       // Calculate heatIndex based on https://en.wikipedia.org/wiki/Heat_index
-      BigDecimal humidity = val.toBigDecimal();
-      BigDecimal degrees = -42.379 +
-                          (  2.04901523 * temperature) +
-                          ( 10.14333127 * humidity) -
-                          (  0.22475541 * (temperature * humidity)) -
-                          (  0.00683783 * (temperature ** 2)) -
-                          (  0.05481717 * (humidity ** 2)) +
-                          (  0.00122874 * ((temperature ** 2) * humidity)) +
-                          (  0.00085282 * (temperature * (humidity ** 2))) -
-                          (  0.00000199 * ((temperature ** 2) * (humidity ** 2)));
+      BigDecimal degrees;
       String danger;
       String color;
 
-      if      (degrees < 80)  { danger = "Safe";            color = "ffffff"; degrees = temperature; }
-      else if (degrees < 91)  { danger = "Caution";         color = "ffff66"; }
-      else if (degrees < 104) { danger = "Extreme Caution"; color = "ffd700"; }
-      else if (degrees < 126) { danger = "Danger";          color = "ff8c00"; }
-      else                    { danger = "Extreme Danger";  color = "ff0000"; }
+      if (temperature < 80)  {
+        degrees = temperature;
+        danger = "Safe";
+        color = "ffffff";
+      }
+      else {
+        BigDecimal humidity = val.toBigDecimal();
+
+        degrees = -42.379 +
+                 (  2.04901523 * temperature) +
+                 ( 10.14333127 * humidity) -
+                 (  0.22475541 * (temperature * humidity)) -
+                 (  0.00683783 * (temperature ** 2)) -
+                 (  0.05481717 * (humidity ** 2)) +
+                 (  0.00122874 * ((temperature ** 2) * humidity)) +
+                 (  0.00085282 * (temperature * (humidity ** 2))) -
+                 (  0.00000199 * ((temperature ** 2) * (humidity ** 2)));
+
+        if      (degrees < 80)  { danger = "Safe";            color = "ffffff"; }
+        else if (degrees < 91)  { danger = "Caution";         color = "ffff66"; }
+        else if (degrees < 104) { danger = "Extreme Caution"; color = "ffd700"; }
+        else if (degrees < 126) { danger = "Danger";          color = "ff8c00"; }
+        else                    { danger = "Extreme Danger";  color = "ff0000"; }
+      }
 
       updated = attributeUpdateTemperature(degrees.toString(), attribHeatIndex);
       if (attributeUpdateString(danger, attribHeatDanger)) updated = true;
@@ -906,21 +916,30 @@ private Boolean attributeUpdateSimmerIndex(String val, String attribSimmerIndex,
       }
 
       // Calculate heatIndex based on https://www.vcalc.com/wiki/rklarsen/Summer+Simmer+Index
-      BigDecimal humidity = val.toBigDecimal();
-      BigDecimal degrees = 1.98 * (temperature - (0.55 - (0.0055 * humidity)) * (temperature - 58.0)) - 56.83;
-
+      BigDecimal degrees;
       String danger;
-      String color;
+      String color;       
 
-      if      (degrees < 70)  { danger = "Cool";                          color = "ffffff"; degrees = temperature; }
-      else if (degrees < 77)  { danger = "Slightly Cool";                 color = "0099ff"; }
-      else if (degrees < 83)  { danger = "Comfortable";                   color = "2dca02"; }
-      else if (degrees < 91)  { danger = "Slightly Warm";                 color = "9acd32"; }
-      else if (degrees < 100) { danger = "Increased Discomfort";          color = "ffb233"; }
-      else if (degrees < 112) { danger = "Caution Heat Exhaustion";       color = "ff6600"; }
-      else if (degrees < 125) { danger = "Danger Heatstroke";             color = "ff3300"; }
-      else if (degrees < 150) { danger = "Extreme Danger";                color = "ff0000"; }
-      else                    { danger = "Circulatory Collapse Imminent"; color = "cc3300"; }
+      if (temperature < 70)  {
+        degrees = temperature;
+        danger = "Cool";
+        color = "ffffff";
+      }
+      else {
+        BigDecimal humidity = val.toBigDecimal();
+
+        degrees = 1.98 * (temperature - (0.55 - (0.0055 * humidity)) * (temperature - 58.0)) - 56.83;
+
+        if      (degrees < 70)  { danger = "Cool";                          color = "ffffff"; }
+        else if (degrees < 77)  { danger = "Slightly Cool";                 color = "0099ff"; }
+        else if (degrees < 83)  { danger = "Comfortable";                   color = "2dca02"; }
+        else if (degrees < 91)  { danger = "Slightly Warm";                 color = "9acd32"; }
+        else if (degrees < 100) { danger = "Increased Discomfort";          color = "ffb233"; }
+        else if (degrees < 112) { danger = "Caution Heat Exhaustion";       color = "ff6600"; }
+        else if (degrees < 125) { danger = "Danger Heatstroke";             color = "ff3300"; }
+        else if (degrees < 150) { danger = "Extreme Danger";                color = "ff0000"; }
+        else                    { danger = "Circulatory Collapse Imminent"; color = "cc3300"; }
+      }
 
       updated = attributeUpdateTemperature(degrees.toString(), attribSimmerIndex);
       if (attributeUpdateString(danger, attribSimmerDanger)) updated = true;
@@ -949,20 +968,30 @@ private Boolean attributeUpdateWindChill(String val, String attribWindChill, Str
       }
 
       // Calculate windChill based on https://en.wikipedia.org/wiki/Wind_chill
-      BigDecimal windSpeed = val.toBigDecimal();
-      BigDecimal degrees = 35.74 +
-                          ( 0.6215 * temperature) -
-                          (35.75 * (windSpeed ** 0.16)) +
-                          ((0.4275 * temperature) * (windSpeed ** 0.16));
+      BigDecimal degrees;
       String danger;
-      String color;
+      String color;   
 
-      if      (degrees < -69) { danger = "Frostbite certain";  color = "2d2c52"; }
-      else if (degrees < -19) { danger = "Frostbite likely";   color = "1f479f"; }
-      else if (degrees < 1)   { danger = "Frostbite possible"; color = "0c6cb5"; }
-      else if (degrees < 21)  { danger = "Very Unpleasant";    color = "2f9fda"; }
-      else if (degrees < 41)  { danger = "Unpleasant";         color = "9dc8e6"; }
-      else                    { danger = "Safe";               color = "ffffff"; }
+      BigDecimal windSpeed = val.toBigDecimal();
+
+      if (temperature > 50 || windSpeed < 3) {
+        degrees = temperature;
+        danger = "Safe";
+        color = "ffffff";
+      }
+      else {
+        degrees = 35.74 +
+                ( 0.6215 * temperature) -
+                (35.75 * (windSpeed ** 0.16)) +
+                ((0.4275 * temperature) * (windSpeed ** 0.16));
+
+        if      (degrees < -69) { danger = "Frostbite certain";  color = "2d2c52"; }
+        else if (degrees < -19) { danger = "Frostbite likely";   color = "1f479f"; }
+        else if (degrees < 1)   { danger = "Frostbite possible"; color = "0c6cb5"; }
+        else if (degrees < 21)  { danger = "Very Unpleasant";    color = "2f9fda"; }
+        else if (degrees < 41)  { danger = "Unpleasant";         color = "9dc8e6"; }
+        else                    { danger = "Safe";               color = "ffffff"; }
+      }
 
       updated = attributeUpdateTemperature(degrees.toString(), attribWindChill);
       if (attributeUpdateString(danger, attribWindDanger)) updated = true;
