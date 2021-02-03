@@ -79,9 +79,10 @@
  * 2020.10.29 - In a virtual (bundled) PWS, now each individual component is correctly identified if orphaned
  *            - Added safeguards for heat, summer simmer and wind chill indexes to prevent invalid values when temperature is
  *              above or below a certain threshold
+ * 2021.02.03 - Added support for humidityAbs (absolute humidity) based on current relative humidity and temperature
  */
 
-public static String version() { return "v1.23.10"; }
+public static String version() { return "v1.23.15"; }
 
 // Metadata -------------------------------------------------------------------------------------------------------------------
 

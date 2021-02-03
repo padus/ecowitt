@@ -47,6 +47,7 @@ metadata {
  // attribute "temperature", "number";                         // °F
 
  // attribute "humidity", "number";                            // 0-100%
+    attribute "humidityAbs", "number";                         // oz/lb³ or g/m³ 
     attribute "dewPoint", "number";                            // °F - calculated using outdoor "temperature" & "humidity"
     attribute "heatIndex", "number";                           // °F - calculated using outdoor "temperature" & "humidity"
     attribute "heatDanger", "string";                          // Heat index danger level
@@ -134,7 +135,7 @@ metadata {
       input(name: "voltageMax", type: "string", title: "<font style='font-size:12px; color:#1a77c9'>Full Battery Voltage</font>", description: "<font style='font-size:12px; font-style: italic'>Sensor value when battery is full</font>", defaultValue: "", required: true);
     }
     if (calcDewPoint != null) {
-      input(name: "calcDewPoint", type: "bool", title: "<font style='font-size:12px; color:#1a77c9'>Calculate Dew/Frost Point</font>", description: "<font style='font-size:12px; font-style: italic'>Temperature to which air must be cooled to become saturated with water vapor and condense or freeze</font>", defaultValue: false);
+      input(name: "calcDewPoint", type: "bool", title: "<font style='font-size:12px; color:#1a77c9'>Calculate Dew Point & Absolute Humidity</font>", description: "<font style='font-size:12px; font-style: italic'>Temperature below which water vapor will condense & amount of water contained in a parcel of air</font>", defaultValue: false);
     }
     if (calcHeatIndex != null) {
       input(name: "calcHeatIndex", type: "bool", title: "<font style='font-size:12px; color:#1a77c9'>Calculate Heat Index</font>", description: "<font style='font-size:12px; font-style: italic'>Perceived discomfort as a result of the combined effects of the air temperature and humidity</font>", defaultValue: false);
@@ -316,6 +317,18 @@ private BigDecimal convert_Wm2_to_lux(BigDecimal val) {
 
 private BigDecimal convert_lux_to_Wm2(BigDecimal val) {
   return (val * 0.0079);
+}
+
+// ------------------------------------------------------------
+
+private BigDecimal convert_gm3_to_ozyd3(BigDecimal val) {
+  return (val / 37.079776);
+}
+
+// ------------------------------------------------------------
+
+private BigDecimal convert_ozyd3_to_gm3(BigDecimal val) {
+  return (val * 37.079776);
 }
 
 // Attribute handling ----------------------------------------------------------------------------------------------------------
@@ -800,7 +813,7 @@ private Boolean attributeUpdateWindDirection(String val, String attribWindDirect
 
 // ------------------------------------------------------------
 
-private Boolean attributeUpdateDewPoint(String val, String attribDewPoint) {
+private Boolean attributeUpdateDewPoint(String val, String attribDewPoint, String attribHumidityAbs) {
   Boolean updated = false;
 
   BigDecimal temperature = (device.currentValue("temperature") as BigDecimal);
@@ -821,21 +834,26 @@ private Boolean attributeUpdateDewPoint(String val, String attribDewPoint) {
 
       double tC = temperature as double;
 
-      // calculate saturation vapor pressure in millibars
+      // Calculate saturation vapor pressure in millibars
       BigDecimal e = (tC < 0) ?
         6.1115 * Math.exp((23.036 - (tC / 333.7)) * (tC / (279.82 + tC))) :
         6.1121 * Math.exp((18.678 - (tC / 234.4)) * (tC / (257.14 + tC)));
 
-      // calculate current vapor pressure in millibars
+      // Calculate current vapor pressure in millibars
       e *= humidity / 100;
 
       BigDecimal degrees = (-430.22 + 237.7 * Math.log(e)) / (-Math.log(e) + 19.08);
 
+      // Calculate humidityAbs based on https://carnotcycle.wordpress.com/2012/08/04/how-to-convert-relative-humidity-to-absolute-humidity/
+      BigDecimal volume = ((6.1121 * Math.exp((17.67 * tC) / (tC + 243.5)) * (humidity as double) * 2.1674)) / (tC + 273.15);
+
       if (!unitSystemIsMetric()) {
         degrees = convert_C_to_F(degrees);
+        volume = convert_gm3_to_ozyd3(volume);
       }
 
       if (attributeUpdateTemperature(degrees.toString(), attribDewPoint)) updated = true;
+      if (attributeUpdateNumber(volume, attribHumidityAbs, unitSystemIsMetric()? "g/m³": "oz/lb³", 2)) updated = true;
     }
   }
 
@@ -1112,7 +1130,7 @@ Boolean attributeUpdate(String key, String val) {
   case "humidity_co2":
     state.sensor = 1;
     updated = attributeUpdateHumidity(val, "humidity");
-    if (attributeUpdateDewPoint(val, "dewPoint")) updated = true;
+    if (attributeUpdateDewPoint(val, "dewPoint", "humidityAbs")) updated = true;
     if (attributeUpdateHeatIndex(val, "heatIndex", "heatDanger", "heatColor")) updated = true;
     if (attributeUpdateSimmerIndex(val, "simmerIndex", "simmerDanger", "simmerColor")) updated = true;
     break;
