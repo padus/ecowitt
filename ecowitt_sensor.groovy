@@ -47,7 +47,7 @@ metadata {
  // attribute "temperature", "number";                         // °F
 
  // attribute "humidity", "number";                            // 0-100%
-    attribute "humidityAbs", "number";                         // oz/lb³ or g/m³ 
+    attribute "humidityAbs", "number";                         // oz/yd³ or g/m³ 
     attribute "dewPoint", "number";                            // °F - calculated using outdoor "temperature" & "humidity"
     attribute "heatIndex", "number";                           // °F - calculated using outdoor "temperature" & "humidity"
     attribute "heatDanger", "string";                          // Heat index danger level
@@ -853,7 +853,7 @@ private Boolean attributeUpdateDewPoint(String val, String attribDewPoint, Strin
       }
 
       if (attributeUpdateTemperature(degrees.toString(), attribDewPoint)) updated = true;
-      if (attributeUpdateNumber(volume, attribHumidityAbs, unitSystemIsMetric()? "g/m³": "oz/lb³", 2)) updated = true;
+      if (attributeUpdateNumber(volume, attribHumidityAbs, unitSystemIsMetric()? "g/m³": "oz/yd³", 2)) updated = true;
     }
   }
 
