@@ -1117,7 +1117,7 @@ Boolean attributeUpdate(String key, String val) {
   case ~/tempf_wf[1-8]/:
   case ~/temp[1-8]f/:
   case ~/tf_ch[1-8]/:
-  case "tempf_co2":
+  case "tf_co2":
     state.sensor = 1;
     updated = attributeUpdateTemperature(val, "temperature");
     break;
@@ -1127,7 +1127,7 @@ Boolean attributeUpdate(String key, String val) {
   case ~/humidity_wf[1-8]/:
   case ~/humidity[1-8]/:
   case ~/soilmoisture[1-8]/:
-  case "humidity_co2":
+  case "humi_co2":
     state.sensor = 1;
     updated = attributeUpdateHumidity(val, "humidity");
     if (attributeUpdateDewPoint(val, "dewPoint", "humidityAbs")) updated = true;

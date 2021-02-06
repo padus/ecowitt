@@ -80,9 +80,10 @@
  *            - Added safeguards for heat, summer simmer and wind chill indexes to prevent invalid values when temperature is
  *              above or below a certain threshold
  * 2021.02.04 - Added support for humidityAbs (absolute humidity) based on current relative humidity and temperature
+ * 2021.02.06 - Fixed WH45 temperature and humidity signature
  */
 
-public static String version() { return "v1.23.16"; }
+public static String version() { return "v1.23.17"; }
 
 // Metadata -------------------------------------------------------------------------------------------------------------------
 
@@ -775,8 +776,8 @@ private Boolean attributeUpdate(Map data, Closure sensor) {
     //
     // Air Quality Monitor (WH45)
     //
-    case "tempf_co2":
-    case "humidity_co2":
+    case "tf_co2":
+    case "humi_co2":
     case "pm25_co2":
     case "pm25_24h_co2":
     case "pm10_co2":

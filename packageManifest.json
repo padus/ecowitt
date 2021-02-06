@@ -2,9 +2,9 @@
   "packageName": "Ecowitt WiFi Gateway",
   "minimumHEVersion": "2.1.9",
   "author": "Mirco Caramori",
-  "version": "1.23.16",
-  "dateReleased": "2021-02-04",
-  "releaseNotes": "https://community.hubitat.com/t/release-ecowitt-gw1000-wi-fi-gateway/38983/800",
+  "version": "1.23.17",
+  "dateReleased": "2021-02-06",
+  "releaseNotes": "https://community.hubitat.com/t/release-ecowitt-gw1000-wi-fi-gateway/38983/804",
   "documentationLink": "https://github.com/mircolino/ecowitt/blob/master/readme.md",
   "communityLink": "https://community.hubitat.com/t/release-ecowitt-gw1000-wi-fi-gateway/38983",
   "drivers": [
