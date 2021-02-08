@@ -27,6 +27,7 @@ metadata {
     capability "Ultraviolet Index";
     capability "Illuminance Measurement";
     capability "Water Sensor";
+    capability "Carbon Dioxide Measurement";
 
  // attribute "battery", "number";                             // 0-100%
     attribute "batteryIcon", "number";                         // 0, 20, 40, 60, 80, 100
@@ -72,8 +73,9 @@ metadata {
     attribute "pm25_avg_24h", "number";                        // µg/m³ - PM2.5 particle reading - average over the last 24 hours
     attribute "pm10", "number";                                // µg/m³ - PM10 particle reading - current
     attribute "pm10_avg_24h", "number";                        // µg/m³ - PM10 particle reading - average over the last 24 hours
-    attribute "co2", "number";                                 // ppm - CO2 concetration - current
-    attribute "co2_avg_24h", "number";                         // ppm - CO2 concetration - average over the last 24 hours
+
+ // attribute "carbonDioxide", "number";                       // ppm - CO2 concetration - current
+    attribute "carbonDioxide_avg_24h", "number";               // ppm - CO2 concetration - average over the last 24 hours
 
     attribute "aqi", "number";                                 // AQI (0-500)
     attribute "aqiDanger", "string";                           // AQI danger level
@@ -1223,12 +1225,12 @@ Boolean attributeUpdate(String key, String val) {
 
   case "co2":
     state.sensor = 1;
-    updated = attributeUpdateCO2(val, "co2");
+    updated = attributeUpdateCO2(val, "carbonDioxide");
     break;
 
   case "co2_24h":
     state.sensor = 1;
-    updated = attributeUpdateCO2(val, "co2_avg_24h");
+    updated = attributeUpdateCO2(val, "carbonDioxide_avg_24h");
     break;
 
   case ~/leak_ch[1-4]/:

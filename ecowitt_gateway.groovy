@@ -81,9 +81,11 @@
  *              above or below a certain threshold
  * 2021.02.04 - Added support for humidityAbs (absolute humidity) based on current relative humidity and temperature
  * 2021.02.06 - Fixed WH45 temperature and humidity signature
+ * 2021.02.08 - Added "Carbon Dioxide Measurement" capability
+ *            - Renamed attributes "co2" to native "carbonDioxide" and "co2_avg_24h" to "carbonDioxide_avg_24h" 
  */
 
-public static String version() { return "v1.23.17"; }
+public static String version() { return "v1.23.19"; }
 
 // Metadata -------------------------------------------------------------------------------------------------------------------
 
