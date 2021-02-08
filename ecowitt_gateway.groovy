@@ -83,7 +83,7 @@
  * 2021.02.06 - Fixed WH45 temperature and humidity signature
  * 2021.02.08 - Added "Carbon Dioxide Measurement" capability
  *            - Renamed attributes "co2" to native "carbonDioxide" and "co2_avg_24h" to "carbonDioxide_avg_24h"
-              - When a sensor is on USB power, battery attributes are no longer created
+ *            - When a sensor is on USB power, battery attributes are no longer created
  */
 
 public static String version() { return "v1.23.20"; }
