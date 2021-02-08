@@ -1,12 +1,13 @@
 {
   "name": "Ecowitt HTML template repository",
   "templates": {
-    "2":  "<i class=\"ewi-air\" style=\"color:#${aqiColor}\"></i> ${aqiDanger}<br>PM2.5: ${pm25} &micro;g/m&sup3;<br>AQI: ${aqi}",
-    "2B": "<i class=\"ewi-air\" style=\"color:#${aqiColor}\"></i> ${aqiDanger}<br>PM2.5: ${pm25} &micro;g/m&sup3;<br>AQI: ${aqi}<br><i class=\"ewi-batt${batteryIcon}\"></i> ${battery} %",
+    "2":  "<i class=\"ewi-air\" style=\"color:#${aqiColor}\"></i> ${aqiDanger}<br>AQI: ${aqi}<br>PM2.5: ${pm25} &micro;g/m&sup3;",
+    "2B": "<i class=\"ewi-air\" style=\"color:#${aqiColor}\"></i> ${aqiDanger}<br>AQI: ${aqi}<br>PM2.5: ${pm25} &micro;g/m&sup3;<br><i class=\"ewi-batt${batteryIcon}\"></i> ${battery} %",
     "5":  "<i class=\"ewi-water\" style=\"color:#${leakColor}\"></i> ${leakMsg}",
     "5B": "<i class=\"ewi-water\" style=\"color:#${leakColor}\"></i> ${leakMsg}<br><i class=\"ewi-batt${batteryIcon}\"></i> ${battery} %",
     "7":  "<i class=\"ewi-UV\" style=\"color:#${ultravioletColor}\"></i> ${ultravioletDanger}<br>UVI ${ultravioletIndex}<br><i class=\"ewi-light\"></i> ${illuminance} lux",
-    "9B": "<i class=\"ewi-batt${batteryTempIcon}\"></i> Temp: ${batteryTemp} %<br><i class=\"ewi-batt${batteryRainIcon}\"></i> Rain: ${batteryRain} %<br><i class=\"ewi-batt${batteryWindIcon}\"></i> Wind: ${batteryWind} %"  
+    "9B": "<i class=\"ewi-batt${batteryTempIcon}\"></i> Temp: ${batteryTemp} %<br><i class=\"ewi-batt${batteryRainIcon}\"></i> Rain: ${batteryRain} %<br><i class=\"ewi-batt${batteryWindIcon}\"></i> Wind: ${batteryWind} %",
+    "12": "<i class=\"ewi-air\" style=\"color:#${aqiColor}\"></i> ${aqiDanger}<br>AQI: ${aqi}<br>PM2.5: ${pm25} &micro;g/m&sup3;<br>PM10: ${pm10} &micro;g/m&sup3;<br>CO₂: ${carbonDioxide} ppm"
   },
   "templatesImperial": {
     "0":  "<i class=\"ewi-temperature\"></i> ${temperature} &deg;F<br><i class=\"ewi-humidity\"></i> ${humidity} %",
