@@ -74,8 +74,8 @@ metadata {
     attribute "pm10", "number";                                // µg/m³ - PM10 particle reading - current
     attribute "pm10_avg_24h", "number";                        // µg/m³ - PM10 particle reading - average over the last 24 hours
 
- // attribute "carbonDioxide", "number";                       // ppm - CO2 concetration - current
-    attribute "carbonDioxide_avg_24h", "number";               // ppm - CO2 concetration - average over the last 24 hours
+ // attribute "carbonDioxide", "number";                       // ppm - CO₂ concetration - current
+    attribute "carbonDioxide_avg_24h", "number";               // ppm - CO₂ concetration - average over the last 24 hours
 
     attribute "aqi", "number";                                 // AQI (0-500)
     attribute "aqiDanger", "string";                           // AQI danger level

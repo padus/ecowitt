@@ -842,6 +842,9 @@ private Boolean attributeUpdate(Map data, Closure sensor) {
       updated = sensor(it.key, it.value, 10, java.util.regex.Matcher.lastMatcher.group(1).toInteger());
       break;
 
+    //
+    // WeatherFlow Station (WFST)
+    //
     case ~/batt_wf([1-8])/:
     case ~/tempf_wf([1-8])/:
     case ~/humidity_wf([1-8])/:
