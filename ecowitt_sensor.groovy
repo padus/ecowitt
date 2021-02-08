@@ -449,9 +449,13 @@ private Boolean attributeUpdateBattery(String val, String attribBattery, String 
   else if (percent < 90) icon = 80;
   else icon = 100;
 
-  Boolean updated = attributeUpdateNumber(percent, attribBattery, "%", 0);
-  if (attributeUpdateNumber(icon, attribBatteryIcon, "%")) updated = true;
-  if (attributeUpdateNumber(original, attribBatteryOrg, unitOrg)) updated = true;
+  Boolean updated = attributeUpdateNumber(original, attribBatteryOrg, unitOrg);
+
+  if (type != 2 || original != 6) {
+    // We are not on USB power
+    if (attributeUpdateNumber(percent, attribBattery, "%", 0)) updated = true;
+    if (attributeUpdateNumber(icon, attribBatteryIcon, "%")) updated = true;
+  }
 
   return (updated);
 }
