@@ -84,9 +84,10 @@
  * 2021.02.08 - Added "Carbon Dioxide Measurement" capability
  *            - Renamed attributes "co2" to native "carbonDioxide" and "co2_avg_24h" to "carbonDioxide_avg_24h"
  *            - When a sensor is on USB power, battery attributes are no longer created
+ * 2021.05.18 - streamlined double conversion in attributeUpdateDewPoint() 
  */
 
-public static String version() { return "v1.23.20"; }
+public static String version() { return "v1.23.21"; }
 
 // Metadata -------------------------------------------------------------------------------------------------------------------
 

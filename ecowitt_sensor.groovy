@@ -836,22 +836,22 @@ private Boolean attributeUpdateDewPoint(String val, String attribDewPoint, Strin
       }
 
       // Calculate dewPoint based on https://web.archive.org/web/20150209041650/http://www.gorhamschaffler.com:80/humidity_formulas.htm
-      BigDecimal humidity = val.toBigDecimal();
+      double rH = val.toDouble();
 
-      double tC = temperature as double;
+      double tC = temperature.doubleValue();
 
       // Calculate saturation vapor pressure in millibars
-      BigDecimal e = (tC < 0) ?
+      double e = (tC < 0) ?
         6.1115 * Math.exp((23.036 - (tC / 333.7)) * (tC / (279.82 + tC))) :
         6.1121 * Math.exp((18.678 - (tC / 234.4)) * (tC / (257.14 + tC)));
 
       // Calculate current vapor pressure in millibars
-      e *= humidity / 100;
+      e *= rH / 100;
 
       BigDecimal degrees = (-430.22 + 237.7 * Math.log(e)) / (-Math.log(e) + 19.08);
 
       // Calculate humidityAbs based on https://carnotcycle.wordpress.com/2012/08/04/how-to-convert-relative-humidity-to-absolute-humidity/
-      BigDecimal volume = ((6.1121 * Math.exp((17.67 * tC) / (tC + 243.5)) * (humidity as double) * 2.1674)) / (tC + 273.15);
+      BigDecimal volume = ((6.1121 * Math.exp((17.67 * tC) / (tC + 243.5)) * rH * 2.1674)) / (tC + 273.15);
 
       if (!unitSystemIsMetric()) {
         degrees = convert_C_to_F(degrees);
