@@ -1495,7 +1495,7 @@ private List<String> htmlGetUserInput(String input, Integer count) {
   }
   else {
     // Input is an array of repository template IDs
-    List<String> idList = input.tokenize("[, ]");
+    List<String> idList = input.tokenize(", ");
     if (idList) {
       // We found at least one template ID in the user input, make sure they are not too many
       Object repository = htmlGetRepository();
