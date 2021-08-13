@@ -85,10 +85,17 @@
  *            - Renamed attributes "co2" to native "carbonDioxide" and "co2_avg_24h" to "carbonDioxide_avg_24h"
  *            - When a sensor is on USB power, battery attributes are no longer created
  * 2021.05.18 - streamlined double conversion in attributeUpdateDewPoint()
- * 2021.06.02 - bug fixing 
+ * 2021.06.02 - bug fixing
+ * 2021.08.11 - updated status attribute to be deleted when no error
+ *            - added the ability to set the number of digits for temperature and pressure
+ *            - added the ability to completely disable html template support including all related attributes
+ *            - fixed a bug where the soil moisture sensor would incorreclty display Dew Point and Heat Index preferences
+ *            - used the new (2.2.8) API deleteCurrentState() to remove stale attributes when toggling Dew Point, Heat Index
+ *              and Wind Chill support
+ *            - improved and optimized device orphaned status detection
  */
 
-public static String version() { return "v1.23.22"; }
+public static String version() { return "v1.30.27"; }
 
 // Metadata -------------------------------------------------------------------------------------------------------------------
 
@@ -413,18 +420,26 @@ private void logData(Map data) {
   }
 }
 
-// Ztatus ---------------------------------------------------------------------------------------------------------------------
+// Device Status --------------------------------------------------------------------------------------------------------------
 
-private Boolean ztatus(String str, String color = null) {
+private Boolean devStatus(String str = null, String color = null) {
+  if (str) {
+    if (color) str = "<font style='color:${color}'>${str}</font>";
 
-  if (color) str = "<font style='color:${color}'>${str}</font>";
+    return (attributeUpdateString(str, "status"));
+  }
 
-  return (attributeUpdateString(str, "status"));
+  if (device.currentValue("status") != null) {
+    device.deleteCurrentState("status");
+    return (true);
+  }
+
+  return (false);
 }
 
 // ------------------------------------------------------------
 
-private Boolean ztatusIsError() {
+private Boolean devStatusIsError() {
   
   String str = device.currentValue("status") as String;
 
@@ -653,7 +668,7 @@ private Boolean sensorUpdate(String key, String value, Integer id = null, Intege
           if (sensor && sensorIsBundled(id, channel)) sensor.updateDataValue("isBundled", "true");
         }
 
-        ztatus("OK", "green");
+        devStatus();
       }
 
       if (sensor) updated = sensor.attributeUpdate(key, value);
@@ -667,7 +682,7 @@ private Boolean sensorUpdate(String key, String value, Integer id = null, Intege
   catch (Exception e) {
     if (e instanceof com.hubitat.app.exception.UnknownDeviceTypeException) {
       logError("Unable to create child sensor device. Please make sure the \"ecowitt_sensor.groovy\" driver is installed.");
-      ztatus("Unable to create child sensor device. Please make sure the \"ecowitt_sensor.groovy\" driver is installed", "red");
+      devStatus("Unable to create child sensor device. Please make sure the \"ecowitt_sensor.groovy\" driver is installed", "red");
     }
     else logError("Exception in sensorUpdate(${id}, ${channel}): ${e}");
   }
@@ -903,7 +918,7 @@ void resyncSensors() {
 
     if (dniIsValid(device.getDeviceNetworkId())) {
       // We have a valid gateway dni
-      ztatus("Sensor sync pending", "blue");
+      devStatus("Sensor sync pending", "blue");
 
       device.updateDataValue("sensorResync", "true");
     }
@@ -953,10 +968,10 @@ void updated() {
     String error = dniUpdate();
     if (error == null) {
       // The gateway dni hasn't changed: we set OK only if a resync sensors is not pending
-      if (device.getDataValue("sensorResync")) ztatus("Sensor sync pending", "blue");
-      else ztatus("OK", "green");
+      if (device.getDataValue("sensorResync")) devStatus("Sensor sync pending", "blue");
+      else devStatus();
     }
-    else if (error != "") ztatus(error, "red");
+    else if (error != "") devStatus(error, "red");
     else resyncSensors();
 
     // Update driver version now and every Sunday @ 2am
@@ -1035,17 +1050,15 @@ void parse(String msg) {
     if (device.getDataValue("sensorResync")) {
       // We execute this block only the first time we receive data from the wifi gateway
       // or when the user presses the "Resynchronize Sensors" command
-      device.updateDataValue("sensorResync", null);
-      device.data.remove("sensorResync");
-
+      device.removeDataValue("sensorResync");
+ 
       // (Re)create sensor map
-      device.updateDataValue("sensorBundled", null);
-      device.data.remove("sensorBundled");      
-      device.updateDataValue("sensorMap", null);
+      device.removeDataValue("sensorBundled");      
+      device.removeDataValue("sensorMap");
       sensorMapping(data);
 
       // (Re)create sensor list
-      device.updateDataValue("sensorList", null);
+      device.removeDataValue("sensorList");
       attributeUpdate(data, this.&sensorEnumerate);
 
       // Match the new (soon to be created) sensor list with the existing one
@@ -1053,7 +1066,7 @@ void parse(String msg) {
       sensorGarbageCollect();
 
       // Clear pending status and start processing data
-      ztatus("OK", "green");
+      devStatus();
     }
 
     attributeUpdate(data, this.&sensorUpdate);

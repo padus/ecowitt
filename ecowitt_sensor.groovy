@@ -124,29 +124,40 @@ metadata {
     attribute "orphaned", "enum", ["false", "true"];           // Whether or not the unbundled sensor is still receiving data from the gateway
     attribute "orphanedTemp", "enum", ["false", "true"];       // Whether or not the bundled WH32 is still receiving data from the gateway
     attribute "orphanedRain", "enum", ["false", "true"];       // Whether or not the bundled WH40 is still receiving data from the gateway
-    attribute "orphanedWind", "enum", ["false", "true"];       // Whether or not the bundled WH68/WH80 sensor is still receiving data from the gateway            
+    attribute "orphanedWind", "enum", ["false", "true"];       // Whether or not the bundled WH68/WH80 sensor is still receiving data from the gateway    
+
+ // command "settingsResetConditional";                        // Used for backward compatibility to reset device conditional preferences
   }
 
   preferences {
-    input(name: "htmlTemplate", type: "string", title: "<font style='font-size:12px; color:#1a77c9'>Tile HTML Template(s)</font>", description: "<font style='font-size:12px; font-style: italic'>See <u><a href='https://github.com/mircolino/ecowitt/blob/master/readme.md#templates' target='_blank'>documentation</a></u> for input formats</font>", defaultValue: "");
+    input(name: "htmlEnabled", type: "bool", title: "<font style='font-size:12px; color:#1a77c9'>Enable Tile HTML</font>", description: "<font style='font-size:12px; font-style: italic'>Rich multi-attribute dashboard tiles using html templates</font>", defaultValue: true);
+    if (htmlEnabled || htmlEnabled == null) {
+      input(name: "htmlTemplate", type: "string", title: "<font style='font-size:12px; color:#1a77c9'>Tile HTML Template(s)</font>", description: "<font style='font-size:12px; font-style: italic'>See <u><a href='https://github.com/mircolino/ecowitt/blob/master/readme.md#templates' target='_blank'>documentation</a></u> for input formats</font>", defaultValue: "");
+    }
     if (localAltitude != null) {
-      input(name: "localAltitude", type: "string", title: "<font style='font-size:12px; color:#1a77c9'><u><a href='https://www.advancedconverter.com/map-tools/altitude-on-google-maps' target='_blank'>Altitude</a></u> to Correct Sea Level Pressure</font>", description: "<font style='font-size:12px; font-style: italic'>Examples: \"378 ft\" or \"115 m\"</font>", defaultValue: "", required: true);
+      input(name: "localAltitude", type: "string", title: "<font style='font-size:12px; color:#1a77c9'><u><a href='https://www.advancedconverter.com/map-tools/altitude-on-google-maps' target='_blank'>Altitude</a></u> to Correct Sea Level Pressure</font>", description: "<font style='font-size:12px; font-style: italic'>Examples: \"378 ft\" or \"115 m\"</font>", required: true);
     }
     if (voltageMin != null) {
-      input(name: "voltageMin", type: "string", title: "<font style='font-size:12px; color:#1a77c9'>Empty Battery Voltage</font>", description: "<font style='font-size:12px; font-style: italic'>Sensor value when battery is empty</font>", defaultValue: "", required: true);
-      input(name: "voltageMax", type: "string", title: "<font style='font-size:12px; color:#1a77c9'>Full Battery Voltage</font>", description: "<font style='font-size:12px; font-style: italic'>Sensor value when battery is full</font>", defaultValue: "", required: true);
+      input(name: "voltageMin", type: "string", title: "<font style='font-size:12px; color:#1a77c9'>Empty Battery Voltage</font>", description: "<font style='font-size:12px; font-style: italic'>Sensor value when battery is empty</font>", required: true);
+      input(name: "voltageMax", type: "string", title: "<font style='font-size:12px; color:#1a77c9'>Full Battery Voltage</font>", description: "<font style='font-size:12px; font-style: italic'>Sensor value when battery is full</font>", required: true);
     }
     if (calcDewPoint != null) {
-      input(name: "calcDewPoint", type: "bool", title: "<font style='font-size:12px; color:#1a77c9'>Calculate Dew Point & Absolute Humidity</font>", description: "<font style='font-size:12px; font-style: italic'>Temperature below which water vapor will condense & amount of water contained in a parcel of air</font>", defaultValue: false);
+      input(name: "calcDewPoint", type: "bool", title: "<font style='font-size:12px; color:#1a77c9'>Calculate Dew Point & Absolute Humidity</font>", description: "<font style='font-size:12px; font-style: italic'>Temperature below which water vapor will condense & amount of water contained in a parcel of air</font>");
     }
     if (calcHeatIndex != null) {
-      input(name: "calcHeatIndex", type: "bool", title: "<font style='font-size:12px; color:#1a77c9'>Calculate Heat Index</font>", description: "<font style='font-size:12px; font-style: italic'>Perceived discomfort as a result of the combined effects of the air temperature and humidity</font>", defaultValue: false);
+      input(name: "calcHeatIndex", type: "bool", title: "<font style='font-size:12px; color:#1a77c9'>Calculate Heat Index</font>", description: "<font style='font-size:12px; font-style: italic'>Perceived discomfort as a result of the combined effects of the air temperature and humidity</font>");
     }
     if (calcSimmerIndex != null) {
-      input(name: "calcSimmerIndex", type: "bool", title: "<font style='font-size:12px; color:#1a77c9'>Calculate Summer Simmer Index</font>", description: "<font style='font-size:12px; font-style: italic'>Similar to the Heat Index but using a newer and more accurate formula</font>", defaultValue: false);
+      input(name: "calcSimmerIndex", type: "bool", title: "<font style='font-size:12px; color:#1a77c9'>Calculate Summer Simmer Index</font>", description: "<font style='font-size:12px; font-style: italic'>Similar to the Heat Index but using a newer and more accurate formula</font>");
     }
     if (calcWindChill != null) {
-      input(name: "calcWindChill", type: "bool", title: "<font style='font-size:12px; color:#1a77c9'>Calculate Wind-chill Factor</font>", description: "<font style='font-size:12px; font-style: italic'>Lowering of body temperature due to the passing-flow of lower-temperature air</font>", defaultValue: false);
+      input(name: "calcWindChill", type: "bool", title: "<font style='font-size:12px; color:#1a77c9'>Calculate Wind-chill Factor</font>", description: "<font style='font-size:12px; font-style: italic'>Lowering of body temperature due to the passing-flow of lower-temperature air</font>");
+    }
+    if (decsTemperature != null) {
+      input(name: "decsTemperature", type: "number", title: "<font style='font-size:12px; color:#1a77c9'>Temperature decimals</font>", description: "<font style='font-size:12px; font-style: italic'>Enter a single digit number or -1 for no rounding</font>");
+    }
+    if (decsPressure != null) {
+      input(name: "decsPressure", type: "number", title: "<font style='font-size:12px; color:#1a77c9'>Pressure decimals</font>", description: "<font style='font-size:12px; font-style: italic'>Enter a single digit number or -1 for no rounding</font>");
     }
   }
 }
@@ -180,18 +191,26 @@ private void logInfo(String str) { if (getParent().logGetLevel() > 1) log.info(s
 private void logDebug(String str) { if (getParent().logGetLevel() > 2) log.debug(str); }
 private void logTrace(String str) { if (getParent().logGetLevel() > 3) log.trace(str); }
 
-// Ztatus ---------------------------------------------------------------------------------------------------------------------
+// Device Status --------------------------------------------------------------------------------------------------------------
 
-private Boolean ztatus(String str, String color = null) {
+private Boolean devStatus(String str = null, String color = null) {
+  if (str) {
+    if (color) str = "<font style='color:${color}'>${str}</font>";
 
-  if (color) str = "<font style='color:${color}'>${str}</font>";
+    return (attributeUpdateString(str, "status"));
+  }
 
-  return (attributeUpdateString(str, "status"));
+  if (device.currentValue("status") != null) {
+    device.deleteCurrentState("status");
+    return (true);
+  }
+
+  return (false);
 }
 
 // ------------------------------------------------------------
 
-private Boolean ztatusIsError() {
+private Boolean devStatusIsError() {
   
   String str = device.currentValue("status") as String;
 
@@ -396,6 +415,61 @@ private List<String> attributeEnumerate(Boolean existing = true) {
 
 // ------------------------------------------------------------
 
+private void attributeDeleteStale() {
+  if (!settings.calcDewPoint) {
+    if (device.currentValue("dewPoint") != null) device.deleteCurrentState("dewPoint");
+    if (device.currentValue("humidityAbs") != null) device.deleteCurrentState("humidityAbs");
+  }
+
+  if (!settings.calcHeatIndex) {
+    if (device.currentValue("heatIndex") != null) device.deleteCurrentState("heatIndex");
+    if (device.currentValue("heatDanger") != null) device.deleteCurrentState("heatDanger");
+    if (device.currentValue("heatColor") != null) device.deleteCurrentState("heatColor");
+  }
+
+  if (!settings.calcSimmerIndex) {
+    if (device.currentValue("simmerIndex") != null) device.deleteCurrentState("simmerIndex");
+    if (device.currentValue("simmerDanger") != null) device.deleteCurrentState("simmerDanger");
+    if (device.currentValue("simmerColor") != null) device.deleteCurrentState("simmerColor");
+  }
+
+  if (!settings.calcWindChill) {
+    if (device.currentValue("windChill") != null) device.deleteCurrentState("windChill");
+    if (device.currentValue("windDanger") != null) device.deleteCurrentState("windDanger");
+    if (device.currentValue("windColor") != null) device.deleteCurrentState("windColor");
+  }
+
+  if (!settings.htmlEnabled) {
+    if (device.currentValue("batteryIcon") != null) device.deleteCurrentState("batteryIcon");
+    if (device.currentValue("batteryTempIcon") != null) device.deleteCurrentState("batteryTempIcon");
+    if (device.currentValue("batteryRainIcon") != null) device.deleteCurrentState("batteryRainIcon");
+    if (device.currentValue("batteryWindIcon") != null) device.deleteCurrentState("batteryWindIcon");
+
+    if (device.currentValue("heatDanger") != null) device.deleteCurrentState("heatDanger");
+    if (device.currentValue("heatColor") != null) device.deleteCurrentState("heatColor");
+
+    if (device.currentValue("simmerDanger") != null) device.deleteCurrentState("simmerDanger");
+    if (device.currentValue("simmerColor") != null) device.deleteCurrentState("simmerColor");
+
+    if (device.currentValue("aqiDanger") != null) device.deleteCurrentState("aqiDanger");
+    if (device.currentValue("aqiColor") != null) device.deleteCurrentState("aqiColor");
+
+    if (device.currentValue("aqiDanger_avg_24h") != null) device.deleteCurrentState("aqiDanger_avg_24h");
+    if (device.currentValue("aqiColor_avg_24h") != null) device.deleteCurrentState("aqiColor_avg_24h");
+
+    if (device.currentValue("waterMsg") != null) device.deleteCurrentState("waterMsg");
+    if (device.currentValue("waterColor") != null) device.deleteCurrentState("waterColor");
+  
+    if (device.currentValue("ultravioletDanger") != null) device.deleteCurrentState("ultravioletDanger");
+    if (device.currentValue("ultravioletColor") != null) device.deleteCurrentState("ultravioletColor");
+
+    if (device.currentValue("windDanger") != null) device.deleteCurrentState("windDanger");
+    if (device.currentValue("windColor") != null) device.deleteCurrentState("windColor");        
+  }
+}
+
+// ------------------------------------------------------------
+
 private Boolean attributeUpdateBattery(String val, String attribBattery, String attribBatteryIcon, String attribBatteryOrg, Integer type) {
   //
   // Convert all different batteries returned values to a 0-100% range
@@ -454,7 +528,7 @@ private Boolean attributeUpdateBattery(String val, String attribBattery, String 
   if (type != 2 || original != 6) {
     // We are not on USB power
     if (attributeUpdateNumber(percent, attribBattery, "%", 0)) updated = true;
-    if (attributeUpdateNumber(icon, attribBatteryIcon, "%")) updated = true;
+    if (settings.htmlEnabled && attributeUpdateNumber(icon, attribBatteryIcon, "%")) updated = true;
   }
 
   return (updated);
@@ -499,13 +573,21 @@ private Boolean attributeUpdateTemperature(String val, String attribTemperature)
   BigDecimal degrees = val.toBigDecimal();
   String measure = "°F";
 
+  // Get number of decimals (default = 1)
+  Integer decimals = settings.decsTemperature;
+  if (decimals == null) {
+    // First time: initialize and show the preference
+    decimals = 1;
+    device.updateSetting("decsTemperature", [value: decimals, type: "number"]);
+  }
+
   // Convert to metric if requested
   if (unitSystemIsMetric()) {
     degrees = convert_F_to_C(degrees);
     measure = "°C";
   }
 
-  return (attributeUpdateNumber(degrees, attribTemperature, measure, 1));
+  return (attributeUpdateNumber(degrees, attribTemperature, measure, decimals));
 }
 
 // ------------------------------------------------------------
@@ -523,6 +605,14 @@ private Boolean attributeUpdatePressure(String val, String attribPressure, Strin
 
   // Get unit system
   Boolean metric = unitSystemIsMetric();
+
+  // Get number of decimals (default = 2)
+  Integer decimals = settings.decsPressure;
+  if (decimals == null) {
+    // First time: initialize and show the preference
+    decimals = 2;
+    device.updateSetting("decsPressure", [value: decimals, type: "number"]);
+  }
 
   // Get pressure in hectopascal
   BigDecimal absolute = convert_inHg_to_hPa(val.toBigDecimal());
@@ -568,8 +658,8 @@ private Boolean attributeUpdatePressure(String val, String attribPressure, Strin
     val = "inHg";
   }
 
-  Boolean updated = attributeUpdateNumber(relative, attribPressure, val, 2);
-  if (attributeUpdateNumber(absolute, attribPressureAbs, val, 2)) updated = true;
+  Boolean updated = attributeUpdateNumber(relative, attribPressure, val, decimals);
+  if (attributeUpdateNumber(absolute, attribPressureAbs, val, decimals)) updated = true;
 
   return (updated);
 }
@@ -634,20 +724,23 @@ private Boolean attributeUpdateAQI(String val, Boolean pm25, String attribAqi, S
     if (aqi < aqi25) aqi = aqi25;
   }
 
-  String danger;
-  String color;
-
-  if      (aqi <  51) { danger = "Good";                           color = "3ea72d"; }
-  else if (aqi < 101) { danger = "Moderate";                       color = "fff300"; }
-  else if (aqi < 151) { danger = "Unhealthy for Sensitive Groups"; color = "f18b00"; }
-  else if (aqi < 201) { danger = "Unhealthy";                      color = "e53210"; }
-  else if (aqi < 301) { danger = "Very Unhealthy";                 color = "b567a4"; }
-  else if (aqi < 401) { danger = "Hazardous";                      color = "7e0023"; }
-  else {                danger = "Hazardous";                      color = "7e0023"; }
-
   Boolean updated = attributeUpdateNumber(aqi, attribAqi, "AQI");
-  if (attributeUpdateString(danger, attribAqiDanger)) updated = true;
-  if (attributeUpdateString(color, attribAqiColor)) updated = true;
+
+  if (settings.htmlEnabled) {
+    String danger;
+    String color;
+
+    if      (aqi <  51) { danger = "Good";                           color = "3ea72d"; }
+    else if (aqi < 101) { danger = "Moderate";                       color = "fff300"; }
+    else if (aqi < 151) { danger = "Unhealthy for Sensitive Groups"; color = "f18b00"; }
+    else if (aqi < 201) { danger = "Unhealthy";                      color = "e53210"; }
+    else if (aqi < 301) { danger = "Very Unhealthy";                 color = "b567a4"; }
+    else if (aqi < 401) { danger = "Hazardous";                      color = "7e0023"; }
+    else {                danger = "Hazardous";                      color = "7e0023"; }
+
+    if (attributeUpdateString(danger, attribAqiDanger)) updated = true;
+    if (attributeUpdateString(color, attribAqiColor)) updated = true;
+  }
 
   return (updated);
 }
@@ -666,22 +759,24 @@ private Boolean attributeUpdateCO2(String val, String attribCo2) {
 private Boolean attributeUpdateLeak(String val, String attribWater, String attribWaterMsg, String attribWaterColor) {
 
   BigDecimal leak = (val.toBigDecimal())? 1: 0;
-  String water, message, color;
 
-  if (leak) {
-    water = "wet";
-    message = "Leak detected!";
-    color = "ff0000";
-  }
-  else {
-    water = "dry";
-    message = "Dry";
-    color = "ffffff";
-  }
+  Boolean updated = attributeUpdateString(leak? "wet": "dry", attribWater);
 
-  Boolean updated = attributeUpdateString(water, attribWater);
-  if (attributeUpdateString(message, attribWaterMsg)) updated = true;
-  if (attributeUpdateString(color, attribWaterColor)) updated = true;
+  if (settings.htmlEnabled) {
+    String message, color;
+
+    if (leak) {
+      message = "Leak detected!";
+      color = "ff0000";
+    }
+    else {
+      message = "Dry";
+      color = "ffffff";
+    }
+
+    if (attributeUpdateString(message, attribWaterMsg)) updated = true;
+    if (attributeUpdateString(color, attribWaterColor)) updated = true;
+  }
 
   return (updated);
 }
@@ -739,18 +834,21 @@ private Boolean attributeUpdateUV(String val, String attribUvIndex, String attri
   //
   BigDecimal index = val.toBigDecimal();
 
-  String danger;
-  String color;
-
-  if (index < 3)       { danger = "Low";       color = "3ea72d"; }
-  else if (index < 6)  { danger = "Medium";    color = "fff300"; }
-  else if (index < 8)  { danger = "High";      color = "f18b00"; }
-  else if (index < 11) { danger = "Very High"; color = "e53210"; }
-  else                 { danger = "Extreme";   color = "b567a4"; }
-
   Boolean updated = attributeUpdateNumber(index, attribUvIndex, "uvi");
-  if (attributeUpdateString(danger, attribUvDanger)) updated = true;
-  if (attributeUpdateString(color, attribUvColor)) updated = true;
+
+  if (settings.htmlEnabled) {
+    String danger;
+    String color;
+
+    if (index < 3)       { danger = "Low";       color = "3ea72d"; }
+    else if (index < 6)  { danger = "Medium";    color = "fff300"; }
+    else if (index < 8)  { danger = "High";      color = "f18b00"; }
+    else if (index < 11) { danger = "Very High"; color = "e53210"; }
+    else                 { danger = "Extreme";   color = "b567a4"; }
+
+    if (attributeUpdateString(danger, attribUvDanger)) updated = true;
+    if (attributeUpdateString(color, attribUvColor)) updated = true;
+  }
 
   return (updated);
 }
@@ -822,13 +920,13 @@ private Boolean attributeUpdateWindDirection(String val, String attribWindDirect
 private Boolean attributeUpdateDewPoint(String val, String attribDewPoint, String attribHumidityAbs) {
   Boolean updated = false;
 
-  BigDecimal temperature = (device.currentValue("temperature") as BigDecimal);
-  if (temperature != null) {
-    if (settings.calcDewPoint == null) {
-      // First time: initialize and show the preference
-      device.updateSetting("calcDewPoint", [value: false, type: "bool"]);
-    }
-    else if (settings.calcDewPoint) {
+  if (!settings.calcDewPoint) {
+    // First time: initialize and show the preference
+    if (settings.calcDewPoint == null) device.updateSetting("calcDewPoint", [value: false, type: "bool"]);
+  }
+  else {
+    BigDecimal temperature = (device.currentValue("temperature") as BigDecimal);
+    if (temperature != null) {
 
       if (!unitSystemIsMetric()) {
         // Convert temperature to C
@@ -871,13 +969,14 @@ private Boolean attributeUpdateDewPoint(String val, String attribDewPoint, Strin
 private Boolean attributeUpdateHeatIndex(String val, String attribHeatIndex, String attribHeatDanger, String attribHeatColor) {
   Boolean updated = false;
 
-  BigDecimal temperature = (device.currentValue("temperature") as BigDecimal);
-  if (temperature != null) {
-    if (settings.calcHeatIndex == null) {
-      // First time: initialize and show the preference
-      device.updateSetting("calcHeatIndex", [value: false, type: "bool"]);
-    }
-    else if (settings.calcHeatIndex) {
+  if (!settings.calcHeatIndex) {
+    // First time: initialize and show the preference
+    if (settings.calcHeatIndex == null) device.updateSetting("calcHeatIndex", [value: false, type: "bool"]);
+  }
+  else {
+    BigDecimal temperature = (device.currentValue("temperature") as BigDecimal);
+    if (temperature != null) {
+
       if (unitSystemIsMetric()) {
         // Convert temperature back to F
         temperature = convert_C_to_F(temperature);
@@ -885,37 +984,43 @@ private Boolean attributeUpdateHeatIndex(String val, String attribHeatIndex, Str
 
       // Calculate heatIndex based on https://en.wikipedia.org/wiki/Heat_index
       BigDecimal degrees;
-      String danger;
-      String color;
 
-      if (temperature < 80)  {
-        degrees = temperature;
-        danger = "Safe";
-        color = "ffffff";
-      }
+      if (temperature < 80) degrees = temperature;
       else {
         BigDecimal humidity = val.toBigDecimal();
 
         degrees = -42.379 +
-                 (  2.04901523 * temperature) +
-                 ( 10.14333127 * humidity) -
-                 (  0.22475541 * (temperature * humidity)) -
-                 (  0.00683783 * (temperature ** 2)) -
-                 (  0.05481717 * (humidity ** 2)) +
-                 (  0.00122874 * ((temperature ** 2) * humidity)) +
-                 (  0.00085282 * (temperature * (humidity ** 2))) -
-                 (  0.00000199 * ((temperature ** 2) * (humidity ** 2)));
-
-        if      (degrees < 80)  { danger = "Safe";            color = "ffffff"; }
-        else if (degrees < 91)  { danger = "Caution";         color = "ffff66"; }
-        else if (degrees < 104) { danger = "Extreme Caution"; color = "ffd700"; }
-        else if (degrees < 126) { danger = "Danger";          color = "ff8c00"; }
-        else                    { danger = "Extreme Danger";  color = "ff0000"; }
+                  ( 2.04901523 * temperature) +
+                  (10.14333127 * humidity) -
+                  ( 0.22475541 * (temperature * humidity)) -
+                  ( 0.00683783 * (temperature ** 2)) -
+                  ( 0.05481717 * (humidity ** 2)) +
+                  ( 0.00122874 * ((temperature ** 2) * humidity)) +
+                  ( 0.00085282 * (temperature * (humidity ** 2))) -
+                  ( 0.00000199 * ((temperature ** 2) * (humidity ** 2)));
       }
 
       updated = attributeUpdateTemperature(degrees.toString(), attribHeatIndex);
-      if (attributeUpdateString(danger, attribHeatDanger)) updated = true;
-      if (attributeUpdateString(color, attribHeatColor)) updated = true;
+
+      if (settings.htmlEnabled) {
+        String danger;
+        String color;
+
+        if (temperature < 80)  {
+          danger = "Safe";
+          color = "ffffff";
+        }
+        else {
+          if      (degrees < 80)  { danger = "Safe";            color = "ffffff"; }
+          else if (degrees < 91)  { danger = "Caution";         color = "ffff66"; }
+          else if (degrees < 104) { danger = "Extreme Caution"; color = "ffd700"; }
+          else if (degrees < 126) { danger = "Danger";          color = "ff8c00"; }
+          else                    { danger = "Extreme Danger";  color = "ff0000"; }
+        }
+
+        if (attributeUpdateString(danger, attribHeatDanger)) updated = true;
+        if (attributeUpdateString(color, attribHeatColor)) updated = true;
+      }
     }
   }
 
@@ -927,13 +1032,14 @@ private Boolean attributeUpdateHeatIndex(String val, String attribHeatIndex, Str
 private Boolean attributeUpdateSimmerIndex(String val, String attribSimmerIndex, String attribSimmerDanger, String attribSimmerColor) {
   Boolean updated = false;
 
-  BigDecimal temperature = (device.currentValue("temperature") as BigDecimal);
-  if (temperature != null) {
-    if (settings.calcSimmerIndex == null) {
-      // First time: initialize and show the preference
-      device.updateSetting("calcSimmerIndex", [value: false, type: "bool"]);
-    }
-    else if (settings.calcSimmerIndex) {
+  if (!settings.calcSimmerIndex) {
+    // First time: initialize and show the preference
+    if (settings.calcSimmerIndex == null) device.updateSetting("calcSimmerIndex", [value: false, type: "bool"]);
+  }
+  else {
+    BigDecimal temperature = (device.currentValue("temperature") as BigDecimal);
+    if (temperature != null) {
+
       if (unitSystemIsMetric()) {
         // Convert temperature back to F
         temperature = convert_C_to_F(temperature);
@@ -941,33 +1047,39 @@ private Boolean attributeUpdateSimmerIndex(String val, String attribSimmerIndex,
 
       // Calculate heatIndex based on https://www.vcalc.com/wiki/rklarsen/Summer+Simmer+Index
       BigDecimal degrees;
-      String danger;
-      String color;       
 
-      if (temperature < 70)  {
-        degrees = temperature;
-        danger = "Cool";
-        color = "ffffff";
-      }
+      if (temperature < 70) degrees = temperature;
       else {
         BigDecimal humidity = val.toBigDecimal();
 
         degrees = 1.98 * (temperature - (0.55 - (0.0055 * humidity)) * (temperature - 58.0)) - 56.83;
-
-        if      (degrees < 70)  { danger = "Cool";                          color = "ffffff"; }
-        else if (degrees < 77)  { danger = "Slightly Cool";                 color = "0099ff"; }
-        else if (degrees < 83)  { danger = "Comfortable";                   color = "2dca02"; }
-        else if (degrees < 91)  { danger = "Slightly Warm";                 color = "9acd32"; }
-        else if (degrees < 100) { danger = "Increased Discomfort";          color = "ffb233"; }
-        else if (degrees < 112) { danger = "Caution Heat Exhaustion";       color = "ff6600"; }
-        else if (degrees < 125) { danger = "Danger Heatstroke";             color = "ff3300"; }
-        else if (degrees < 150) { danger = "Extreme Danger";                color = "ff0000"; }
-        else                    { danger = "Circulatory Collapse Imminent"; color = "cc3300"; }
       }
 
       updated = attributeUpdateTemperature(degrees.toString(), attribSimmerIndex);
-      if (attributeUpdateString(danger, attribSimmerDanger)) updated = true;
-      if (attributeUpdateString(color, attribSimmerColor)) updated = true;
+
+      if (settings.htmlEnabled) {
+        String danger;
+        String color;       
+
+        if (temperature < 70)  {
+          danger = "Cool";
+          color = "ffffff";
+        }
+        else {
+          if      (degrees < 70)  { danger = "Cool";                          color = "ffffff"; }
+          else if (degrees < 77)  { danger = "Slightly Cool";                 color = "0099ff"; }
+          else if (degrees < 83)  { danger = "Comfortable";                   color = "2dca02"; }
+          else if (degrees < 91)  { danger = "Slightly Warm";                 color = "9acd32"; }
+          else if (degrees < 100) { danger = "Increased Discomfort";          color = "ffb233"; }
+          else if (degrees < 112) { danger = "Caution Heat Exhaustion";       color = "ff6600"; }
+          else if (degrees < 125) { danger = "Danger Heatstroke";             color = "ff3300"; }
+          else if (degrees < 150) { danger = "Extreme Danger";                color = "ff0000"; }
+          else                    { danger = "Circulatory Collapse Imminent"; color = "cc3300"; }
+        }
+
+        if (attributeUpdateString(danger, attribSimmerDanger)) updated = true;
+        if (attributeUpdateString(color, attribSimmerColor)) updated = true;
+      }
     }
   }
 
@@ -979,13 +1091,14 @@ private Boolean attributeUpdateSimmerIndex(String val, String attribSimmerIndex,
 private Boolean attributeUpdateWindChill(String val, String attribWindChill, String attribWindDanger, String attribWindColor) {
   Boolean updated = false;
 
-  BigDecimal temperature = (device.currentValue("temperature") as BigDecimal);
-  if (temperature != null) {
-    if (settings.calcWindChill == null) {
-      // First time: initialize and show the preference
-      device.updateSetting("calcWindChill", [value: false, type: "bool"]);
-    }
-    else if (settings.calcWindChill) {
+  if (!settings.calcWindChill) {
+    // First time: initialize and show the preference
+    if (settings.calcWindChill == null) device.updateSetting("calcWindChill", [value: false, type: "bool"]);
+  }
+  else {
+    BigDecimal temperature = (device.currentValue("temperature") as BigDecimal);
+    if (temperature != null) {
+
       if (unitSystemIsMetric()) {
         // Convert temperature back to F
         temperature = convert_C_to_F(temperature);
@@ -993,33 +1106,33 @@ private Boolean attributeUpdateWindChill(String val, String attribWindChill, Str
 
       // Calculate windChill based on https://en.wikipedia.org/wiki/Wind_chill
       BigDecimal degrees;
-      String danger;
-      String color;   
-
       BigDecimal windSpeed = val.toBigDecimal();
 
-      if (temperature > 50 || windSpeed < 3) {
-        degrees = temperature;
-        danger = "Safe";
-        color = "ffffff";
-      }
-      else {
-        degrees = 35.74 +
-                ( 0.6215 * temperature) -
-                (35.75 * (windSpeed ** 0.16)) +
-                ((0.4275 * temperature) * (windSpeed ** 0.16));
-
-        if      (degrees < -69) { danger = "Frostbite certain";  color = "2d2c52"; }
-        else if (degrees < -19) { danger = "Frostbite likely";   color = "1f479f"; }
-        else if (degrees < 1)   { danger = "Frostbite possible"; color = "0c6cb5"; }
-        else if (degrees < 21)  { danger = "Very Unpleasant";    color = "2f9fda"; }
-        else if (degrees < 41)  { danger = "Unpleasant";         color = "9dc8e6"; }
-        else                    { danger = "Safe";               color = "ffffff"; }
-      }
+      if (temperature > 50 || windSpeed < 3) degrees = temperature;
+      else degrees = 35.74 + (0.6215 * temperature) - (35.75 * (windSpeed ** 0.16)) + ((0.4275 * temperature) * (windSpeed ** 0.16));
 
       updated = attributeUpdateTemperature(degrees.toString(), attribWindChill);
-      if (attributeUpdateString(danger, attribWindDanger)) updated = true;
-      if (attributeUpdateString(color, attribWindColor)) updated = true;
+
+      if (settings.htmlEnabled) {
+        String danger;
+        String color;   
+
+        if (temperature > 50 || windSpeed < 3) {
+          danger = "Safe";
+          color = "ffffff";
+        }
+        else {
+          if      (degrees < -69) { danger = "Frostbite certain";  color = "2d2c52"; }
+          else if (degrees < -19) { danger = "Frostbite likely";   color = "1f479f"; }
+          else if (degrees < 1)   { danger = "Frostbite possible"; color = "0c6cb5"; }
+          else if (degrees < 21)  { danger = "Very Unpleasant";    color = "2f9fda"; }
+          else if (degrees < 41)  { danger = "Unpleasant";         color = "9dc8e6"; }
+          else                    { danger = "Safe";               color = "ffffff"; }
+        }
+
+        if (attributeUpdateString(danger, attribWindDanger)) updated = true;
+        if (attributeUpdateString(color, attribWindColor)) updated = true;
+      }
     }
   }
 
@@ -1032,19 +1145,21 @@ private Boolean attributeUpdateHtml(String templHtml, String attribHtml) {
 
   Boolean updated = false;
 
-  String pattern = /\$\{([^}]+)\}/;
+  if (settings.htmlEnabled) {
+    String pattern = /\$\{([^}]+)\}/;
 
-  String index;
-  String val;
+    String index;
+    String val;
 
-  for (Integer idx = 0; idx < 16; idx++) {
-    index = idx? "${idx}": "";
+    for (Integer idx = 0; idx < 16; idx++) {
+      index = idx? "${idx}": "";
 
-    val = device.getDataValue("${templHtml}${index}");
-    if (!val) break;
+      val = device.getDataValue("${templHtml}${index}");
+      if (!val) break;
 
-    val = val.replaceAll(~pattern) { java.util.ArrayList match -> (device.currentValue(match[1].trim()) as String); }
-    if (attributeUpdateString(val, "${attribHtml}${index}")) updated = true;
+      val = val.replaceAll(~pattern) { java.util.ArrayList match -> (device.currentValue(match[1].trim()) as String); }
+      if (attributeUpdateString(val, "${attribHtml}${index}")) updated = true;
+    }
   }
 
   return (updated);
@@ -1059,6 +1174,7 @@ Boolean attributeUpdate(String key, String val) {
 
   Boolean updated = false;
   Boolean bundled = device.getDataValue("isBundled");
+  Boolean orphaned = false;   
 
   switch (key) {
 
@@ -1119,220 +1235,218 @@ Boolean attributeUpdate(String key, String val) {
     break;
 
   case "tempinf":
+    // We set this here because it's the integrated GW1000 sensor, which has no battery
+    state.sensor = 1;
+
   case "tempf":
   case ~/tempf_wf[1-8]/:
   case ~/temp[1-8]f/:
   case ~/tf_ch[1-8]/:
   case "tf_co2":
-    state.sensor = 1;
     updated = attributeUpdateTemperature(val, "temperature");
     break;
 
-  case "humidity":
   case "humidityin":
+  case "humidity":
   case ~/humidity_wf[1-8]/:
   case ~/humidity[1-8]/:
-  case ~/soilmoisture[1-8]/:
   case "humi_co2":
-    state.sensor = 1;
     updated = attributeUpdateHumidity(val, "humidity");
     if (attributeUpdateDewPoint(val, "dewPoint", "humidityAbs")) updated = true;
     if (attributeUpdateHeatIndex(val, "heatIndex", "heatDanger", "heatColor")) updated = true;
     if (attributeUpdateSimmerIndex(val, "simmerIndex", "simmerDanger", "simmerColor")) updated = true;
     break;
 
+  case ~/soilmoisture[1-8]/:
+    updated = attributeUpdateHumidity(val, "humidity");
+    break;  
+
   case ~/baromrelin_wf[1-8]/:
   case "baromrelin":
-    state.sensor = 1;
     // we ignore this value as we do our own correction
     break;
 
   case ~/baromabsin_wf[1-8]/:
   case "baromabsin":
-    state.sensor = 1;
     updated = attributeUpdatePressure(val, "pressure", "pressureAbs");
     break;
 
   case ~/rainratein_wf[1-8]/:
   case "rainratein":
-    state.sensor = 1;
     updated = attributeUpdateRain(val, "rainRate", true);
     break;
 
   case ~/eventrainin_wf[1-8]/:
   case "eventrainin":
-    state.sensor = 1;
     updated = attributeUpdateRain(val, "rainEvent");
     break;
 
   case ~/hourlyrainin_wf[1-8]/:
   case "hourlyrainin":
-    state.sensor = 1;
     updated = attributeUpdateRain(val, "rainHourly");
     break;
 
   case ~/dailyrainin_wf[1-8]/:
   case "dailyrainin":
-    state.sensor = 1;
     updated = attributeUpdateRain(val, "rainDaily");
     break;
 
   case ~/weeklyrainin_wf[1-8]/:
   case "weeklyrainin":
-    state.sensor = 1;
     updated = attributeUpdateRain(val, "rainWeekly");
     break;
 
   case ~/monthlyrainin_wf[1-8]/:
   case "monthlyrainin":
-    state.sensor = 1;
     updated = attributeUpdateRain(val, "rainMonthly");
     break;
 
   case ~/yearlyrainin_wf[1-8]/:
   case "yearlyrainin":
-    state.sensor = 1;
     updated = attributeUpdateRain(val, "rainYearly");
     break;
 
   case ~/totalrainin_wf[1-8]/:
   case "totalrainin":
-    state.sensor = 1;
     updated = attributeUpdateRain(val, "rainTotal");
     break;
 
   case ~/pm25_ch[1-4]/:
   case "pm25_co2":
-    state.sensor = 1;
     updated = attributeUpdatePM(val, "pm25");
     if (attributeUpdateAQI(val, true, "aqi", "aqiDanger", "aqiColor")) updated = true;
     break;
 
   case ~/pm25_avg_24h_ch[1-4]/:
   case "pm25_24h_co2":
-    state.sensor = 1;
     updated = attributeUpdatePM(val, "pm25_avg_24h");
     if (attributeUpdateAQI(val, true, "aqi_avg_24h", "aqiDanger_avg_24h", "aqiColor_avg_24h")) updated = true;
     break;
 
   case "pm10_co2":
-    state.sensor = 1;
     updated = attributeUpdatePM(val, "pm10");
     if (attributeUpdateAQI(val, false, "aqi", "aqiDanger", "aqiColor")) updated = true;
     break;
 
   case "pm10_24h_co2":
-    state.sensor = 1;
     updated = attributeUpdatePM(val, "pm10_avg_24h");
     if (attributeUpdateAQI(val, false, "aqi_avg_24h", "aqiDanger_avg_24h", "aqiColor_avg_24h")) updated = true;
     break;
 
   case "co2":
-    state.sensor = 1;
     updated = attributeUpdateCO2(val, "carbonDioxide");
     break;
 
   case "co2_24h":
-    state.sensor = 1;
     updated = attributeUpdateCO2(val, "carbonDioxide_avg_24h");
     break;
 
   case ~/leak_ch[1-4]/:
-    state.sensor = 1;
     updated = attributeUpdateLeak(val, "water", "waterMsg", "waterColor");
     break;
 
   case ~/lightning_wf[1-8]/:
   case "lightning":
-    state.sensor = 1;
     updated = attributeUpdateLightningDistance(val, "lightningDistance");
     break;
 
   case ~/lightning_num_wf[1-8]/:
   case "lightning_num":
-    state.sensor = 1;
     updated = attributeUpdateLightningCount(val, "lightningCount");
     break;
 
   case ~/lightning_time_wf[1-8]/:
   case "lightning_time":
-    state.sensor = 1;
     updated = attributeUpdateLightningTime(val, "lightningTime");
     break;
 
   case ~/lightning_energy_wf[1-8]/:
-    state.sensor = 1;
     updated = attributeUpdateLightningEnergy(val, "lightningEnergy");
     break;
 
   case ~/uv_wf[1-8]/:
   case "uv":
-    state.sensor = 1;
     updated = attributeUpdateUV(val, "ultravioletIndex", "ultravioletDanger", "ultravioletColor");
     break;
 
   case ~/solarradiation_wf[1-8]/:
   case "solarradiation":
-    state.sensor = 1;
     updated = attributeUpdateLight(val, "solarRadiation", "illuminance");
     break;
 
   case ~/winddir_wf[1-8]/:
   case "winddir":
-    state.sensor = 1;
     updated = attributeUpdateWindDirection(val, "windDirection", "windCompass");
     break;
 
   case ~/winddir_avg10m_wf[1-8]/:
   case "winddir_avg10m":
-    state.sensor = 1;
     updated = attributeUpdateWindDirection(val, "windDirection_avg_10m", "windCompass_avg_10m");
     break;
 
   case ~/windspeedmph_wf[1-8]/:
   case "windspeedmph":
-    state.sensor = 1;
     updated = attributeUpdateWindSpeed(val, "windSpeed");
     if (attributeUpdateWindChill(val, "windChill", "windDanger", "windColor")) updated = true;
     break;
 
   case ~/windspdmph_avg10m_wf[1-8]/:
   case "windspdmph_avg10m":
-    state.sensor = 1;
     updated = attributeUpdateWindSpeed(val, "windSpeed_avg_10m");
     break;
 
   case ~/windgustmph_wf[1-8]/:
   case "windgustmph":
-    state.sensor = 1;
     updated = attributeUpdateWindSpeed(val, "windGust");
     break;
 
   case ~/maxdailygust_wf[1-8]/:
   case "maxdailygust":
-    state.sensor = 1;
     updated = attributeUpdateWindSpeed(val, "windGustMaxDaily");
     break;
 
   //
-  // End Of Data
+  // End Of Data: update orphaned status and html attributes
   //
-
   case "endofdata":
-    if (updateSensorStatus(bundled)) {
+    if (state.sensorTemp != null) {
+      if (state.sensorTemp == 0) orphaned = true;
+      attributeUpdateString(state.sensorTemp? "false": "true", "orphanedTemp");
+      state.sensorTemp = 0;
+    }
+
+    if (state.sensorRain != null) {
+      if (state.sensorRain == 0) orphaned = true;
+      attributeUpdateString(state.sensorRain? "false": "true", "orphanedRain");
+      state.sensorRain = 0;
+    }
+
+    if (state.sensorWind != null) {
+      if (state.sensorWind == 0) orphaned = true;
+      attributeUpdateString(state.sensorWind? "false": "true", "orphanedWind");
+      state.sensorWind = 0;
+    }      
+
+    if (state.sensor != null) {
+      if (state.sensor == 0) orphaned = true;
+      attributeUpdateString(state.sensor? "false": "true", "orphaned");
+      state.sensor = 0;      
+    }
+
+    if (orphaned) {
       // Sensor or part the PWS bundle is not receiving data
-      if (!ztatusIsError()) ztatus("Orphaned", "orange");
+      if (!devStatusIsError()) devStatus("Orphaned", "orange");
     }
     else {
       // Sensor or all parts of the PWS bundle are receiving data      
-      if (!ztatusIsError()) ztatus("OK", "green"); 
+      if (!devStatusIsError()) devStatus(); 
 
       // If we are a bundled PWS sensor, at the endofdata we update the "virtual" battery with the lowest of all the "physical" batteries
       if (bundled) updated = attributeUpdateLowestBattery();
-
-      // Update templates if any
-      if (attributeUpdateHtml("htmlTemplate", "html")) updated = true;
     }
+
+    // Update HTML templates if any
+    if (attributeUpdateHtml("htmlTemplate", "html")) updated = true;
     break;
 
   default:
@@ -1341,40 +1455,6 @@ Boolean attributeUpdate(String key, String val) {
   }
 
   return (updated);
-}
-
-// -------------------------------------------------------------
-
-Boolean updateSensorStatus(bundled) {
-  Boolean orphaned = false; 
-
-  if (bundled) {
-    if (state.sensorTemp != null) {
-      if (state.sensorTemp == 0) orphaned = true;
-      attributeUpdateString(state.sensorTemp? "false": "true", "orphanedTemp");
-      state.sensorTemp = 0;
-    }
-    if (state.sensorRain != null) {
-      if (state.sensorRain == 0) orphaned = true;
-      attributeUpdateString(state.sensorRain? "false": "true", "orphanedRain");
-      state.sensorRain = 0;
-    }
-    if (state.sensorWind != null) {
-      if (state.sensorWind == 0) orphaned = true;
-      attributeUpdateString(state.sensorWind? "false": "true", "orphanedWind");
-      state.sensorWind = 0;
-    }      
-  }
-  else {
-    if (state.sensor != null) {
-      if (state.sensor == 0) orphaned = true;
-      attributeUpdateString(state.sensor? "false": "true", "orphaned");
-    }
-  }
-
-  if (state.sensor != null) state.sensor = 0;
-
-  return (orphaned);
 }
 
 // HTML templates --------------------------------------------------------------------------------------------------------------
@@ -1425,21 +1505,15 @@ private Integer htmlCountAttributes(String htmlAttrib) {
 
 // ------------------------------------------------------------
 
-private Boolean htmlSetAttributes(String val, String htmlAttrib, Integer count, Boolean onlyPresent) {
-
-  Boolean updated = false;
+private void htmlDeleteAttributes(String htmlAttrib, Integer count) {
 
   String attrib;
 
   for (Integer idx = 0; idx < count; idx++) {
     attrib = idx? "${htmlAttrib}${idx}": htmlAttrib;
 
-    if (onlyPresent == false || device.currentValue(attrib) != null) {
-      if (attributeUpdateString(val, attrib)) updated = true;
-    }
+    if (device.currentValue(attrib) != null) device.deleteCurrentState(attrib);
   }
-
-  return (updated);
 }
 
 // ------------------------------------------------------------
@@ -1526,29 +1600,32 @@ private List<String> htmlGetUserInput(String input, Integer count) {
 
 private String htmlUpdateUserInput(String input) {
   //
-  // Return true if HTML templates have been pre-processed sucesfully
+  // Return:
+  //            null) html templates have been disabled
+  //              "") user input is empty or valid
+  //   "<error_msg>") user input is invalid
   //
   String htmlTemplate = "htmlTemplate";
   String htmlAttrib = "html";
 
-  String template;
+  // Delete old data templates (if any) 
+  for (Integer idx = 0; idx < 16; idx++) {
+    device.removeDataValue(idx? "${htmlTemplate}${idx}": htmlTemplate);
+  }
 
   // Get the maximum number of supported templates
   Integer count = htmlCountAttributes(htmlAttrib);
-
   if (!count) {
     // Return if we do not support HTML templates
-    return ("");
+    return (null);
   }
 
-  // Cleanup previous states
-  htmlSetAttributes("n/a", htmlAttrib, count, true);
+  // Cleanup previous states and data
+  htmlDeleteAttributes(htmlAttrib, count);
 
-  for (Integer idx = 0; idx < count; idx++) {
-    template = idx? "${htmlTemplate}${idx}": htmlTemplate;
-
-    if (device.getDataValue(template)) device.updateDataValue(template, null);
-    device.data.remove(template);
+  // If templates are disabled we just exit here
+  if (!settings.htmlEnabled) {
+    return (null);      
   }
 
   // Parse user input
@@ -1573,14 +1650,23 @@ private String htmlUpdateUserInput(String input) {
 
   // Finally! We have a (1 <= number <= count) of valid templates: let's write them down
   for (Integer idx = 0; idx < templateList.size(); idx++) {
-    template = idx? "${htmlTemplate}${idx}": htmlTemplate;
-
-    device.updateDataValue(template, templateList[idx]);
+    device.updateDataValue(idx? "${htmlTemplate}${idx}": htmlTemplate, templateList[idx]);
   }
 
-  htmlSetAttributes("pending", htmlAttrib, templateList.size(), false);
-
   return ("");
+}
+
+// Driver Commands ------------------------------------------------------------------------------------------------------------
+
+void settingsResetConditional() {
+
+  device.removeSetting("localAltitude");
+  device.removeSetting("voltageMin");
+  device.removeSetting("voltageMax");
+  device.removeSetting("calcDewPoint");
+  device.removeSetting("calcHeatIndex");
+  device.removeSetting("calcSimmerIndex");
+  device.removeSetting("calcWindChill");    
 }
 
 // Driver lifecycle -----------------------------------------------------------------------------------------------------------
@@ -1598,13 +1684,14 @@ void installed() {
 
 void updated() {
   try {
-    // Clear previous states
+    // Clear previous states and sttributes
     state.clear();
+    attributeDeleteStale();
 
     // Pre-process HTML templates (if any)
     String error = htmlUpdateUserInput(settings.htmlTemplate as String);
-    if (error) ztatus(error, "red");
-    else ztatus("OK", "green");
+    if (error) devStatus(error, "red");
+    else devStatus();
    }
   catch (Exception e) {
     logError("Exception in updated(): ${e}");
@@ -1639,6 +1726,25 @@ void parse(String msg) {
 
 /*
 
+private Integer attributeDelete(String attrib = null) {
+  //
+  // Delete the specified attribute or all if !attrib
+  // Return the number of deleted attributes
+  //
+  Integer deleted = 0;
+
+  List<com.hubitat.hub.domain.Attribute> list = device.getSupportedAttributes();
+  if (list) {
+    list.each {
+      if ((!attrib || attrib == it.name) && device.currentValue(it.name) != null) {
+        device.deleteCurrentState(it.name);
+        deleted++;
+      }
+    }
+  }
+
+  return (deleted);
+}
 
 */
 
