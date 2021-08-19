@@ -1,8 +1,8 @@
 /**
  * Driver:     Ecowitt WiFi Gateway
  * Author:     Mirco Caramori
- * Repository: https://github.com/mircolino/ecowitt
- * Import URL: https://raw.githubusercontent.com/mircolino/ecowitt/master/ecowitt_gateway.groovy
+ * Repository: https://github.com/padus/ecowitt
+ * Import URL: https://raw.githubusercontent.com/padus/ecowitt/main/ecowitt_gateway.groovy
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file except
  * in compliance with the License. You may obtain a copy of the License at:
@@ -93,14 +93,16 @@
  *            - used the new (2.2.8) API deleteCurrentState() to remove stale attributes when toggling Dew Point, Heat Index
  *              and Wind Chill support
  *            - improved and optimized device orphaned status detection
+ * 2021.08.18 - relocated repository: mircolino -> padus
+ *
  */
 
-public static String version() { return "v1.30.27"; }
+public static String version() { return "v1.30.28"; }
 
 // Metadata -------------------------------------------------------------------------------------------------------------------
 
 metadata {
-  definition(name: "Ecowitt WiFi Gateway", namespace: "mircolino", author: "Mirco Caramori", importUrl: "https://raw.githubusercontent.com/mircolino/ecowitt/master/ecowitt_gateway.groovy") {
+  definition(name: "Ecowitt WiFi Gateway", namespace: "mircolino", author: "Mirco Caramori", importUrl: "https://raw.githubusercontent.com/padus/ecowitt/main/ecowitt_gateway.groovy") {
     capability "Sensor";
 
     command "resyncSensors";
@@ -241,7 +243,7 @@ Boolean versionUpdate() {
       // Retrieve latest version from GitHub repository manifest
       // If the file is not found, it will throw an exception
       Map verNew = null;
-      String manifestText = "https://raw.githubusercontent.com/mircolino/ecowitt/master/packageManifest.json".toURL().getText();
+      String manifestText = "https://raw.githubusercontent.com/padus/ecowitt/main/manifest.json".toURL().getText();
       if (manifestText) {
         // text -> json
         Object parser = new groovy.json.JsonSlurper();

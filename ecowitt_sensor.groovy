@@ -1,8 +1,8 @@
 /**
  * Driver:     Ecowitt RF Sensor
  * Author:     Mirco Caramori
- * Repository: https://github.com/mircolino/ecowitt
- * Import URL: https://raw.githubusercontent.com/mircolino/ecowitt/master/ecowitt_sensor.groovy
+ * Repository: https://github.com/padus/ecowitt
+ * Import URL: https://raw.githubusercontent.com/padus/ecowitt/main/ecowitt_sensor.groovy
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file except
  * in compliance with the License. You may obtain a copy of the License at:
@@ -17,7 +17,7 @@
 */
 
 metadata {
-  definition(name: "Ecowitt RF Sensor", namespace: "mircolino", author: "Mirco Caramori", importUrl: "https://raw.githubusercontent.com/mircolino/ecowitt/master/ecowitt_sensor.groovy") {
+  definition(name: "Ecowitt RF Sensor", namespace: "mircolino", author: "Mirco Caramori", importUrl: "https://raw.githubusercontent.com/padus/ecowitt/main/ecowitt_sensor.groovy") {
     capability "Sensor";
 
     capability "Battery";
@@ -132,7 +132,7 @@ metadata {
   preferences {
     input(name: "htmlEnabled", type: "bool", title: "<font style='font-size:12px; color:#1a77c9'>Enable Tile HTML</font>", description: "<font style='font-size:12px; font-style: italic'>Rich multi-attribute dashboard tiles using html templates</font>", defaultValue: true);
     if (htmlEnabled || htmlEnabled == null) {
-      input(name: "htmlTemplate", type: "string", title: "<font style='font-size:12px; color:#1a77c9'>Tile HTML Template(s)</font>", description: "<font style='font-size:12px; font-style: italic'>See <u><a href='https://github.com/mircolino/ecowitt/blob/master/readme.md#templates' target='_blank'>documentation</a></u> for input formats</font>", defaultValue: "");
+      input(name: "htmlTemplate", type: "string", title: "<font style='font-size:12px; color:#1a77c9'>Tile HTML Template(s)</font>", description: "<font style='font-size:12px; font-style: italic'>See <u><a href='https://github.com/padus/ecowitt/blob/main/readme.md#templates' target='_blank'>documentation</a></u> for input formats</font>", defaultValue: "");
     }
     if (localAltitude != null) {
       input(name: "localAltitude", type: "string", title: "<font style='font-size:12px; color:#1a77c9'><u><a href='https://www.advancedconverter.com/map-tools/altitude-on-google-maps' target='_blank'>Altitude</a></u> to Correct Sea Level Pressure</font>", description: "<font style='font-size:12px; font-style: italic'>Examples: \"378 ft\" or \"115 m\"</font>", required: true);
@@ -1467,7 +1467,7 @@ private Object htmlGetRepository() {
   Object repository = null;
 
   try {
-    String repositoryText = "https://mircolino.github.io/ecowitt/ecowitt.json".toURL().getText();
+    String repositoryText = "https://padus.github.io/ecowitt/ecowitt.json".toURL().getText();
     if (repositoryText) {
       // text -> json
       Object parser = new groovy.json.JsonSlurper();

@@ -4,8 +4,6 @@ TODO
 Common
 ------
 
-- Localization
-- Explore ways to have Google assistant read seansor values
 
 Parent
 ------
