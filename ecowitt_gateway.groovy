@@ -1,8 +1,8 @@
 /**
  * Driver:     Ecowitt WiFi Gateway
- * Author:     Simon Burke (Original Author (Mirco Caramori)
+ * Author:     Simon Burke (Original author Mirco Caramori)
  * Repository: https://github.com/sburke781/ecowitt
- * Import URL: https://raw.githubusercontent.com/sburke781/ecowitt/main/ecowitt_gateway.groovy
+ * Import URL: https://raw.githubusercontent.com/sburke781/ecowitt/re-release/ecowitt_gateway.groovy
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file except
  * in compliance with the License. You may obtain a copy of the License at:
@@ -101,11 +101,12 @@
 public static String version() { return "v1.30.29"; }
 public static String gitHubUser() { return "sburke781"; }
 public static String gitHubRepo() { return "ecowitt"; }
+public static String gitHubBranch() { return "re-release"; }
 // Metadata -------------------------------------------------------------------------------------------------------------------
 
 metadata {
   
-  definition(name: "Ecowitt WiFi Gateway", namespace: "mircolino", author: "Simon Burke", importUrl: "https://raw.githubusercontent.com/${gitHubUser}/${gitHubRepo}/main/ecowitt_gateway.groovy") {
+  definition(name: "Ecowitt WiFi Gateway", namespace: "mircolino", author: "Simon Burke", importUrl: "https://raw.githubusercontent.com/${gitHubUser}/${gitHubRepo}/${gitHubBranch}/ecowitt_gateway.groovy") {
     capability "Sensor";
 
     command "resyncSensors";
@@ -246,7 +247,7 @@ Boolean versionUpdate() {
       // Retrieve latest version from GitHub repository manifest
       // If the file is not found, it will throw an exception
       Map verNew = null;
-      String manifestText = "https://raw.githubusercontent.com/${gitHubUser}/${gitHubRepo}/main/manifest.json".toURL().getText();
+      String manifestText = "https://raw.githubusercontent.com/${gitHubUser}/${gitHubRepo}/${gitHubBranch}/packageManifest.json".toURL().getText();
       if (manifestText) {
         // text -> json
         Object parser = new groovy.json.JsonSlurper();

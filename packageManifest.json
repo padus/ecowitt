@@ -5,21 +5,21 @@
   "version": "1.30.29",
   "dateReleased": "2021-08-25",
   "releaseNotes": "https://community.hubitat.com/t/re-release-ecowitt-gateway-drivers/78492/2",
-  "documentationLink": "https://github.com/sburke781/ecowitt/blob/master/readme.md",
+  "documentationLink": "https://github.com/sburke781/ecowitt/blob/re-release/readme.md",
   "communityLink": "https://community.hubitat.com/t/re-release-ecowitt-gateway-drivers/78492",
   "drivers": [
     {
       "id": "8de1f519-ba1d-42f9-8b9b-c70086fec20a",
       "name": "Ecowitt WiFi Gateway",
       "namespace": "mircolino",
-      "location": "https://raw.githubusercontent.com/sburke781/ecowitt/master/ecowitt_gateway.groovy",
+      "location": "https://raw.githubusercontent.com/sburke781/ecowitt/re-release/ecowitt_gateway.groovy",
       "required": true
     },
     {
       "id": "34788010-9e52-4817-aa75-283ec0b1fad7",
       "name": "Ecowitt RF Sensor",
       "namespace": "mircolino",
-      "location": "https://raw.githubusercontent.com/sburke781/ecowitt/master/ecowitt_sensor.groovy",
+      "location": "https://raw.githubusercontent.com/sburke781/ecowitt/re-release/ecowitt_sensor.groovy",
       "required": true
     }
   ]
