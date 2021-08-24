@@ -1,6 +1,6 @@
 /**
  * Driver:     Ecowitt WiFi Gateway
- * Author:     Simon Burke (Original author Mirco Caramori)
+ * Author:     Simon Burke (Original author Mirco Caramori - github.com/mircolino)
  * Repository: https://github.com/sburke781/ecowitt
  * Import URL: https://raw.githubusercontent.com/sburke781/ecowitt/re-release/ecowitt_gateway.groovy
  *
