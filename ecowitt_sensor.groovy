@@ -2,7 +2,7 @@
  * Driver:     Ecowitt RF Sensor
  * Author:     Simon Burke (Original author Mirco Caramori)
  * Repository: https://github.com/sburke781/ecowitt
- * Import URL: https://raw.githubusercontent.com/sburke781/ecowitt/re-release/ecowitt_sensor.groovy
+ * Import URL: https://raw.githubusercontent.com/sburke781/ecowitt/main/ecowitt_sensor.groovy
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file except
  * in compliance with the License. You may obtain a copy of the License at:
@@ -18,7 +18,7 @@
 
 public static String gitHubUser() { return "sburke781"; }
 public static String gitHubRepo() { return "ecowitt"; }
-public static String gitHubBranch() { return "re-release"; }
+public static String gitHubBranch() { return "main"; }
 metadata {
   definition(name: "Ecowitt RF Sensor", namespace: "mircolino", author: "Simon Burke", importUrl: "https://raw.githubusercontent.com/${gitHubUser}/${gitHubRepo}/${gitHubBranch}/ecowitt_sensor.groovy") {
     capability "Sensor";

@@ -7,7 +7,7 @@
         "name": "Ecowitt WiFi Gateway",
         "category": "Integrations",
         "tags": [ "Monitoring", "Irrigation", "LAN", "Temperature & Humidity", "Water", "Weather" ],
-        "location": "https://raw.githubusercontent.com/sburke781/ecowitt/re-release/packageManifest.json",
+        "location": "https://raw.githubusercontent.com/sburke781/ecowitt/main/packageManifest.json",
         "description": "Ecowitt Wifi Gateway driver for Hubitat Elevation"
       }
     ]

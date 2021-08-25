@@ -2,7 +2,7 @@
  * Driver:     Ecowitt WiFi Gateway
  * Author:     Simon Burke (Original author Mirco Caramori - github.com/mircolino)
  * Repository: https://github.com/sburke781/ecowitt
- * Import URL: https://raw.githubusercontent.com/sburke781/ecowitt/re-release/ecowitt_gateway.groovy
+ * Import URL: https://raw.githubusercontent.com/sburke781/ecowitt/main/ecowitt_gateway.groovy
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file except
  * in compliance with the License. You may obtain a copy of the License at:
@@ -101,7 +101,7 @@
 public static String version() { return "v1.30.29"; }
 public static String gitHubUser() { return "sburke781"; }
 public static String gitHubRepo() { return "ecowitt"; }
-public static String gitHubBranch() { return "re-release"; }
+public static String gitHubBranch() { return "main"; }
 // Metadata -------------------------------------------------------------------------------------------------------------------
 
 metadata {

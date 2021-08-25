@@ -18,44 +18,44 @@
 
 1.  Make sure all your sensors are properly registered:  
 
-    <img src="https://github.com/sburke781/ecowitt/raw/re-release/images/D01.png" width="300" height="600">  
+    <img src="https://github.com/sburke781/ecowitt/raw/main/images/D01.png" width="300" height="600">  
 
 2.  <span>Setup a local/customized weather service as follow (replacing hostname/IP with your own):  
 
-    <img src="https://github.com/sburke781/ecowitt/raw/re-release/images/D02.png" width="300" height="600">
+    <img src="https://github.com/sburke781/ecowitt/raw/main/images/D02.png" width="300" height="600">
 
 #### Hubitat: 
 
 1.  If the Ecowitt Gateway has been setup correctly, every 5 minutes, you should see the following warning in the Hubitat system log:
 
-    <img src="https://github.com/sburke781/ecowitt/raw/re-release/images/D03.png">
+    <img src="https://github.com/sburke781/ecowitt/raw/main/images/D03.png">
     
     That's because this driver has not been installed yet and the hub has nowhere to forward the gateway data to.
     
-2.  In "Drivers Code" add the Ecowitt [WiFi Gateway](https://raw.githubusercontent.com/sburke781/ecowitt/re-release/ecowitt_gateway.groovy) and [RF Sensor](https://raw.githubusercontent.com/sburke781/ecowitt/re-release/ecowitt_sensor.groovy) drivers:
+2.  In "Drivers Code" add the Ecowitt [WiFi Gateway](https://raw.githubusercontent.com/sburke781/ecowitt/main/ecowitt_gateway.groovy) and [RF Sensor](https://raw.githubusercontent.com/sburke781/ecowitt/main/ecowitt_sensor.groovy) drivers:
 
-    <img src="https://github.com/sburke781/ecowitt/raw/re-release/images/D04.png">
+    <img src="https://github.com/sburke781/ecowitt/raw/main/images/D04.png">
     
 3.  In "Devices" add a new "Ecowitt WiFi Gateway" virtual device and click "Save Device":
 
-    <img src="https://github.com/sburke781/ecowitt/raw/re-release/images/D05.png">
+    <img src="https://github.com/sburke781/ecowitt/raw/main/images/D05.png">
 
 4.  Enter the Gateway MAC or IP address, in any legal form (MAC addresses are safer because they never change, but they don't work across VLANs) and wheather you want to combine outdoor sensors into a PWS (which will allow you to create HTML weather tiles combining attributes from all sensor members).
     Finally "Save Preferences":
 
-    <img src="https://github.com/sburke781/ecowitt/raw/re-release/images/D06.png">
+    <img src="https://github.com/sburke781/ecowitt/raw/main/images/D06.png">
 
 5.  That should be all.
     The first time Hubitat receives data from the Gateway, the driver will automatically create child devices for all the present (and supported) sensors (depending on the frequency you setup your Gateway to send data, this may take a few minutes):
     
-    <img src="https://github.com/sburke781/ecowitt/raw/re-release/images/D07.png">
+    <img src="https://github.com/sburke781/ecowitt/raw/main/images/D07.png">
 
 ### <a name="templates"></a> HTML Templates
 
 HTML templates are a powerful way to gang-up multiple Ecowitt sensor attributes in a single Hubitat dashboard tile with endless customization.
 The following is a basic example of what you can achieve with a simple HTML template:
 
-<img src="https://github.com/sburke781/ecowitt/raw/re-release/images/D08.png" width="400" height="235">
+<img src="https://github.com/sburke781/ecowitt/raw/main/images/D08.png" width="400" height="235">
 
 Each sensor can specify up to 5 templates which will allow the creation of 5 customized dashboard tiles.
 
@@ -81,11 +81,11 @@ NB:
 
 1.  In "Hubitat -> Devices" select an Ecowitt sensor (not the gateway) you'd like to "templetize".
     
-    Then In "Preferences -> HTML Tile Template" enter, either your template directly or up to five (comma separated) pre-made template IDs which the driver will automatically retrieve from the [template repository](https://github.com/sburke781/ecowitt/blob/re-release/templates.md).
+    Then In "Preferences -> HTML Tile Template" enter, either your template directly or up to five (comma separated) pre-made template IDs which the driver will automatically retrieve from the [template repository](https://github.com/sburke781/ecowitt/blob/main/templates.md).
 
     Finally click "Save Preferences".
     
-    <img src="https://github.com/sburke781/ecowitt/raw/re-release/images/D09.png">
+    <img src="https://github.com/sburke781/ecowitt/raw/main/images/D09.png">
 
     NB: if you enter a template directly, make sure it's 256 character or shorter. If you enter a list of templates make sure it's 5 IDs or shorter without duplicates.
 
@@ -96,12 +96,12 @@ NB:
     ```
      Click "Save CSS"
 
-    <img src="https://github.com/sburke781/ecowitt/raw/re-release/images/D10.png">   
+    <img src="https://github.com/sburke781/ecowitt/raw/main/images/D10.png">   
 
 
 3.  Now, in the same dashboard, add a new tile, on the left select the Ecowitt sensor, in the center select "Attribute" and on the right select the "html" attribute
     
-    <img src="https://github.com/sburke781/ecowitt/raw/re-release/images/D11.png"> 
+    <img src="https://github.com/sburke781/ecowitt/raw/main/images/D11.png"> 
 
     Tip: you can remove the tile "html" title by entering the following in the dashboard CSS (assuming the tile ID is 66):
 
@@ -123,12 +123,12 @@ These icons are in reality text, so of course all the standard CSS font styling,
 
 [This is a complete list](https://sburke781.github.io/ecowitt/ecowitt.html) of all the icons available. Just access the page source html to see all the defined icon classes, and how to use them.
 
-<img src="https://github.com/sburke781/ecowitt/raw/re-release/images/D12.png">
+<img src="https://github.com/sburke781/ecowitt/raw/main/images/D12.png">
 
 #### <a name="repository"></a> HTML Template Repository
 
-To facilitate reusing and sharing templates, the Ecowitt driver uses a [central JSON repository](https://raw.githubusercontent.com/sburke781/ecowitt/re-release/html/ecowitt.json) where all the templates can be accessed by ID.
-This is a [complete up-to-date list](https://github.com/sburke781/ecowitt/blob/re-release/templates.md) of all the templates available in the repository.
+To facilitate reusing and sharing templates, the Ecowitt driver uses a [central JSON repository](https://raw.githubusercontent.com/sburke781/ecowitt/main/html/ecowitt.json) where all the templates can be accessed by ID.
+This is a [complete up-to-date list](https://github.com/sburke781/ecowitt/blob/main/templates.md) of all the templates available in the repository.
 
 *Templates in the repository are measurement system agnostic and will display the correct unit system based on the parent selection.* 
 
