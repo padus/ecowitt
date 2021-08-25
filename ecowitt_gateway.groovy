@@ -95,6 +95,7 @@
  *            - improved and optimized device orphaned status detection
  * 2021.08.18 - relocated repository: mircolino -> padus
  * 2021.08.25 - relocated repository: padus -> sburke781
+ *            - moved to ecowitt namespace
  *
  */
 
@@ -106,7 +107,7 @@ public static String gitHubBranch() { return "main"; }
 
 metadata {
   
-  definition(name: "Ecowitt WiFi Gateway", namespace: "mircolino", author: "Simon Burke", importUrl: "https://raw.githubusercontent.com/${gitHubUser}/${gitHubRepo}/${gitHubBranch}/ecowitt_gateway.groovy") {
+  definition(name: "Ecowitt WiFi Gateway", namespace: "ecowitt", author: "Simon Burke", importUrl: "https://raw.githubusercontent.com/${gitHubUser}/${gitHubRepo}/${gitHubBranch}/ecowitt_gateway.groovy") {
     capability "Sensor";
 
     command "resyncSensors";

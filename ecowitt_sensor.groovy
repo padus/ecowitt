@@ -1,6 +1,6 @@
 /**
  * Driver:     Ecowitt RF Sensor
- * Author:     Simon Burke (Original author Mirco Caramori)
+ * Author:     Simon Burke (Original author Mirco Caramori - github.com/mircolino)
  * Repository: https://github.com/sburke781/ecowitt
  * Import URL: https://raw.githubusercontent.com/sburke781/ecowitt/main/ecowitt_sensor.groovy
  *
@@ -20,7 +20,7 @@ public static String gitHubUser() { return "sburke781"; }
 public static String gitHubRepo() { return "ecowitt"; }
 public static String gitHubBranch() { return "main"; }
 metadata {
-  definition(name: "Ecowitt RF Sensor", namespace: "mircolino", author: "Simon Burke", importUrl: "https://raw.githubusercontent.com/${gitHubUser}/${gitHubRepo}/${gitHubBranch}/ecowitt_sensor.groovy") {
+  definition(name: "Ecowitt RF Sensor", namespace: "ecowitt", author: "Simon Burke", importUrl: "https://raw.githubusercontent.com/${gitHubUser}/${gitHubRepo}/${gitHubBranch}/ecowitt_sensor.groovy") {
     capability "Sensor";
 
     capability "Battery";
