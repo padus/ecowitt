@@ -127,7 +127,7 @@ These icons are in reality text, so of course all the standard CSS font styling,
 
 #### <a name="repository"></a> HTML Template Repository
 
-To facilitate reusing and sharing templates, the Ecowitt driver uses a [central JSON repository](https://raw.githubusercontent.com/sburke781/ecowitt/main/html/ecowitt.json) where all the templates can be accessed by ID.
+To facilitate reusing and sharing templates, the Ecowitt driver uses a [central JSON repository](https://sburke781.github.io/ecowitt/html/ecowitt.json) where all the templates can be accessed by ID.
 This is a [complete up-to-date list](https://github.com/sburke781/ecowitt/blob/main/templates.md) of all the templates available in the repository.
 
 *Templates in the repository are measurement system agnostic and will display the correct unit system based on the parent selection.* 
