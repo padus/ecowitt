@@ -1470,7 +1470,7 @@ private Object htmlGetRepository() {
   Object repository = null;
 
   try {
-    String repositoryText = "https://raw.githubusercontent.com/${gitHubUser}/${gitHubRepo}/${gitHubBranch}/html/ecowitt.json".toURL().getText();
+    String repositoryText = "https://${gitHubUser}.github.io/ecowitt/html/ecowitt.json".toURL().getText();
     if (repositoryText) {
       // text -> json
       Object parser = new groovy.json.JsonSlurper();

@@ -92,7 +92,7 @@ NB:
 2.  In the Hubitat dashboard you intend to use to create HTML template tiles, click "Cog icon -> Advanced -> CSS" and add the following line to the beginning of the CSS file:
     
      ```  
-    @import url("https://sburke781.github.io/ecowitt/ecowitt.css");
+    @import url("https://sburke781.github.io/ecowitt/html/ecowitt.css");
     ```
      Click "Save CSS"
 
@@ -121,7 +121,7 @@ For example, using the driver **windCompass** attribute, the following is the sy
 
 These icons are in reality text, so of course all the standard CSS font styling, shuch as size, color etc. applies as well.
 
-[This is a complete list](https://sburke781.github.io/ecowitt/ecowitt.html) of all the icons available. Just access the page source html to see all the defined icon classes, and how to use them.
+[This is a complete list](https://sburke781.github.io/ecowitt/html/ecowitt.html) of all the icons available. Just access the page source html to see all the defined icon classes, and how to use them.
 
 <img src="https://github.com/sburke781/ecowitt/raw/main/images/D12.png">
 
