@@ -107,7 +107,7 @@ public static String gitHubBranch() { return "main"; }
 
 metadata {
   
-  definition(name: "Ecowitt WiFi Gateway", namespace: "ecowitt", author: "Simon Burke", importUrl: "https://raw.githubusercontent.com/${gitHubUser}/${gitHubRepo}/${gitHubBranch}/ecowitt_gateway.groovy") {
+  definition(name: "Ecowitt WiFi Gateway", namespace: "ecowitt", author: "Simon Burke", importUrl: "https://raw.githubusercontent.com/${gitHubUser()}/${gitHubRepo()}/${gitHubBranch()}/ecowitt_gateway.groovy") {
     capability "Sensor";
 
     command "resyncSensors";
@@ -248,7 +248,7 @@ Boolean versionUpdate() {
       // Retrieve latest version from GitHub repository manifest
       // If the file is not found, it will throw an exception
       Map verNew = null;
-      String manifestText = "https://raw.githubusercontent.com/${gitHubUser}/${gitHubRepo}/${gitHubBranch}/packageManifest.json".toURL().getText();
+      String manifestText = "https://raw.githubusercontent.com/${gitHubUser()}/${gitHubRepo()}/${gitHubBranch()}/packageManifest.json".toURL().getText();
       if (manifestText) {
         // text -> json
         Object parser = new groovy.json.JsonSlurper();
