@@ -14,25 +14,29 @@
 
 ### Installation Instructions
 
-#### Ecowitt WS View:
+#### Ecowitt WS View Mobile App:
 
 1.  Make sure all your sensors are properly registered:  
 
     <img src="https://github.com/sburke781/ecowitt/raw/main/images/D01.png" width="300" height="600">  
 
-2.  <span>Setup a local/customized weather service as follow (replacing hostname/IP with your own):  
+2.  <span>Setup a local/customized weather service, a scheduled push of data from the EcoWitt Gateway to the Hubitat Elevation Hub.  Make sure the Protocol Type is EcoWitt, the Server IP / Hostname is the address of your HE Hub, the path is /data, and the port is 39501.  Set the refresh frequency as you wish, 60 seconds or above is recommended.
 
     <img src="https://github.com/sburke781/ecowitt/raw/main/images/D02.png" width="300" height="600">
 
 #### Hubitat: 
 
-1.  If the Ecowitt Gateway has been setup correctly, every 5 minutes, you should see the following warning in the Hubitat system log:
+1.  If the Ecowitt Gateway has been setup correctly, every time the scheduled data push occurs, you should see the following warning in the Hubitat system log:
 
     <img src="https://github.com/sburke781/ecowitt/raw/main/images/D03.png">
     
     That's because this driver has not been installed yet and the hub has nowhere to forward the gateway data to.
     
-2.  In "Drivers Code" add the Ecowitt [WiFi Gateway](https://raw.githubusercontent.com/sburke781/ecowitt/main/ecowitt_gateway.groovy) and [RF Sensor](https://raw.githubusercontent.com/sburke781/ecowitt/main/ecowitt_sensor.groovy) drivers:
+2.  There are two options for installing the EcoWitt Gateway drivers, the preferred method is to use the Community developed [Hubitat Package Manager](https://community.hubitat.com/t/beta-hubitat-package-manager/38016), searching for the keyword "EcoWitt".
+
+    Alternatively, the drivers can be manually installed under the Drivers Code section of the HE web front-end, using the links below.
+
+    In "Drivers Code" add the Ecowitt [WiFi Gateway](https://raw.githubusercontent.com/sburke781/ecowitt/main/ecowitt_gateway.groovy) and [RF Sensor](https://raw.githubusercontent.com/sburke781/ecowitt/main/ecowitt_sensor.groovy) drivers:
 
     <img src="https://github.com/sburke781/ecowitt/raw/main/images/D04.png">
     
@@ -40,13 +44,12 @@
 
     <img src="https://github.com/sburke781/ecowitt/raw/main/images/D05.png">
 
-4.  Enter the Gateway MAC or IP address, in any legal form (MAC addresses are safer because they never change, but they don't work across VLANs) and wheather you want to combine outdoor sensors into a PWS (which will allow you to create HTML weather tiles combining attributes from all sensor members).
+4.  Enter the EcoWitt Gateway MAC or IP address, in any legal form (MAC addresses are safer because they never change, but they don't work across VLANs) and whether you want to combine outdoor sensors into a PWS (which will allow you to create HTML weather tiles combining attributes from all sensor members).
     Finally "Save Preferences":
 
     <img src="https://github.com/sburke781/ecowitt/raw/main/images/D06.png">
 
-5.  That should be all.
-    The first time Hubitat receives data from the Gateway, the driver will automatically create child devices for all the present (and supported) sensors (depending on the frequency you setup your Gateway to send data, this may take a few minutes):
+5.  Wait for the next push of data from the EcoWitt Gateway, configured earlier in the WS View Mobile App.  When this occurs, the driver will automatically create child devices for all the present (and supported) sensors (depending on the frequency you setup for your Gateway to send data, this may take a few minutes):
     
     <img src="https://github.com/sburke781/ecowitt/raw/main/images/D07.png">
 
