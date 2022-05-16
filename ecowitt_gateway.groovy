@@ -650,9 +650,7 @@ private Boolean sensorEnumerate(String key, String value, Integer id = null, Int
   // Enumerate sensors needed for the current data
   //
   if (id) {
-      log.debug "sensorEnumerate id = ${id}"
     String sid = sensorId(id, channel);
-      log.debug "sensorEnumerate sid = ${sid}"
 
     ArrayList<String> sensorList = [];
 
@@ -683,9 +681,7 @@ private Boolean sensorUpdate(String key, String value, Integer id = null, Intege
 
   try {
     if (id) {
-        log.debug "sensorUpdate id = ${id}"
       String dni = sensorIdToDni(sensorId(id, channel));
-        log.debug "sensorUpdate dni = ${dni}"
 
       com.hubitat.app.ChildDeviceWrapper sensor = getChildDevice(dni);
       if (sensor == null) {
