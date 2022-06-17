@@ -100,6 +100,7 @@
  * 2021.12.04 - Added nameserver lookup for remote gateways where their public IP address can change, thanks again to @kahn-hubitat
  * 2022.02.02 - Added Air Quality capability and population of associated Air Quality attribute in sensor driver, thanks @kahn-hubitat
  * 2022.02.03 - Fixed bug with Air Quality update where it would only happen when HTML tile was enabled
+ * 2022.16.05 - Added support for Leaf Wetness Sensor
  */
 import groovy.json.JsonSlurper;
 
@@ -515,8 +516,8 @@ private void sensorMapping(Map data) {
   //
   // Remap sensors, boundling or decoupling devices, depending on what's present
   //
-  //                     0       1       2       3       4       5       6       7       8       9       10      11
-  String[] sensorMap =  ["WH69", "WH25", "WH26", "WH31", "WH40", "WH41", "WH51", "WH55", "WH57", "WH80", "WH34", "WFST"];
+  //                     0       1       2       3       4       5       6       7       8       9       10      11        12
+  String[] sensorMap =  ["WH69", "WH25", "WH26", "WH31", "WH40", "WH41", "WH51", "WH55", "WH57", "WH80", "WH34", "WFST", "WN35"];
 
   logDebug("sensorMapping()");
 
@@ -574,8 +575,8 @@ String sensorModel(Integer id) {
 
   // assert (id >= 0 && id <= 10);
 
-  //                      0     1     2     3     4     5     6     7     8     9     10    11
-  // String sensorMap = "[WH69, WH25, WH26, WH31, WH40, WH41, WH51, WH55, WH57, WH80, WH34, WFST]";
+  //                      0     1     2     3     4     5     6     7     8     9     10    11    12
+  // String sensorMap = "[WH69, WH25, WH26, WH31, WH40, WH41, WH51, WH55, WH57, WH80, WH34, WFST, WN35]";
   //
   String sensorMap = device.getDataValue("sensorMap");
 
@@ -599,7 +600,8 @@ private String sensorName(Integer id, Integer channel) {
                   "WH57": "Lightning Detection Sensor",
                   "WH80": "Wind Solar Sensor",
                   "WH34": "Water/Soil Temperature Sensor",
-                  "WFST": "WeatherFlow Station"];
+                  "WFST": "WeatherFlow Station",
+                  "WN35": "Leaf Wetness Sensor"];
 
   String model = sensorId."${sensorModel(id)}";
 
@@ -780,6 +782,12 @@ private Boolean attributeUpdate(Map data, Closure sensor) {
     case "baromrelin":
     case "baromabsin":
       updated = sensor(it.key, it.value, 1);
+      break;
+        
+    // Leaf Wetness Sensor
+    case ~/leaf_batt([1-8])/:
+    case ~/leafwetness_ch([1-8])/:
+      updated = sensor(it.key, it.value, 12);
       break;
 
     //

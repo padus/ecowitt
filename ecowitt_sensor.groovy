@@ -92,6 +92,8 @@ metadata {
  // attribute "water", "enum", ["dry", "wet"];                 // "dry" or "wet"
     attribute "waterMsg", "string";                            // dry) "Dry", wet) "Leak detected!"
     attribute "waterColor", "string";                          // dry) "ffffff", wet) "ff0000" to colorize the icon
+      
+    attribute "leafWetness", "number";                         // 0-100% leaf wetness
 
     attribute "lightningTime", "string";                       // Strike time - local time
     attribute "lightningDistance", "number";                   // Strike distance - km
@@ -601,6 +603,15 @@ private Boolean attributeUpdateHumidity(String val, String attribHumidity) {
   BigDecimal percent = val.toBigDecimal();
 
   return (attributeUpdateNumber(percent, attribHumidity, "%", 0));
+}
+
+// ------------------------------------------------------------
+
+private Boolean attributeUpdateLeafWetness(String val, String attribLeafWetness) {
+
+  BigDecimal percent = val.toBigDecimal();
+
+  return (attributeUpdateNumber(percent, attribLeafWetness, "%", 0));
 }
 
 // ------------------------------------------------------------
@@ -1220,6 +1231,10 @@ Boolean attributeUpdate(String key, String val) {
     break;
 
   case ~/batt[1-8]/:
+  case ~/leaf_batt[1-8]/:
+    state.sensor = 1;
+    updated = attributeUpdateBattery(val, "battery", "batteryIcon", "batteryOrg", 1);  // voltage
+    break;
   case "wh25batt":
   case "wh65batt":
     state.sensor = 1;
@@ -1267,6 +1282,10 @@ Boolean attributeUpdate(String key, String val) {
   case ~/soilmoisture[1-8]/:
     updated = attributeUpdateHumidity(val, "humidity");
     break;  
+      
+  case ~/leafwetness_ch[1-8]/:
+    updated = attributeUpdateLeafWetness(val, "leafWetness");
+    break; 
 
   case ~/baromrelin_wf[1-8]/:
   case "baromrelin":
