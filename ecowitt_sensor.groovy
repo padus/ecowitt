@@ -1231,17 +1231,16 @@ Boolean attributeUpdate(String key, String val) {
     break;
 
   case ~/batt[1-8]/:
-  case ~/leaf_batt[1-8]/:
-    state.sensor = 1;
-    updated = attributeUpdateBattery(val, "battery", "batteryIcon", "batteryOrg", 1);  // voltage
-    break;
   case "wh25batt":
   case "wh65batt":
+  //case "ws90batt":
+  //case "wh90batt":
     state.sensor = 1;
     updated = attributeUpdateBattery(val, "battery", "batteryIcon", "batteryOrg", 0);  // !boolean
     break;
 
   case ~/batt_wf[1-8]/:
+  case ~/leaf_batt[1-8]/:
   case ~/soilbatt[1-8]/:
   case ~/tf_batt[1-8]/:
     state.sensor = 1;
