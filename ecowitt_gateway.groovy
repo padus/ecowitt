@@ -100,8 +100,9 @@
  * 2021.12.04 - Added nameserver lookup for remote gateways where their public IP address can change, thanks again to @kahn-hubitat
  * 2022.02.02 - Added Air Quality capability and population of associated Air Quality attribute in sensor driver, thanks @kahn-hubitat
  * 2022.02.03 - Fixed bug with Air Quality update where it would only happen when HTML tile was enabled
- * 2022.16.05 - Added support for Leaf Wetness Sensor
- * 2022.17.06 - Leaf Sensor adjustments for version handling
+ * 2022.06.17 - Added support for Leaf Wetness Sensor
+ * 2022.06.17 - Leaf Sensor adjustments for version handling
+ * 2022.07.04 - Fix for WH31 Battery Readings not being picked up correctly
  */
 import groovy.json.JsonSlurper;
 
