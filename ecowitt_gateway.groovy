@@ -103,10 +103,11 @@
  * 2022.06.17 - Added support for Leaf Wetness Sensor
  * 2022.06.17 - Leaf Sensor adjustments for version handling
  * 2022.07.04 - Fix for WH31 Battery Readings not being picked up correctly
+ * 2022.07.09 - Formatting of Dynamic DNS Preference title and description
  */
 import groovy.json.JsonSlurper;
 
-public static String version() { return "v1.33.01"; }
+public static String version() { return "v1.33.02"; }
 public static String gitHubUser() { return "sburke781"; }
 public static String gitHubRepo() { return "ecowitt"; }
 public static String gitHubBranch() { return "main"; }
@@ -134,8 +135,8 @@ metadata {
 
   preferences {
     input(name: "macAddress", type: "string", title: "<font style='font-size:12px; color:#1a77c9'>MAC / IP Address</font>", description: "<font style='font-size:12px; font-style: italic'>Wi-Fi gateway MAC or IP address</font>", defaultValue: "", required: true);
-    input(name: "DDNSName", type: "text", title: "Dynamic DNS Name to use to resolve a changing ip address. Leave Blank if not used.", description: "Enter DDNS Name", required: false)
-    input(name: "DDNSRefreshTime", type: "number", title: "How often (in Hours) to check/resolve the DDNS Name to discover an IP address change on a remote weather station? (Range 1 - 720, Default 24)?", range: "1..720", defaultValue: 3, required: false)
+    input(name: "DDNSName", type: "text", title: "<font style='font-size:12px; color:#1a77c9'>DDNS Name</font>", description: "<font style='font-size:12px; font-style: italic'>Dynamic DNS Name to use to resolve a changing ip address. Leave Blank if not used.</font>", required: false)
+    input(name: "DDNSRefreshTime", type: "number", title: "<font style='font-size:12px; color:#1a77c9'>DDNS Refresh Time (Hours)</font>",description: "<font style='font-size:12px; font-style: italic'>How often (in Hours) to check/resolve the DDNS Name to discover an IP address change on a remote weather station? (Range 1 - 720, Default 24)?</font>", range: "1..720", defaultValue: 3, required: false)
     input(name: "bundleSensors", type: "bool", title: "<font style='font-size:12px; color:#1a77c9'>Compound Outdoor Sensors</font>", description: "<font style='font-size:12px; font-style: italic'>Combine sensors in a virtual PWS array</font>", defaultValue: true);
     input(name: "unitSystem", type: "enum", title: "<font style='font-size:12px; color:#1a77c9'>System of Measurement</font>", description: "<font style='font-size:12px; font-style: italic'>Unit system all values are converted to</font>", options: [0:"Imperial", 1:"Metric"], multiple: false, defaultValue: 0, required: true);
     input(name: "logLevel", type: "enum", title: "<font style='font-size:12px; color:#1a77c9'>Log Verbosity</font>", description: "<font style='font-size:12px; font-style: italic'>Default: 'Debug' for 30 min and 'Info' thereafter</font>", options: [0:"Error", 1:"Warning", 2:"Info", 3:"Debug", 4:"Trace"], multiple: false, defaultValue: 3, required: true);
