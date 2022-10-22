@@ -104,10 +104,11 @@
  * 2022.06.17 - Leaf Sensor adjustments for version handling
  * 2022.07.04 - Fix for WH31 Battery Readings not being picked up correctly
  * 2022.07.09 - Formatting of Dynamic DNS Preference title and description
+ * 2022.10.22 - Add Witboy Weather Station support (WH/WS90) - developed by @kahn-hubitat
  */
 import groovy.json.JsonSlurper;
 
-public static String version() { return "v1.33.02"; }
+public static String version() { return "v1.34.00"; }
 public static String gitHubUser() { return "sburke781"; }
 public static String gitHubRepo() { return "ecowitt"; }
 public static String gitHubBranch() { return "main"; }
@@ -512,6 +513,7 @@ String sensorDniToId(String dni) {
  *      WH68                              X
  *      WH80  X                           X
  * WH65/WH69  X             X             X
+ * WS90       X             X             X
  *
  */
 
@@ -519,8 +521,8 @@ private void sensorMapping(Map data) {
   //
   // Remap sensors, boundling or decoupling devices, depending on what's present
   //
-  //                     0       1       2       3       4       5       6       7       8       9       10      11        12
-  String[] sensorMap =  ["WH69", "WH25", "WH26", "WH31", "WH40", "WH41", "WH51", "WH55", "WH57", "WH80", "WH34", "WFST", "WN35"];
+  //                     0       1       2       3       4       5       6       7       8       9       10      11        12     13
+  String[] sensorMap =  ["WH69", "WH25", "WH26", "WH31", "WH40", "WH41", "WH51", "WH55", "WH57", "WH80", "WH34", "WFST", "WN35", "WS90"];
 
   logDebug("sensorMapping()");
 
@@ -530,6 +532,7 @@ private void sensorMapping(Map data) {
   Boolean wh68 = data.containsKey("wh68batt");
   Boolean wh80 = data.containsKey("wh80batt");
   Boolean wh69 = data.containsKey("wh65batt");
+  Boolean ws90 = data.containsKey("ws90batt");
 
   // Count outdoor sensor
   Integer outdoorSensors = 0;
@@ -540,6 +543,7 @@ private void sensorMapping(Map data) {
 
   // A bit of sanity check
   if (wh69 && outdoorSensors) logWarning("The PWS should be the only outdoor sensor");
+  if (ws90 && outdoorSensors) logWarning("The PWS should be the only outdoor sensor");
   if (wh80 && wh26) logWarning("Both WH80 and WH26 are present with overlapping sensors");
 
   if (wh80) {
@@ -556,6 +560,14 @@ private void sensorMapping(Map data) {
     sensorMap[2] = sensorMap[0];
     sensorMap[4] = sensorMap[0];
     sensorMap[9] = sensorMap[0];
+  }
+  if (ws90) {
+    //
+    // We have a real ws90 PWS
+    //
+    sensorMap[2] = sensorMap[13];
+    sensorMap[4] = sensorMap[13];
+    sensorMap[9] = sensorMap[13];
   }
   else if (bundleOutdoorSensors() && outdoorSensors > 1) {
     //
@@ -826,6 +838,18 @@ private Boolean attributeUpdate(Map data, Closure sensor) {
       updated = sensor(it.key, it.value, 4);
       break;
 
+    // Rain (ws90)
+
+    case "rrain_piezo":
+    case "erain_piezo":
+    case "hrain_piezo":
+    case "drain_piezo":
+    case "wrain_piezo":
+    case "mrain_piezo":
+    case "yrain_piezo":
+    case "train_piezo": 
+      updated = sensor(it.key, it.value, 4);
+      break;
     //
     // Multi-channel Air Quality Sensor (WH41)
     //
@@ -877,11 +901,13 @@ private Boolean attributeUpdate(Map data, Closure sensor) {
       break;
 
     //
-    // Wind & Solar Sensor (WH80 -> WH69)
+    // Wind & Solar Sensor (WH80 -> WH69, WS90)
     //
     case "wh65batt":
     case "wh68batt":
     case "wh80batt":
+    case "ws90batt":
+    case "wh90batt":  // Is really WS90
     case "winddir":
     case "winddir_avg10m":
     case "windspeedmph":
