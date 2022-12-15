@@ -1298,41 +1298,49 @@ Boolean attributeUpdate(String key, String val) {
 
   case ~/rainratein_wf[1-8]/:
   case "rainratein":
+  case "rrain_piezo":
     updated = attributeUpdateRain(val, "rainRate", true);
     break;
 
   case ~/eventrainin_wf[1-8]/:
   case "eventrainin":
+  case "erain_piezo":
     updated = attributeUpdateRain(val, "rainEvent");
     break;
 
   case ~/hourlyrainin_wf[1-8]/:
   case "hourlyrainin":
+  case "hrain_piezo":
     updated = attributeUpdateRain(val, "rainHourly");
     break;
 
   case ~/dailyrainin_wf[1-8]/:
   case "dailyrainin":
+  case "drain_piezo":
     updated = attributeUpdateRain(val, "rainDaily");
     break;
 
   case ~/weeklyrainin_wf[1-8]/:
   case "weeklyrainin":
+  case "wrain_piezo":
     updated = attributeUpdateRain(val, "rainWeekly");
     break;
 
   case ~/monthlyrainin_wf[1-8]/:
   case "monthlyrainin":
+  case "mrain_piezo":
     updated = attributeUpdateRain(val, "rainMonthly");
     break;
 
   case ~/yearlyrainin_wf[1-8]/:
   case "yearlyrainin":
+  case "yrain_piezo":
     updated = attributeUpdateRain(val, "rainYearly");
     break;
 
   case ~/totalrainin_wf[1-8]/:
   case "totalrainin":
+  case "train_piezo":
     updated = attributeUpdateRain(val, "rainTotal");
     break;
 

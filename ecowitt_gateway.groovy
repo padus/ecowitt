@@ -104,11 +104,12 @@
  * 2022.06.17 - Leaf Sensor adjustments for version handling
  * 2022.07.04 - Fix for WH31 Battery Readings not being picked up correctly
  * 2022.07.09 - Formatting of Dynamic DNS Preference title and description
- * 2022.10.22 - Add Witboy Weather Station support (WH/WS90) - developed by @kahn-hubitat
+ * 2022.10.22 - Add Wittboy Weather Station support (WH/WS90) - developed by @kahn-hubitat
+ * 2022.12.15 - Added Wittboy (WS90) rain readings to child sensor driver
  */
 import groovy.json.JsonSlurper;
 
-public static String version() { return "v1.34.00"; }
+public static String version() { return "v1.34.01"; }
 public static String gitHubUser() { return "sburke781"; }
 public static String gitHubRepo() { return "ecowitt"; }
 public static String gitHubBranch() { return "main"; }
