@@ -4,13 +4,13 @@
 ### Features
 
 - LAN comunication only, no cloud/weather service needed.
-- One Hubitat device for each Ecowitt sensor for easy dashboard tiles and RM rules handling.
+- One Hubitat device for each sensor for easy dashboard tiles and RM rules handling.
 - Ability to combine outdoor sensors such as the WH32, WH40 and WH68 into a virtual PWS (Personal Weather Station) for rich weather tiles.
-- Ability to resynchronize and delete orphaned children at runtime when sensors un unregistered fro the station.
+- Ability to resynchronize and delete orphaned children at runtime when sensors are unregistered.
 - On-the-fly Imperial <-> Metric conversion.
 - Accurate sea level pressure correction using altitude and temperature.
 - Accurate AQI (Air Quality Index) calculation from PM2.5 density.
-- Tile [HTML templates](#templates), which allows endless tiles customization, including displaying multiple attributes in a single tile. 
+- Tile [HTML templates](#templates), including displaying multiple attributes in a single tile. 
 
 ### Installation Instructions
 
@@ -20,9 +20,14 @@
 
     <img src="https://github.com/sburke781/ecowitt/raw/main/images/D01.png" width="300" height="600">  
 
-2.  <span>Setup a local/customized weather service, a scheduled push of data from the EcoWitt Gateway to the Hubitat Elevation Hub.  Make sure the Protocol Type is EcoWitt, the Server IP / Hostname is the address of your HE Hub, the path is /data, and the port is 39501.  Set the refresh frequency as you wish, 60 seconds or above is recommended.
+2.  <span>Setup a local/customized weather service, a scheduled push of data from the Gateway to the Hubitat Elevation Hub.  Configure the data push:
+    + Protocol Type is EcoWitt,
+    + Server IP / Hostname is the address of your HE Hub,
+    + Path is /data,
+    + Port is 39501
+    + Set the refresh frequency as you wish, 60 seconds or above is recommended.
 
-    <img src="https://github.com/sburke781/ecowitt/raw/main/images/D02.png" width="300" height="600">
+   <img src="https://github.com/sburke781/ecowitt/raw/main/images/D02.png" width="300" height="600">
 
 #### Hubitat: 
 
@@ -32,15 +37,15 @@
     
     That's because this driver has not been installed yet and the hub has nowhere to forward the gateway data to.
     
-2.  There are two options for installing the EcoWitt Gateway drivers, the preferred method is to use the Community developed [Hubitat Package Manager](https://community.hubitat.com/t/beta-hubitat-package-manager/38016), searching for the keyword "EcoWitt".
-
-    Alternatively, the drivers can be manually installed under the Drivers Code section of the HE web front-end, using the links below.
-
-    In "Drivers Code" add the Ecowitt [WiFi Gateway](https://raw.githubusercontent.com/sburke781/ecowitt/main/ecowitt_gateway.groovy) and [RF Sensor](https://raw.githubusercontent.com/sburke781/ecowitt/main/ecowitt_sensor.groovy) drivers:
+2.  There are two options for installing the EcoWitt Gateway and RF Sensor drivers:
+  
+    + Option 1 (preferred): [Hubitat Package Manager](https://community.hubitat.com/t/release-hubitat-package-manager-hubitatcommunity/94471), searching for the keyword "EcoWitt" in HPM
+    + Option 2 Manual Installation
+      + In "Drivers Code" add the Ecowitt [WiFi Gateway](https://raw.githubusercontent.com/sburke781/ecowitt/main/ecowitt_gateway.groovy) and [RF Sensor](https://raw.githubusercontent.com/sburke781/ecowitt/main/ecowitt_sensor.groovy) drivers:
 
     <img src="https://github.com/sburke781/ecowitt/raw/main/images/D04.png">
     
-3.  In "Devices" add a new "Ecowitt WiFi Gateway" virtual device and click "Save Device":
+3.  With the drivers installed, navigate to the "Devices" page on the Hubitat Hub, add a new "Virtual" device, referencing the "Ecowitt WiFi Gateway" driver, then click "Save Device":
 
     <img src="https://github.com/sburke781/ecowitt/raw/main/images/D05.png">
 
@@ -55,42 +60,24 @@
 
 ### <a name="templates"></a> HTML Templates
 
-HTML templates are a powerful way to gang-up multiple Ecowitt sensor attributes in a single Hubitat dashboard tile with endless customization.
-The following is a basic example of what you can achieve with a simple HTML template:
+HTML templates are a powerful way to present multiple Ecowitt sensor attributes in a single Hubitat dashboard tile.
+The following are some basic examples of what you can achieve with a simple HTML template:
 
 <img src="https://github.com/sburke781/ecowitt/raw/main/images/D08.png" width="400" height="235">
 
-Each sensor can specify up to 5 templates which will allow the creation of 5 customized dashboard tiles.
-
-#### <a name="format"></a> HTML Template Format
-
-Templates are pure HTML code with embedded servlets, which are nothing but sensor attributes surrounded by a \$\{\} expression.
-For example the following two templates are used to create the tiles in the image above:
-     
-   ```
-   <i class="ewi-temperature"></i> ${temperature} &deg;F<br><i class="ewi-humidity"></i> ${humidity} %<br><i class="ewi-pressure"></i> ${pressure} inHg
-   ```  
-   ```
-   <i class="ewi-air" style="color:#${aqiColor}"></i> ${aqiDanger}<br>PM2.5: ${pm25} &micro;g/m&sup3;<br>AQI: ${aqi}
-   ```
-NB:
-
-1. When you enter the template in the device preferences DO NOT surround it with quotation marks.
-2. The maximum lenght of a template (imposed by the Hubitat GUI) is 256 characters. If you enter a longer template, Hubitat will return a "Server 500 error".
-3. For each specific sensor template, ONLY use the attributes you see displayed on the upper-right corner of the sensor preferences (those highlighted in red in the image below).
-4. For obvious reasons, in a template, NEVER use the expression **\$\{html}**. Or your hub will enter a wormhole and resurface in a parallel universe made only of antimatter ;-) 
+Each sensor device can specify up to 5 templates which will allow the creation of 5 customized dashboard tiles.
 
 #### HTML Templates Quick Start
 
 1.  In "Hubitat -> Devices" select an Ecowitt sensor (not the gateway) you'd like to "templetize".
     
-    Then In "Preferences -> HTML Tile Template" enter, either your template directly or up to five (comma separated) pre-made template IDs which the driver will automatically retrieve from the [template repository](https://github.com/sburke781/ecowitt/blob/main/templates.md).
+    Then In "Preferences -> HTML Tile Template" enter up to five (comma separated) pre-made template IDs which the driver will automatically retrieve from the [template repository](https://github.com/sburke781/ecowitt/blob/main/templates.md).
 
     Finally click "Save Preferences".
     
     <img src="https://github.com/sburke781/ecowitt/raw/main/images/D09.png">
-
-    NB: if you enter a template directly, make sure it's 256 character or shorter. If you enter a list of templates make sure it's 5 IDs or shorter without duplicates.
+  
+    Note, whenever you click Save Preferences, whether to update the list of Template Id's or any other settings, the html attributes will temporarily disappear until the next feed of data is received from the EcoWitt Gateway.  This will cause existing dashboard tiles to stop displaying the EcoWitt weather readings during this time.
 
 2.  In the Hubitat dashboard you intend to use to create HTML template tiles, click "Cog icon -> Advanced -> CSS" and add the following line to the beginning of the CSS file:
     
