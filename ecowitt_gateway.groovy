@@ -106,10 +106,11 @@
  * 2022.07.09 - Formatting of Dynamic DNS Preference title and description
  * 2022.10.22 - Add Wittboy Weather Station support (WH/WS90) - developed by @kahn-hubitat
  * 2022.12.15 - Added Wittboy (WS90) rain readings to child sensor driver
+ * 2023.01.01 - Added wh90batt to sensor detection for detecting WittBoy PWS
  */
 import groovy.json.JsonSlurper;
 
-public static String version() { return "v1.34.01"; }
+public static String version() { return "v1.34.02"; }
 public static String gitHubUser() { return "sburke781"; }
 public static String gitHubRepo() { return "ecowitt"; }
 public static String gitHubBranch() { return "main"; }
@@ -533,7 +534,7 @@ private void sensorMapping(Map data) {
   Boolean wh68 = data.containsKey("wh68batt");
   Boolean wh80 = data.containsKey("wh80batt");
   Boolean wh69 = data.containsKey("wh65batt");
-  Boolean ws90 = data.containsKey("ws90batt");
+  Boolean ws90 = data.containsKey("ws90batt") || data.containsKey("wh90batt");
 
   // Count outdoor sensor
   Integer outdoorSensors = 0;
