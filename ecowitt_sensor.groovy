@@ -1243,7 +1243,7 @@ Boolean attributeUpdate(String key, String val) {
   case ~/leaf_batt[1-8]/:
   case ~/soilbatt[1-8]/:
   case ~/tf_batt[1-8]/:
-  case "ws90cap_volt"
+  case "ws90cap_volt":
     state.sensor = 1;
     updated = attributeUpdateBattery(val, "battery", "batteryIcon", "batteryOrg", 1);  // voltage
     break;
