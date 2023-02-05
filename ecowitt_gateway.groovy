@@ -107,10 +107,11 @@
  * 2022.10.22 - Add Wittboy Weather Station support (WH/WS90) - developed by @kahn-hubitat
  * 2022.12.15 - Added Wittboy (WS90) rain readings to child sensor driver
  * 2023.01.01 - Added wh90batt to sensor detection for detecting WittBoy PWS
+ * 2023-02-05 - Added ws90cap_volt reading (Wittboy Battery)
  */
 import groovy.json.JsonSlurper;
 
-public static String version() { return "v1.34.02"; }
+public static String version() { return "v1.34.03"; }
 public static String gitHubUser() { return "sburke781"; }
 public static String gitHubRepo() { return "ecowitt"; }
 public static String gitHubBranch() { return "main"; }
