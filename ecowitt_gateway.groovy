@@ -108,6 +108,7 @@
  * 2022.12.15 - Added Wittboy (WS90) rain readings to child sensor driver
  * 2023.01.01 - Added wh90batt to sensor detection for detecting WittBoy PWS
  * 2023-02-05 - Added ws90cap_volt reading (Wittboy Battery)
+ * 2023-02-18 - Added version check to parse method
  */
 import groovy.json.JsonSlurper;
 
