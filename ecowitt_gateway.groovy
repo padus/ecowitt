@@ -111,7 +111,7 @@
  */
 import groovy.json.JsonSlurper;
 
-public static String version() { return "v1.34.05"; }
+public static String version() { return "v1.34.06"; }
 public static String gitHubUser() { return "sburke781"; }
 public static String gitHubRepo() { return "ecowitt"; }
 public static String gitHubBranch() { return "main"; }
@@ -1172,6 +1172,13 @@ void parse(String msg) {
     }
 
     attributeUpdate(data, this.&sensorUpdate);
+    
+    // If the driver has been updated on the HE hub, check that this is reflected in the driver attribute
+    // If not, run the version update to record the correct details
+    if(!(device.currentValue("driver").startsWith(versionExtract(version()).desc))) {
+      logDebug("Driver on HE Hub updated, running versionUpdate() to update the driver attribute");
+      versionUpdate();
+    }
   }
   catch (Exception e) {
     logError("Exception in parse(): ${e}");
