@@ -109,10 +109,11 @@
  * 2023.01.01 - Added wh90batt to sensor detection for detecting WittBoy PWS
  * 2023-02-05 - Added ws90cap_volt reading (Wittboy Battery)
  * 2023-02-18 - Added version check to parse method
+ * 2023-07-02 - Fix for Dew Point in Celsius
  */
 import groovy.json.JsonSlurper;
 
-public static String version() { return "v1.34.06"; }
+public static String version() { return "v1.34.07"; }
 public static String gitHubUser() { return "sburke781"; }
 public static String gitHubRepo() { return "ecowitt"; }
 public static String gitHubBranch() { return "main"; }

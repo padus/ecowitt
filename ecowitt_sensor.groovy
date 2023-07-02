@@ -950,12 +950,27 @@ private Boolean attributeUpdateDewPoint(String val, String attribDewPoint, Strin
         // Convert temperature to C
         temperature = convert_F_to_C(temperature);
       }
-
+  
       // Calculate dewPoint based on https://web.archive.org/web/20150209041650/http://www.gorhamschaffler.com:80/humidity_formulas.htm
       double rH = val.toDouble();
 
       double tC = temperature.doubleValue();
 
+      /*
+      //The next step is to obtain the saturation vapor pressure(Es) using formula (5) as before when air temperature is known.
+      double Es = 6.11 * Math.pow(10, 7.5*tC/(237.7+tC));
+
+      //The next step is to use the saturation vapor pressure and the relative humidity to compute the actual vapor pressure(E) of the air. This can be done with the following formula.
+      double E = (rH*Es) / 100;
+
+      //RH=relative humidity of air expressed as a percent.(i.e. 80%)
+      //Now you are ready to use the following formula to obtain the dewpoint temperature.
+      // Note: ln( ) means to take the natural log of the variable in the parentheses
+      BigDecimal degrees = (-430.22 + (237.7 * Math.log(E))) / (-Math.log(E) + 19.08);
+      log.debug("rH = " + rH + ", tC = " + tC + ", Es = " + Es + ", E = " + E + ", degrees = " + degrees);
+
+      */
+        
       // Calculate saturation vapor pressure in millibars
       double e = (tC < 0) ?
         6.1115 * Math.exp((23.036 - (tC / 333.7)) * (tC / (279.82 + tC))) :
@@ -966,13 +981,13 @@ private Boolean attributeUpdateDewPoint(String val, String attribDewPoint, Strin
 
       BigDecimal degrees = (-430.22 + 237.7 * Math.log(e)) / (-Math.log(e) + 19.08);
 
+
       // Calculate humidityAbs based on https://carnotcycle.wordpress.com/2012/08/04/how-to-convert-relative-humidity-to-absolute-humidity/
       BigDecimal volume = ((6.1121 * Math.exp((17.67 * tC) / (tC + 243.5)) * rH * 2.1674)) / (tC + 273.15);
-
-      if (!unitSystemIsMetric()) {
-        degrees = convert_C_to_F(degrees);
-        volume = convert_gm3_to_ozyd3(volume);
-      }
+      
+      // convert back to Fahrenheit, the attribUpdateTemperature does the final conversion back to C
+      degrees = convert_C_to_F(degrees);
+      if (!unitSystemIsMetric()) { volume = convert_gm3_to_ozyd3(volume); }
 
       if (attributeUpdateTemperature(degrees.toString(), attribDewPoint)) updated = true;
       if (attributeUpdateNumber(volume, attribHumidityAbs, unitSystemIsMetric()? "g/m³": "oz/yd³", 2)) updated = true;
