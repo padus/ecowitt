@@ -911,9 +911,11 @@ private Boolean attributeUpdate(Map data, Closure sensor) {
     case "wh65batt":
     case "wh68batt":
     case "wh80batt":
-    case "ws90batt":
-    case "wh90batt":  // Is really WS90
+    case "wh90batt": 
+    case "ws80cap_volt":
     case "ws90cap_volt":
+    case "ws80_ver":
+    case "ws90_ver":
     case "winddir":
     case "winddir_avg10m":
     case "windspeedmph":

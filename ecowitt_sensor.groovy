@@ -36,6 +36,10 @@ metadata {
  // attribute "battery", "number";                             // 0-100%
     attribute "batteryIcon", "number";                         // 0, 20, 40, 60, 80, 100
     attribute "batteryOrg", "number";                          // original/un-translated battery value returned by the sensor
+      
+    attribute "batterySolar", "number";                        // Only created/used for WS80/WS90, tracks capicator battery
+    attribute "batterySolarIcon", "number";
+    attribute "batterySolarOrg", "number";                     // original/un-translated battery value returned by the sensor
 
     attribute "batteryTemp", "number";                         //
     attribute "batteryTempIcon", "number";                     // Only created/used when a WH32 is bundled in a PWS
@@ -124,6 +128,8 @@ metadata {
     attribute "html2", "string";                               // e.g. "<div>Temperature: ${temperature}°F<br>Humidity: ${humidity}%</div>"
     attribute "html3", "string";                               //
     attribute "html4", "string";                               //
+      
+    attribute "firmware", "string";                            // Used with sensors that have firmware
 
     attribute "status", "string";                              // Display current driver status
 
@@ -482,6 +488,7 @@ private Boolean attributeUpdateBattery(String val, String attribBattery, String 
   // Type: 1) voltage: range from 1.30V (empty) to 1.65V (full)
   //       2) pentastep: range from 0 (empty) to 5 (full)
   //       0) binary: 0 (full) or 1 (empty)
+  //       3) voltage solar: range from 0.3V (empty) to 5.3V (full)
   //
   BigDecimal original = val.toBigDecimal();
   BigDecimal percent;
@@ -514,6 +521,17 @@ private Boolean attributeUpdateBattery(String val, String attribBattery, String 
     // Change range from (0 - 5) to (0% - 100%)
     percent = convertRange(original, 0, 5, 0, 100);
     unitOrg = "level";
+    break;
+      
+  case 3:
+    // Solar - change range from voltage to (0% - 100%)
+    BigDecimal vMin, vMax;
+
+    vMin = 0.3;
+    vMax = 5.3;
+
+    percent = convertRange(original, vMin, vMax, 0, 100);
+    unitOrg = "V";
     break;
 
   default:
@@ -1174,6 +1192,15 @@ private Boolean attributeUpdateWindChill(String val, String attribWindChill, Str
 
 // ------------------------------------------------------------
 
+private Boolean attributeUpdateFirmware(String val, String attribFirmware) {
+
+  Boolean updated = attributeUpdateString(val, attribFirmware);
+
+  return (updated);
+}
+
+// ------------------------------------------------------------
+
 private Boolean attributeUpdateHtml(String templHtml, String attribHtml) {
 
   Boolean updated = false;
@@ -1249,7 +1276,6 @@ Boolean attributeUpdate(String key, String val) {
   case ~/batt[1-8]/:
   case "wh25batt":
   case "wh65batt":
-  case "ws90batt":
     state.sensor = 1;
     updated = attributeUpdateBattery(val, "battery", "batteryIcon", "batteryOrg", 0);  // !boolean
     break;
@@ -1258,7 +1284,7 @@ Boolean attributeUpdate(String key, String val) {
   case ~/leaf_batt[1-8]/:
   case ~/soilbatt[1-8]/:
   case ~/tf_batt[1-8]/:
-  // case "ws90cap_volt":
+
     state.sensor = 1;
     updated = attributeUpdateBattery(val, "battery", "batteryIcon", "batteryOrg", 1);  // voltage
     break;
@@ -1270,7 +1296,13 @@ Boolean attributeUpdate(String key, String val) {
     state.sensor = 1;
     updated = attributeUpdateBattery(val, "battery", "batteryIcon", "batteryOrg", 2);  // 0 - 5
     break;
-
+      
+  case "ws80cap_volt":
+  case "ws90cap_volt":
+    state.sensor = 1;
+    updated = attributeUpdateBattery(val, "batterySolar", "batterySolarIcon", "batterySolarOrg", 3); 
+    break;
+ 
   case "tempinf":
     // We set this here because it's the integrated GW1000 sensor, which has no battery
     state.sensor = 1;
@@ -1422,7 +1454,12 @@ Boolean attributeUpdate(String key, String val) {
   case "solarradiation":
     updated = attributeUpdateLight(val, "solarRadiation", "illuminance");
     break;
-
+      
+  case "ws80_ver":
+  case "ws90_ver":
+    updated = attributeUpdateFirmware(val, "firmware");
+    break;
+      
   case ~/winddir_wf[1-8]/:
   case "winddir":
     updated = attributeUpdateWindDirection(val, "windDirection", "windCompass");
