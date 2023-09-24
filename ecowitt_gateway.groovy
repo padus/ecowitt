@@ -111,10 +111,11 @@
  * 2023-02-18 - Added version check to parse method
  * 2023-07-02 - Fix for Dew Point in Celsius
  * 2023-09-24 - Updates for Wittboy battery readings and firmware (made by @xcguy)
+ * 2023-09-24 - New runtime attribute, dateutc stored in data value and detection of gain30_piezo (not stored)
  */
 import groovy.json.JsonSlurper;
 
-public static String version() { return "v1.34.08"; }
+public static String version() { return "v1.34.09"; }
 public static String gitHubUser() { return "sburke781"; }
 public static String gitHubRepo() { return "ecowitt"; }
 public static String gitHubBranch() { return "main"; }
@@ -138,6 +139,7 @@ metadata {
     attribute "lastUpdate", "string";                          // Time last data was posted
     attribute "status", "string";                              // Display current driver status
     attribute "dynamicIPResult","string"                       // Result of nameserver lookup
+    attribute "runtime","number"                               // Run time
   }
 
   preferences {
@@ -759,6 +761,19 @@ private Boolean attributeUpdateString(String val, String attribute) {
   return (false);
 }
 
+private Boolean attributeUpdateNumber(Number val, String attribute) {
+  //
+  // Only update "attribute" if different
+  // Return true if "attribute" has actually been updated/created
+  //
+  if ((device.currentValue(attribute) as Number) != val) {
+    sendEvent(name: attribute, value: val);
+    return (true);
+  }
+
+  return (false);
+}
+
 // ------------------------------------------------------------
 
 private Boolean attributeUpdate(Map data, Closure sensor) {
@@ -967,6 +982,20 @@ private Boolean attributeUpdate(Map data, Closure sensor) {
       updated = sensor(it.key, it.value, 11, java.util.regex.Matcher.lastMatcher.group(1).toInteger());
       break;
 
+    case "runtime":
+      if(it.value.isInteger()) { updated = attributeUpdateNumber(it.value.toInteger(), "runtime"); }
+      break;
+
+    case "dateutc":
+      state.dateutc = it.value;
+      updated = true;
+      break;
+    
+    case "gain30_piezo":
+      // we won't handle this one for now, need to work out what it relates to...
+      updated = true;
+      break;
+    
     case "endofdata":
       // Special key to notify all drivers (parent and children) of end-od-data status
       updated = sensor(it.key, it.value);
