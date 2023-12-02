@@ -1145,9 +1145,11 @@ void updated() {
     else if (error != "") devStatus(error, "red");
     else resyncSensors();
 
-    // Update driver version now and every Sunday @ 2am
+    // Update driver version now and every Sunday @ 2am, if we are monitoring Git
     versionUpdate();
-    schedule("0 0 2 ? * 1 *", versionUpdate);
+    if(monitorGitVersion()) {
+      schedule("0 0 2 ? * 1 *", versionUpdate);
+    }
 
     // Turn off debug log in 30 minutes
     if (logGetLevel() > 2) runIn(1800, logDebugOff);
