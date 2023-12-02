@@ -286,6 +286,7 @@ Boolean versionUpdate() {
 
   // If the driver state variable has not been recorded on the device, update it
   if (devVer == null || devVer == "") {
+    logDebug("versionUpdate: device driver version was empty, populating it now");
     devOk = attributeUpdateString(verCur.desc, attribute);
     devVer = verCur.desc;
   }  
@@ -331,6 +332,7 @@ Boolean versionUpdate() {
     ok = true;
     // Capturing the situation where Git Repo monitoring has been turned off and a version update is still captured in the driver attribute
     if(devVer != verCur.desc) {
+      logDebug("versionUpdate: Device driver version does not match the code, updating it now");
       devOk = attributeUpdateString(verCur.desc, attribute);
     }
   }
